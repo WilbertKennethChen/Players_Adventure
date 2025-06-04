@@ -16,9 +16,11 @@ namespace Engine {
         // Smart pointer to font.
         std::shared_ptr<ALLEGRO_FONT> font;
 
+
     public:
         // Text to draw.
         std::string Text;
+        float maxWidth;
         // Text's color.
         ALLEGRO_COLOR Color;
         /// <summary>
@@ -35,7 +37,7 @@ namespace Engine {
         /// <param name="a">Color's alpha value.</param>
         /// <param name="anchorX">The centerX of the object. (0, 0) means top-left, while (1, 0) means top-right.</param>
         /// <param name="anchorY">The centerY of the object. (0, 1) means bottom-left, while (1, 1) means bottom-right.</param>
-        explicit Label(const std::string &text, const std::string &font, int fontSize, float x, float y, unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255, float anchorX = 0, float anchorY = 0);
+        explicit Label(const std::string &text, const std::string &font, int fontSize, float x, float y, unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255, float anchorX = 0, float anchorY = 0, float maxWidth = 0);
         /// <summary>
         /// Draw text with loaded font.
         /// </summary>

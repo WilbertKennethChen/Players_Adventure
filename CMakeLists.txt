@@ -13,20 +13,10 @@ file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(2025_I2P2_TowerDefense
-    Bullet/Bullet.cpp
-    Bullet/Bullet.hpp
-    Bullet/FireBullet.cpp
-    Bullet/FireBullet.hpp
-    Bullet/LaserBullet.cpp
-    Bullet/LaserBullet.hpp
+
 
     # TODO HACKATHON-3 (3/3): Add the new enemy source files here
-    Enemy/Enemy.cpp
-    Enemy/Enemy.hpp
-    Enemy/SoldierEnemy.cpp
-    Enemy/SoldierEnemy.hpp
-    Enemy/TankEnemy.cpp
-    Enemy/TankEnemy.hpp
+
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
@@ -65,21 +55,10 @@ add_executable(2025_I2P2_TowerDefense
     Scene/WinScene.cpp
     Scene/WinScene.hpp
 
-    Turret/LaserTurret.cpp
-    Turret/LaserTurret.hpp
-    Turret/MachineGunTurret.cpp
-    Turret/MachineGunTurret.hpp
-    Turret/Turret.cpp
-    Turret/Turret.hpp
-    Turret/TurretButton.cpp
-    Turret/TurretButton.hpp
 
-    UI/Animation/DirtyEffect.cpp
-    UI/Animation/DirtyEffect.hpp
-    UI/Animation/ExplosionEffect.cpp
-    UI/Animation/ExplosionEffect.hpp
-    UI/Animation/Plane.cpp
-    UI/Animation/Plane.hpp
+
+
+
 
     UI/Component/Image.cpp
     UI/Component/Image.hpp
@@ -89,8 +68,14 @@ add_executable(2025_I2P2_TowerDefense
     UI/Component/Label.hpp
     UI/Component/Slider.cpp
     UI/Component/Slider.hpp
+    UI/Component/Textbox.cpp
+    UI/Component/Textbox.hpp
     
     main.cpp
+        Player/Player.cpp
+        Player/Player.hpp
+        UI/Component/Textbox.cpp
+        UI/Component/Textbox.hpp
 )
 
 IF (WIN32)
