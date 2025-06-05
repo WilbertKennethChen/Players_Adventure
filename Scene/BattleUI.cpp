@@ -5,6 +5,9 @@
 #include "BattleUI.hpp"
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+#include "Engine/GameEngine.hpp"
+
 BattleUI::BattleUI(std::string enemyName): enemyName(enemyName) {
     std::ifstream jsonFileStream("Resource/jsonData/enemyInfo.json");
     nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
@@ -30,4 +33,8 @@ void BattleUI::Draw() const {
     // AddNewObject(new Engine::Image("lose/benjamin-happy.png", halfW, halfH, 0, 0, 0.5, 0.5));
     // AddNewObject(new Engine::Label("You Lose :(", "pirulen.ttf", 48, halfW, halfH / 4 + 10, 255, 255, 255, 255, 0.5, 0.5));
 
+}
+
+void BattleUI::OnKeyDown(int keyCode) {
+    IScene::OnKeyDown(keyCode);
 }

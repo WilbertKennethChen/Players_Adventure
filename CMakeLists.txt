@@ -19,6 +19,7 @@ add_executable(2025_I2P2_TowerDefense
     # TODO HACKATHON-3 (3/3): Add the new enemy source files here
     nlohmann/json.hpp
         Resource/jsonData/dialogue.json
+        Resource/jsonData/enemyInfo.json
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
@@ -80,8 +81,6 @@ add_executable(2025_I2P2_TowerDefense
         UI/Component/Textbox.hpp
         NPC/Npc.cpp
         NPC/Npc.hpp
-        UI/Component/BattleUI.cpp
-        UI/Component/BattleUI.hpp
         Scene/BattleUI.cpp
         Scene/BattleUI.hpp
 )

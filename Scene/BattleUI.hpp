@@ -7,6 +7,7 @@
 #include <string>
 
 #include "Engine/IScene.hpp"
+#include "Engine/Group.hpp"
 
 
 class BattleUI: public Engine::IScene {

@@ -357,11 +357,11 @@ Engine::Point PlayScene::getScreenSize() {
 void PlayScene::RenderTextbox(std::string key) {
     keyDown.clear();
     Engine::Point ScreenSize = getScreenSize();
-    std::ifstream jsonFileStream("Resource/jsonData/jsonData.json");
+    std::ifstream jsonFileStream("Resource/jsonData/dialogue.json");
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
     nlohmann::json data = nlohmann::json::parse(jsonFileStream);
-    std::string text = data["jsonData"][nameDiag][key]["text"];
-    nextDiag = data["jsonData"][nameDiag][key]["next"];
+    std::string text = data["dialogue"][nameDiag][key]["text"];
+    nextDiag = data["dialogue"][nameDiag][key]["next"];
 
 
     // std::cout << std::filesystem::current_path() << std::endl;
