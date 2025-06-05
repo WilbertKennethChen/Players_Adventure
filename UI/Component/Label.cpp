@@ -23,12 +23,13 @@ namespace Engine {
                 if (w > maxWidth && !line.empty()) {
                     wrapped += line + "\n";
                     line = word;
+
                 } else {
                     line = testline;
                 }
             }
             wrapped += line;
-            al_draw_multiline_text(font.get(),Color,Position.x,Position.y,maxWidth,30,0,wrapped.c_str());
+            al_draw_multiline_text(font.get(),Color,Position.x,Position.y,maxWidth,35,0,wrapped.c_str());
 
         } else {
             al_draw_text(font.get(), Color, Position.x - Anchor.x * GetTextWidth(), Position.y - Anchor.y * GetTextHeight(), 0, Text.c_str());

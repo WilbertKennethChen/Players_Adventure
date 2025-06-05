@@ -7,8 +7,10 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
+#include <filesystem>
 #include "Player/Player.hpp"
-
+#include "NPC/Npc.hpp"
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
@@ -16,6 +18,9 @@
 #include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
+
+#include <allegro5/allegro_primitives.h>
+
 
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
@@ -40,6 +45,11 @@ const std::vector<int> PlayScene::code = {
 };
 
 std::set<int> keyDown;
+std::string nextDiag;
+std::string nameDiag;
+bool interactable = false;
+float interactRange = 64.0;
+Npc* interactingNPC= nullptr;
 
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
@@ -66,14 +76,24 @@ void PlayScene::Initialize() {
     // AddNewObject(BulletGroup = new Group());
     // AddNewObject(EffectGroup = new Group());
     // Should support buttons.
+
+    AddNewObject(NpcGroup = new Group());
+    Npc *npc = new Npc("play/enemy-10.png",halfW/2,halfH/2,"npc1");
+    NpcGroup->AddNewObject(npc);
+
+    npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
+    NpcGroup->AddNewObject(npc);
+
+    player = new Player("play/enemy-11.png",halfW, halfH,10,200);
+    AddNewObject(player);
+
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
 
-    player = new Player("play/enemy-11.png",halfW, halfH,10,200);
-    AddNewObject(player);
+
 
     // imgTarget = new Engine::Image("play/target.png", 0, 0);
     // imgTarget->Visible = false;
@@ -95,9 +115,34 @@ void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
 
-    if (player) {
+    if (player && !activeTextbox) {
         for (auto& key:keyDown) {
             player->HandleKey(key,deltaTime);
+        }
+    }
+
+    if (!NpcGroup->GetObjects().empty()) {
+        for (auto& npc:NpcGroup->GetObjects()) {
+            float npcPosX = npc->Position.x;
+            float npcPosY = npc->Position.y;
+            float playerPosX = player->Position.x;
+            float playerPosY = player->Position.y;
+
+            if (std::abs(playerPosX - npcPosX) < interactRange &&
+                std::abs(playerPosY - npcPosY) < interactRange) {
+
+                interactable = true;
+
+                interactingNPC = dynamic_cast<Npc*>(npc);
+                // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
+                nameDiag = interactingNPC->getName();
+                break;
+            } else {
+                interactingNPC = nullptr;
+                nameDiag = "";
+                interactable = false;
+            }
+
         }
     }
 
@@ -125,6 +170,8 @@ void PlayScene::Update(float deltaTime) {
 }
 void PlayScene::Draw() const {
     IScene::Draw();
+    int screenW = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int screenH = Engine::GameEngine::GetInstance().GetScreenSize().y;
     if (DebugMode) {
         // Draw reverse BFS distance on all reachable blocks.
         for (int i = 0; i < MapHeight; i++) {
@@ -138,6 +185,11 @@ void PlayScene::Draw() const {
             }
         }
     }
+    if (activeTextbox) {
+        al_draw_filled_rectangle(0, 0, screenW, screenH, al_map_rgba(0, 0, 0, 160));
+    }
+
+    UIGroup->Draw();
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
     IScene::OnMouseDown(button, mx, my);
@@ -165,18 +217,32 @@ void PlayScene::OnKeyDown(int keyCode) {
         DebugMode = !DebugMode;
     }
 
+    // std::cout << interactable << std::endl;
+    if (keyCode == ALLEGRO_KEY_E && interactable) {
 
-    if (keyCode == ALLEGRO_KEY_E) {
         if (!activeTextbox) {
-            RenderTextbox("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
+            RenderTextbox("intro");
         }
     }
-    if (keyCode == ALLEGRO_KEY_ESCAPE) {
-        if (activeTextbox) {
-            UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-            activeTextbox = nullptr;
+    if (activeTextbox) {
+        if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
+            if (!nextDiag.empty()) {
+                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                RenderTextbox(nextDiag);
+            } else {
+                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                activeTextbox = nullptr;
+                nameDiag = "";
+            }
         }
     }
+
+    // if (keyCode == ALLEGRO_KEY_ESCAPE) {
+    //     if (activeTextbox) {
+    //         UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+    //         activeTextbox = nullptr;
+    //     }
+    // }
 
 
 
@@ -288,8 +354,20 @@ Engine::Point PlayScene::getScreenSize() {
     return Engine::GameEngine::GetInstance().GetScreenSize();
 }
 
-void PlayScene::RenderTextbox(std::string text) {
+void PlayScene::RenderTextbox(std::string key) {
+    keyDown.clear();
     Engine::Point ScreenSize = getScreenSize();
+    std::ifstream jsonFileStream("Resource/jsonData/jsonData.json");
+    // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
+    nlohmann::json data = nlohmann::json::parse(jsonFileStream);
+    std::string text = data["jsonData"][nameDiag][key]["text"];
+    nextDiag = data["jsonData"][nameDiag][key]["next"];
+
+
+    // std::cout << std::filesystem::current_path() << std::endl;
+
+
     activeTextbox = new Engine::Textbox(text,ScreenSize);
     UIGroup->AddNewObject(activeTextbox);
+    jsonFileStream.close();
 }

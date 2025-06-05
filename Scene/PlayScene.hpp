@@ -7,10 +7,12 @@
 #include <vector>
 #include <set>
 
+
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include "Player/Player.hpp"
 #include "UI/Component/Textbox.hpp"
+
 class Turret;
 namespace Engine {
     class Group;
@@ -56,6 +58,7 @@ public:
     Group *EnemyGroup;
     Group *EffectGroup;
     Group *UIGroup;
+    Group *NpcGroup;
     Engine::Textbox *activeTextbox;
     Engine::Label *UIMoney;
     Engine::Label *UILives;

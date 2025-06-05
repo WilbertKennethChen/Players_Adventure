@@ -21,6 +21,7 @@ namespace Engine {
         // Text to draw.
         std::string Text;
         float maxWidth;
+
         // Text's color.
         ALLEGRO_COLOR Color;
         /// <summary>

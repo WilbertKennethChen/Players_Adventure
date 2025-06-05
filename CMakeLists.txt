@@ -9,6 +9,7 @@ include_directories(Resource)
 file(COPY Resource/audios DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY Resource/jsonData DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -16,7 +17,8 @@ add_executable(2025_I2P2_TowerDefense
 
 
     # TODO HACKATHON-3 (3/3): Add the new enemy source files here
-
+    nlohmann/json.hpp
+        Resource/jsonData/dialogue.json
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
@@ -76,6 +78,12 @@ add_executable(2025_I2P2_TowerDefense
         Player/Player.hpp
         UI/Component/Textbox.cpp
         UI/Component/Textbox.hpp
+        NPC/Npc.cpp
+        NPC/Npc.hpp
+        UI/Component/BattleUI.cpp
+        UI/Component/BattleUI.hpp
+        Scene/BattleUI.cpp
+        Scene/BattleUI.hpp
 )
 
 IF (WIN32)
