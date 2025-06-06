@@ -188,7 +188,7 @@ void PlayScene::Initialize() {
     currentY += buttonHeight + buttonSpacing;
 }
 void PlayScene::Terminate() {
-    AudioHelper::StopBGM(bgmId);
+    AudioHelper::StopSample(bgmInstance);
     AudioHelper::StopSample(deathBGMInstance);
     deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     IScene::Terminate();
