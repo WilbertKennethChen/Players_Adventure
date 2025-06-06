@@ -5,6 +5,7 @@
 #include "BattleScene.hpp"
 #include <fstream>
 #include <iostream>
+#include <allegro5/allegro_primitives.h>
 #include <nlohmann/json.hpp>
 
 #include "Engine/GameEngine.hpp"
@@ -14,12 +15,30 @@
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 Player* player;
+
+bool statusDisplayed;
+Engine::Label * labelDesc = nullptr;
+Engine::Label * labelEmo = nullptr;
+
 void BattleScene::Initialize() {
 
     enemyName = GameData::getInstance().currentEnemy;
     enemyMaxHp = GameData::getInstance().enemyList[enemyName].hp;
     img = GameData::getInstance().enemyList[enemyName].img;
+    emotion = GameData::getInstance().enemyList[enemyName].emotion;
+    desc = GameData::getInstance().enemyList[enemyName].desc;
+    miniGame = GameData::getInstance().enemyList[enemyName].minigame;
+
+    playerHp = GameData::getInstance().playerHp;
+    playerMaxHp = GameData::getInstance().playerMaxHp;
     enemyHp = enemyMaxHp;
+
+
+
+
+
+    idle = true;
+    statusDisplayed = false;
 
     //
     // std::cout << enemyName << " " << enemyMaxHp << " " << enemyDamage << " " << img << std::endl;
@@ -32,37 +51,68 @@ void BattleScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
-    AddNewObject(new Engine::Image("lose/benjamin-happy.png", halfW, halfH/2 - 100, 300, 300, 0.5, 0.5));
-    AddNewObject(new Engine::Label("Enemy Hp", "pirulen.ttf", 24, halfW, halfH - 200, 255, 255, 255, 255, 0.5, 0.5));
+    //Initialize group for rectangle box
+
+    AddNewControlObject(BoxGroup = new Group());
+
+    //Enemy
+    AddNewObject(new Engine::Image("lose/benjamin-happy.png", halfW, halfH/2 - 50, 300, 300, 0.5, 0.5));
+
+    char buff[20];
+    sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
+
+    AddNewObject(new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5));
     Engine::ImageButton *btn;
 
+
+
+    //player hp
+    sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
+    AddNewObject(new Engine::Label(buff, "pirulen.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5));
+
     //attack button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 100, h-100, w/4, 100);
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 100, h-125, w/4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::AttackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Attack", "pirulen.ttf", 48, 100, h-100, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Attack", "pirulen.ttf", 48, 295, h-75, 0, 0, 0, 255, 0.5, 0.5));
 
     //negotiate button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w/2, h-100, w/4, 100);
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w/2 - w/8, h-125, w/4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::NegotiateOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Negotiate", "pirulen.ttf", 48, w/2, h-100, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Negotiate", "pirulen.ttf", 40, w/2 - w/8 + 200, h-75, 0, 0, 0, 255, 0.5, 0.5));
 
     //Run Button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w - w/4, h-100, w/4, 100);
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w - w/4-100, h-125, w/4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::RunOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Run", "pirulen.ttf", 48, w- w/4, h-100, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Run", "pirulen.ttf", 48, w- w/4 + 100, h-75, 0, 0, 0, 255, 0.5, 0.5));
+
+    //minigame screen
+    minigame_x1 = 10;
+    minigame_x2 = w-10;
+    minigame_y1 = halfH/2 + 150;
+    minigame_y2 = h-200;
+
 }
 
 
 
-void BattleScene::Update() {
-
+void BattleScene::Update(float dt) {
+    std::cout << idle << std::endl;
+    if (idle && !statusDisplayed) {
+        displayEnemyStatus();
+    }
+    if (!idle && statusDisplayed) {
+        deleteEnemyStatus();
+    }
 }
 
 void BattleScene::Draw() const {
     IScene::Draw();
+    BoxGroup->Draw();
+
+    al_draw_rectangle(minigame_x1, minigame_y1, minigame_x2, minigame_y2, al_map_rgba(255,255,255,255), 2);
 }
 
 void BattleScene::OnKeyDown(int keyCode) {
@@ -77,15 +127,41 @@ void BattleScene::setEnemyName(std::string name) {
 }
 
 void BattleScene::AttackOnClick() {
-
+    idle = false;
 }
 void BattleScene::NegotiateOnClick() {
-
+    idle = true;
 }
 
 void BattleScene::RunOnClick() {
 
 }
+
+void BattleScene::displayEnemyStatus() {
+    char buff[20];
+    std::cout << "draw" << std::endl;
+
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    int halfW = w / 2;
+    int halfH = h / 2;
+
+    labelDesc = new Engine::Label("~ " + desc + " ~", "pirulen.ttf", 30, minigame_x2/2, minigame_y1 + 40, 255, 255, 255, 255, 0.5, 0.5);
+
+
+    labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "pirulen.ttf", 30, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
+
+    BoxGroup->AddNewObject(labelEmo);
+    BoxGroup->AddNewObject(labelDesc);
+    statusDisplayed = true;
+}
+
+void BattleScene::deleteEnemyStatus() {
+    BoxGroup->RemoveObject(labelDesc->GetObjectIterator());
+    BoxGroup->RemoveObject(labelEmo->GetObjectIterator());
+    statusDisplayed = false;
+}
+
 
 
 

@@ -14,7 +14,11 @@
 class BattleScene: public Engine::IScene {
 protected:
     std::string enemyName;
-
+    bool idle;
+    float minigame_x1;
+    float minigame_x2;
+    float minigame_y1;
+    float minigame_y2;
 
 public:
     bool done = false;
@@ -22,21 +26,26 @@ public:
     int enemyMaxHp;
     int enemyHp;
     std::string img;
+    std::string emotion;
+    std::string desc;
+    std::string miniGame;
+    int playerMaxHp;
+    int playerHp;
 
-    float playerMaxHp;
-    float playerHp;
-
+    Group * BoxGroup;
 
 
     explicit BattleScene() = default;
     void Initialize() override;
     void setEnemyName(std::string name);
-    void Update();
+    void Update(float dt) override;
     void Draw() const override;
     void OnKeyDown(int keyCode) override;
     void AttackOnClick();
     void NegotiateOnClick();
     void RunOnClick();
+    void displayEnemyStatus();
+    void deleteEnemyStatus();
 };
 
 

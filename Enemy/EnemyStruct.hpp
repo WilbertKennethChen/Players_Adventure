@@ -10,6 +10,7 @@ typedef struct _enemy {
     float hp;
     std::string img;
     std::string emotion;
+    std::string desc;
     std::string minigame;
 }Enemy;
 
