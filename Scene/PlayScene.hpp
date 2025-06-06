@@ -77,6 +77,7 @@ public:
     void Update(float deltaTime) override;
     bool CheckPlayerCollision(const Engine::Point& newPos);
     void Draw() const override;
+    void ResetScene(Engine::Point spawnPosition);
     void OnMouseDown(int button, int mx, int my) override;
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
@@ -85,7 +86,7 @@ public:
     void Hit();
     int GetMoney() const;
     void EarnMoney(int money);
-    void ReadMap();
+    void ReadMap(Engine::Point overrideSpawn);
     void ReadEnemyWave();
     void ConstructUI();
     void UIBtnClicked(int id);
@@ -93,6 +94,9 @@ public:
     void RenderTextbox(std::string text);
     Engine::Point getScreenSize();
     std::vector<std::vector<int>> CalculateBFSDistance();
+    float transitionAlpha = -1.0f;
+    bool isTransitioning = false;
+    Engine::Point pendingSpawnPoint;
 
     // void ModifyReadMapTiles();
 };

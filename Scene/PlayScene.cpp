@@ -32,6 +32,7 @@
 // TODO HACKATHON-5 (2/4): The "LIFE" label are not updated when you lose a life. Try to fix it.
 
 bool PlayScene::DebugMode = false;
+bool mapSwitched;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 25, PlayScene::MapHeight = 13;
 const int PlayScene::BlockSize = 64;
@@ -64,26 +65,21 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
+    mapSwitched = false;
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
     // AddNewObject(GroundEffectGroup = new Group());
-    AddNewObject(DebugIndicatorGroup = new Group());
     // AddNewObject(TowerGroup = new Group());
     // AddNewObject(EnemyGroup = new Group());
     // AddNewObject(BulletGroup = new Group());
     // AddNewObject(EffectGroup = new Group());
     // Should support buttons.
-    AddNewObject(TileMapGroup = new Group());
-    AddNewObject(DebugIndicatorGroup = new Group());
     AddNewObject(NpcGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
-    ReadMap();
+    ReadMap(Engine::Point(-1, -1));
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
-
-
-
     // imgTarget = new Engine::Image("play/target.png", 0, 0);
     // imgTarget->Visible = false;
     // preview = nullptr;
@@ -104,7 +100,23 @@ void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
     Engine::Point originalPos = player->Position;
+    if (isTransitioning) {
+        transitionAlpha += deltaTime;
 
+        if (transitionAlpha >= 1.0f && !mapSwitched) {
+            MapId = (MapId == 1) ? 2 : 1;
+            ResetScene(pendingSpawnPoint);
+            mapSwitched = true;
+        }
+
+        if (transitionAlpha >= 2.0f) {
+            transitionAlpha = -1.0f;
+            isTransitioning = false;
+            mapSwitched = false;
+        }
+
+        return;
+    }
     if (player && !activeTextbox) {
         for (auto& key:keyDown) {
             player->HandleKey(key,deltaTime);
@@ -114,6 +126,35 @@ void PlayScene::Update(float deltaTime) {
                 player->Position = originalPos;
             }
         }
+        player->Position.x = std::max(BlockSize/2.f, std::min(player->Position.x, (float)(MapWidth * BlockSize - BlockSize/2)));
+        player->Position.y = std::max(BlockSize/2.f, std::min(player->Position.y, (float)(MapHeight * BlockSize - BlockSize/2)));
+
+    }
+    if (!isTransitioning && player)
+    {
+        const float transitionRange = BlockSize * 1.5f;
+        const float bottomEdge = (MapHeight * BlockSize) - BlockSize;
+        const float playerRightEdge = player->Position.x + (BlockSize / 2);
+        const float playerLeftEdge = player->Position.x - (BlockSize / 2);
+
+        if (MapId == 1 && playerRightEdge >= (MapWidth * BlockSize) - transitionRange &&
+            player->Position.y >= bottomEdge + 10) {
+            isTransitioning = true;
+            transitionAlpha = 0.0f;
+            pendingSpawnPoint = Engine::Point(
+                BlockSize,
+                player->Position.y
+            );
+            }
+        else if (MapId == 2 && playerLeftEdge <= transitionRange &&
+                 player->Position.y >= bottomEdge + 10) {
+            isTransitioning = true;
+            transitionAlpha = 0.0f;
+            pendingSpawnPoint = Engine::Point(
+                (MapWidth * BlockSize) - BlockSize,
+                player->Position.y
+            );
+                 }
     }
 
     bool collision = false;
@@ -157,9 +198,26 @@ void PlayScene::Update(float deltaTime) {
         }
     }
 
+    if (isTransitioning) {
+        transitionAlpha += deltaTime;
+        if (transitionAlpha >= 1.0f && !mapSwitched) {
+            if (MapId == 1) {
+                MapId = 2;
+            } else if (MapId == 2) {
+                MapId = 1;
+            }
+            ResetScene(pendingSpawnPoint);
+            mapSwitched = true;
+        }
 
-
-
+        // End transition after full cycle (2.0f)
+        if (transitionAlpha >= 2.0f) {
+            transitionAlpha = -1.0f;
+            isTransitioning = false;
+            mapSwitched = false;
+        }
+        return;
+    }
 
     if (SpeedMult == 0)
         AudioHelper::StopSample(deathBGMInstance);
@@ -178,6 +236,29 @@ void PlayScene::Update(float deltaTime) {
         // Compensate the time lost.
 
     }
+}
+
+void PlayScene::ResetScene(Engine::Point spawnPosition) {
+    float savedLives = lives;
+    float savedMoney = money;
+
+    if (TileMapGroup) TileMapGroup->Clear();
+    if (NpcGroup) NpcGroup->Clear();
+    if (UIGroup) UIGroup->Clear();
+
+    if (player) {
+        RemoveObject(player->GetObjectIterator());
+        player = nullptr;
+    }
+
+    if (spawnPosition.y >= (MapHeight * BlockSize - BlockSize)) {
+        spawnPosition.y -= BlockSize;
+    }
+
+    ReadMap(spawnPosition);
+
+    lives = savedLives;
+    money = savedMoney;
 }
 
 bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
@@ -216,8 +297,11 @@ void PlayScene::Draw() const {
     if (activeTextbox) {
         al_draw_filled_rectangle(0, 0, screenW, screenH, al_map_rgba(0, 0, 0, 160));
     }
-
     UIGroup->Draw();
+    if (transitionAlpha >= 0) {
+        float alpha = (transitionAlpha < 1.0f) ? transitionAlpha : (2.0f - transitionAlpha);
+        al_draw_filled_rectangle(0, 0, screenW, screenH, al_map_rgba_f(0, 0, 0, alpha));
+    }
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
     IScene::OnMouseDown(button, mx, my);
@@ -287,7 +371,7 @@ void PlayScene::Hit() {
     }
 }
 
-void PlayScene::ReadMap() {
+void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".txt";
     // Read map file.
     char c;
@@ -353,6 +437,7 @@ void PlayScene::ReadMap() {
             }
         }
     }
+    if (overrideSpawn.x != -1 && overrideSpawn.y != -1) spawnPoint = overrideSpawn;
     int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
     int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
     player = new Player("play/enemy-11.png",
