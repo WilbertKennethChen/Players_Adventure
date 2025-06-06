@@ -42,9 +42,9 @@ void StageSelectScene::Initialize() {
     // bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
     // sliderBGM->SetValue(AudioHelper::BGMVolume);
     // sliderSFX->SetValue(AudioHelper::SFXVolume);
-    //
-    // // Not safe if release resource while playing, however we only free while change scene, so it's fine.
-    // bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
+
+    // Not safe if release resource while playing, however we only free while change scene, so it's fine.
+    bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
 }
 void StageSelectScene::Terminate() {
     AudioHelper::StopSample(bgmInstance);
