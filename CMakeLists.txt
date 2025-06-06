@@ -65,6 +65,7 @@ add_executable(2025_I2P2_TowerDefense
 
 
 
+
     UI/Component/Image.cpp
     UI/Component/Image.hpp
     UI/Component/ImageButton.cpp
@@ -88,8 +89,11 @@ add_executable(2025_I2P2_TowerDefense
         UI/Component/Textbox.hpp
         NPC/Npc.cpp
         NPC/Npc.hpp
-        Scene/BattleUI.cpp
-        Scene/BattleUI.hpp
+        Scene/BattleScene.cpp
+        Scene/BattleScene.hpp
+        Player/GameData.cpp
+        Player/GameData.hpp
+        Enemy/EnemyStruct.hpp
 )
 
 IF (WIN32)

@@ -51,6 +51,7 @@ std::string nameDiag;
 bool interactable = false;
 float interactRange = 64.0;
 Npc* interactingNPC= nullptr;
+std::string enemyName = "";
 
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
@@ -75,6 +76,19 @@ void PlayScene::Initialize() {
     // AddNewObject(EffectGroup = new Group());
     // Should support buttons.
     AddNewObject(NpcGroup = new Group());
+    Npc *npc = new Npc("play/enemy-10.png",halfW/2,halfH/2,"npc1");
+    NpcGroup->AddNewObject(npc);
+
+    npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
+    NpcGroup->AddNewObject(npc);
+    float playerhp = GameData::getInstance().playerHp;
+    float playerposx = GameData::getInstance().playerPosX;
+    float playerposy = GameData::getInstance().playerPosY;
+    player = new Player("play/enemy-11.png",playerposx, playerposy,playerhp,200);
+    AddNewObject(player);
+    std::cout << playerhp << std::endl;
+
+
     AddNewControlObject(UIGroup = new Group());
     ReadMap(Engine::Point(-1, -1));
     // ReadEnemyWave();
@@ -329,6 +343,12 @@ void PlayScene::OnKeyDown(int keyCode) {
         DebugMode = !DebugMode;
     }
 
+    if (keyCode == ALLEGRO_KEY_B) {
+        SaveState("enemy1");
+        Engine::GameEngine::GetInstance().ChangeScene("battle");
+    }
+
+
     // std::cout << interactable << std::endl;
     if (keyCode == ALLEGRO_KEY_E && interactable) {
 
@@ -522,4 +542,11 @@ void PlayScene::RenderTextbox(std::string key) {
     activeTextbox = new Engine::Textbox(text,ScreenSize);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
+}
+
+void PlayScene::SaveState(std::string enemyName) {
+    GameData::getInstance().playerHp = player->getHp();
+    GameData::getInstance().playerPosX = player->Position.x;
+    GameData::getInstance().playerPosY = player->Position.y;
+    GameData::getInstance().currentEnemy = enemyName;
 }
