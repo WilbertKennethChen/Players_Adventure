@@ -18,10 +18,12 @@
 #include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
+#include "Player/GameData.hpp"
 
 #include <allegro5/allegro_primitives.h>
 
 
+#include "BattleScene.hpp"
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
 

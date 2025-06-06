@@ -1,3 +1,4 @@
+// [main.cpp]
 // This is the entry point of your game.
 // You can register your scenes here, and start the game.
 #include "Engine/GameEngine.hpp"
@@ -8,6 +9,7 @@
 #include "Scene/WinScene.hpp"
 #include "Scene/StartScene.h"
 #include "Scene/SettingsScene.hpp"
+#include "Scene/BattleScene.hpp"
 #include "Scene/BattleScene.hpp"
 #include "Scene/PreStartScene.hpp"
 #include "Scene/DoorTransitionScene.hpp""
