@@ -13,6 +13,7 @@ class GameData {
 public:
     std::string currentEnemy;
     float playerHp;
+    float playerMaxHp;
     float playerPosX;
     float playerPosY;
 
