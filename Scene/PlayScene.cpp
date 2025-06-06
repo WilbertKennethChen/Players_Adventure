@@ -115,9 +115,6 @@ void PlayScene::Update(float deltaTime) {
             }
         }
     }
-    for (auto& key : keyDown) {
-        player->HandleKey(key, deltaTime);
-    }
 
     bool collision = false;
     for (auto& npc : NpcGroup->GetObjects()) {
