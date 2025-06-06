@@ -77,6 +77,7 @@ public:
     static Engine::Point GetClientSize();
     explicit PlayScene() = default;
     void Initialize() override;
+    void PauseInitialize();
     void Terminate() override;
     void Update(float deltaTime) override;
     bool CheckPlayerCollision(const Engine::Point& newPos);
