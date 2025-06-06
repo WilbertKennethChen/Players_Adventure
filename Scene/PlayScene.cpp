@@ -33,7 +33,7 @@
 
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
-const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
+const int PlayScene::MapWidth = 25, PlayScene::MapHeight = 13;
 const int PlayScene::BlockSize = 64;
 const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
@@ -64,9 +64,6 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
-    int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
-    int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
-
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
     // AddNewObject(GroundEffectGroup = new Group());
@@ -76,17 +73,9 @@ void PlayScene::Initialize() {
     // AddNewObject(BulletGroup = new Group());
     // AddNewObject(EffectGroup = new Group());
     // Should support buttons.
-
+    AddNewObject(TileMapGroup = new Group());
+    AddNewObject(DebugIndicatorGroup = new Group());
     AddNewObject(NpcGroup = new Group());
-    Npc *npc = new Npc("play/enemy-10.png",halfW/2,halfH/2,"npc1");
-    NpcGroup->AddNewObject(npc);
-
-    npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
-    NpcGroup->AddNewObject(npc);
-
-    player = new Player("play/enemy-11.png",halfW, halfH,10,200);
-    AddNewObject(player);
-
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
     // ReadEnemyWave();
@@ -114,11 +103,36 @@ void PlayScene::Terminate() {
 void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
+    Engine::Point originalPos = player->Position;
 
     if (player && !activeTextbox) {
         for (auto& key:keyDown) {
             player->HandleKey(key,deltaTime);
         }
+        if (player->Position != originalPos) {
+            if (CheckPlayerCollision(player->Position)) {
+                player->Position = originalPos;
+            }
+        }
+    }
+    for (auto& key : keyDown) {
+        player->HandleKey(key, deltaTime);
+    }
+
+    bool collision = false;
+    for (auto& npc : NpcGroup->GetObjects()) {
+        float dx = player->Position.x - npc->Position.x;
+        float dy = player->Position.y - npc->Position.y;
+        float distance = sqrt(dx * dx + dy * dy);
+
+        if (distance < BlockSize * 0.8f) {
+            collision = true;
+            break;
+        }
+    }
+
+    if (collision) {
+        player->Position = originalPos;
     }
 
     if (!NpcGroup->GetObjects().empty()) {
@@ -168,6 +182,23 @@ void PlayScene::Update(float deltaTime) {
 
     }
 }
+
+bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
+    const float playerRadius = BlockSize * 0.4f;
+    const float npcRadius = BlockSize * 0.4f;
+
+    for (auto& npc : NpcGroup->GetObjects()) {
+        float dx = newPos.x - npc->Position.x;
+        float dy = newPos.y - npc->Position.y;
+        float distance = sqrt(dx * dx + dy * dy);
+
+        if (distance < (playerRadius + npcRadius)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void PlayScene::Draw() const {
     IScene::Draw();
     int screenW = Engine::GameEngine::GetInstance().GetScreenSize().x;
@@ -263,12 +294,15 @@ void PlayScene::ReadMap() {
     std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".txt";
     // Read map file.
     char c;
-    std::vector<bool> mapData;
+    std::vector<int> mapData;
     std::ifstream fin(filename);
     while (fin >> c) {
         switch (c) {
-            case '0': mapData.push_back(false); break;
-            case '1': mapData.push_back(true); break;
+            case '0': mapData.push_back(0); break;  // Dirt
+            case '1': mapData.push_back(1); break;  // Floor
+            case '2': mapData.push_back(2); break;  // NPC1
+            case '3': mapData.push_back(3); break;  // NPC2
+            case 'S': mapData.push_back(4); break;  // Player Spawn
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -283,16 +317,52 @@ void PlayScene::ReadMap() {
         throw std::ios_base::failure("Map data is corrupted.");
     // Store map in 2d array.
     mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth));
+    Engine::Point spawnPoint;
     for (int i = 0; i < MapHeight; i++) {
-        for (int j = 0; j < MapWidth; j++) {
+        for (int j = 0; j < MapWidth; j++)
+        {
             const int num = mapData[i * MapWidth + j];
-            mapState[i][j] = num ? TILE_FLOOR : TILE_DIRT;
-            if (num)
-                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-            else
+            switch (num) {
+            case 0:  // Dirt
+                mapState[i][j] = TILE_DIRT;
                 TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                break;
+            case 1:  // Floor
+                mapState[i][j] = TILE_FLOOR;
+                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                break;
+            case 2: // NPC1
+                {
+
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
+                    NpcGroup->AddNewObject(npc1);
+                    break;
+                }
+            case 3: // NPC2
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
+                    NpcGroup->AddNewObject(npc2);
+                    break;
+                }
+            case 4:  // Spawn point
+                mapState[i][j] = TILE_FLOOR;
+                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                break;
+            }
         }
     }
+    int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
+    int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
+    player = new Player("play/enemy-11.png",
+                       spawnPoint.x ? spawnPoint.x : halfW,
+                       spawnPoint.y ? spawnPoint.y : halfH,
+                       10, 200);
+    AddNewObject(player);
 }
 
 void PlayScene::ConstructUI() {

@@ -75,6 +75,7 @@ public:
     void Initialize() override;
     void Terminate() override;
     void Update(float deltaTime) override;
+    bool CheckPlayerCollision(const Engine::Point& newPos);
     void Draw() const override;
     void OnMouseDown(int button, int mx, int my) override;
     void OnMouseMove(int mx, int my) override;
