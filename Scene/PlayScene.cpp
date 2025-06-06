@@ -96,7 +96,12 @@ void PlayScene::Initialize() {
     if (bgmInstance) {
         al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
     }
-    const int mapPixelWidth = MapWidth * BlockSize;
+    PauseInitialize();
+}
+
+void PlayScene::PauseInitialize()
+{
+     const int mapPixelWidth = MapWidth * BlockSize;
     const int mapPixelHeight = MapHeight * BlockSize;
 
     const int pauseW = 640;
@@ -187,6 +192,7 @@ void PlayScene::Initialize() {
     UIGroup->AddNewObject(exitLabel);
     currentY += buttonHeight + buttonSpacing;
 }
+
 void PlayScene::Terminate() {
     AudioHelper::StopSample(bgmInstance);
     AudioHelper::StopSample(deathBGMInstance);
@@ -361,6 +367,7 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
         spawnPosition.y -= BlockSize;
     }
 
+    PauseInitialize();
     ReadMap(spawnPosition);
 
     lives = savedLives;
