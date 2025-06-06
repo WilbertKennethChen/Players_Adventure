@@ -41,3 +41,11 @@
     void Player::Draw() const {
         Sprite::Draw();
     }
+
+    float Player::getHp() {
+        return hp;
+    }
+    void Player::getHit(int damage) {
+        hp-= damage;
+    }
+

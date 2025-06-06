@@ -90,6 +90,7 @@ public:
     void UIBtnClicked(int id);
     bool CheckSpaceValid(int x, int y);
     void RenderTextbox(std::string text);
+    void SaveState(std::string enemyName);
     Engine::Point getScreenSize();
     std::vector<std::vector<int>> CalculateBFSDistance();
 

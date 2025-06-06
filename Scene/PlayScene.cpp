@@ -18,10 +18,12 @@
 #include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
+#include "Player/GameData.hpp"
 
 #include <allegro5/allegro_primitives.h>
 
 
+#include "BattleScene.hpp"
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
 
@@ -50,6 +52,7 @@ std::string nameDiag;
 bool interactable = false;
 float interactRange = 64.0;
 Npc* interactingNPC= nullptr;
+std::string enemyName = "";
 
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
@@ -83,9 +86,13 @@ void PlayScene::Initialize() {
 
     npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
     NpcGroup->AddNewObject(npc);
-
-    player = new Player("play/enemy-11.png",halfW, halfH,10,200);
+    float playerhp = GameData::getInstance().playerHp;
+    float playerposx = GameData::getInstance().playerPosX;
+    float playerposy = GameData::getInstance().playerPosY;
+    player = new Player("play/enemy-11.png",playerposx, playerposy,playerhp,200);
     AddNewObject(player);
+    std::cout << playerhp << std::endl;
+
 
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
@@ -216,6 +223,12 @@ void PlayScene::OnKeyDown(int keyCode) {
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
     }
+
+    if (keyCode == ALLEGRO_KEY_B) {
+        SaveState("enemy1");
+        Engine::GameEngine::GetInstance().ChangeScene("battle");
+    }
+
 
     // std::cout << interactable << std::endl;
     if (keyCode == ALLEGRO_KEY_E && interactable) {
@@ -370,4 +383,11 @@ void PlayScene::RenderTextbox(std::string key) {
     activeTextbox = new Engine::Textbox(text,ScreenSize);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
+}
+
+void PlayScene::SaveState(std::string enemyName) {
+    GameData::getInstance().playerHp = player->getHp();
+    GameData::getInstance().playerPosX = player->Position.x;
+    GameData::getInstance().playerPosY = player->Position.y;
+    GameData::getInstance().currentEnemy = enemyName;
 }

@@ -14,6 +14,8 @@
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Scene/StartScene.h"
+
+#include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
@@ -24,6 +26,17 @@ void StartScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
+
+
+    GameData::getInstance().playerHp = 10;
+    GameData::getInstance().playerPosX = halfW;
+    GameData::getInstance().playerPosY = halfH;
+    GameData::getInstance().currentEnemy = "";
+    //Add new enemy
+    GameData::getInstance().enemyList["enemy1"] = Enemy{"enemy1",20,"img","furious","tiles"};
+
+
+
     Engine::ImageButton *btn;
 
     AddNewObject(new Engine::Label("Tower Defense", "pirulen.ttf", 120, halfW, halfH / 3 + 50, 10, 255, 255, 255, 0.5, 0.5));

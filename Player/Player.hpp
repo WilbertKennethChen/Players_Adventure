@@ -19,6 +19,8 @@ public:
     void Update(float dt) override;
     void Draw() const override;
     void HandleKey(int keycode,float dt);
+    float getHp();
+    void getHit(int damage);
 };
 
 
