@@ -1,0 +1,53 @@
+{
+  "name": "dialogue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WilbertKennethChen/Final-Project-I2P-II.git"
+  },
+  "private": true,
+
+  "dialogue" : {
+    "npc1" : {
+      "intro" : {
+        "text" : "Intro text 1",
+        "next" : "body1"
+      },
+      "body1" : {
+        "text" : "Body 1 Hello world",
+        "next" : "body2"
+      },
+      "body2" : {
+        "text" : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer",
+        "next" : ""
+      }
+    },
+    "npc2" : {
+      "intro" : {
+        "text" : "Wowwwww, you meow like a cat! That means you are one, right? Shut the fuck up. If you really want to be put on a leash and treated like a domestic animal then that’s called a fetish, not “quirky” or “cute”. What part of you seriously thinks that any part of acting like a feline establishes a reputation of appreciation?",
+        "next" : "body1"
+      },
+      "body1" : {
+        "text" : "Is it your lack of any defining aspect of personality that urges you to resort to shitty representations of cats to create an illusion of meaning in your worthless life? Wearing “cat ears” in the shape of headbands further notes the complete absence of human attribution to your false sense of personality, such as intelligence or charisma in any form or shape. ",
+        "next" : "body2"
+      },
+      "body2" : {
+        "text" : "Where do you think this mindset’s gonna lead you? You think you’re funny, random, quirky even? What makes you think that acting like a fucking cat will make a goddamn hyena laugh? I, personally, feel extremely sympathetic towards you as your only escape from the worthless thing you call your existence is to pretend to be an animal.",
+        "next" : "body3"
+      },
+      "body3" : {
+        "text" : "But it’s not a worthy choice to assert this horrifying fact as a dominant trait, mainly because personality traits require an initial personality to lay their foundation on. You’re not worthy of anybody’s time, so go fuck off, “cat-girl”.",
+        "next" : ""
+      }
+    },
+    "npc3" : "lorem ipsum",
+    "npc4" : "took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
+
+
+  }
+}

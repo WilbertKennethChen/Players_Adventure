@@ -5,9 +5,13 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <set>
+
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
+#include "Player/Player.hpp"
+#include "UI/Component/Textbox.hpp"
 
 class Turret;
 namespace Engine {
@@ -31,6 +35,7 @@ protected:
     int lives;
     int money;
     int SpeedMult;
+    Player* player;
 
 public:
     static bool DebugMode;
@@ -53,10 +58,13 @@ public:
     Group *EnemyGroup;
     Group *EffectGroup;
     Group *UIGroup;
+    Group *NpcGroup;
+    Engine::Textbox *activeTextbox;
     Engine::Label *UIMoney;
     Engine::Label *UILives;
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
+
     Turret *preview;
     std::vector<std::vector<TileType>> mapState;
     std::vector<std::vector<int>> mapDistance;
@@ -72,6 +80,7 @@ public:
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
     void OnKeyDown(int keyCode) override;
+    void OnKeyUp(int keyCode) override;
     void Hit();
     int GetMoney() const;
     void EarnMoney(int money);
@@ -80,7 +89,10 @@ public:
     void ConstructUI();
     void UIBtnClicked(int id);
     bool CheckSpaceValid(int x, int y);
+    void RenderTextbox(std::string text);
+    Engine::Point getScreenSize();
     std::vector<std::vector<int>> CalculateBFSDistance();
+
     // void ModifyReadMapTiles();
 };
 #endif   // PLAYSCENE_HPP
