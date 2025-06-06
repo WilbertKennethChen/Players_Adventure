@@ -10,21 +10,22 @@
 
 class DoorTransitionScene final : public Engine::IScene {
 private:
-    // An enum to keep track of what phase of the animation we are in.
     enum class State {
-        DOOR_OPEN_PAUSE,
-        FADING_OUT
+        SHOWING_DOOR,
+        FADING_OUT,
+        COMPLETED
     };
 
     State currentState;
-    float timer;
-    Engine::Sprite* fadeOverlay; // A black sprite we'll use for the fade effect.
+    float stateTimer;
+    float fadeAlpha;
+    Engine::Sprite* fadeOverlay;
+    float doorShowTime = 0.8f;  // Time to show door before fading
+    float fadeOutTime = 1.2f;   // Time for fade out
 
 public:
     explicit DoorTransitionScene() = default;
     void Initialize() override;
     void Update(float deltaTime) override;
 };
-
-
 #endif //DOORTRANSITIONSCENE_HPP
