@@ -92,7 +92,7 @@ void PlayScene::Initialize() {
         al_attach_sample_instance_to_mixer(deathBGMInstance.get(), al_get_default_mixer());
     }
     // Start BGM.
-    bgmInstance = AudioHelper::PlaySample("play.ogg", true, AudioHelper::BGMVolume);
+    bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
     if (bgmInstance) {
         al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
     }
@@ -226,12 +226,20 @@ void PlayScene::Update(float deltaTime) {
         return;
     }
     if (player && !activeTextbox) {
-        for (auto& key:keyDown) {
-            player->HandleKey(key,deltaTime);
+        if (CheckPlayerCollision(player->Position)) {
+            player->Position = originalPos;
         }
-        if (player->Position != originalPos) {
-            if (CheckPlayerCollision(player->Position)) {
-                player->Position = originalPos;
+        const float pushBack = 1.0f;
+        for (auto& npc : NpcGroup->GetObjects()) {
+            float dx = player->Position.x - npc->Position.x;
+            float dy = player->Position.y - npc->Position.y;
+            float distance = sqrt(dx * dx + dy * dy);
+            float minDistance = BlockSize * 0.8f; // Same as collision check
+
+            if (distance < minDistance) {
+                float overlap = minDistance - distance;
+                player->Position.x += (dx / distance) * overlap * pushBack;
+                player->Position.y += (dy / distance) * overlap * pushBack;
             }
         }
         player->Position.x = std::max(BlockSize/2.f, std::min(player->Position.x, (float)(MapWidth * BlockSize - BlockSize/2)));
@@ -265,21 +273,6 @@ void PlayScene::Update(float deltaTime) {
                  }
     }
 
-    bool collision = false;
-    for (auto& npc : NpcGroup->GetObjects()) {
-        float dx = player->Position.x - npc->Position.x;
-        float dy = player->Position.y - npc->Position.y;
-        float distance = sqrt(dx * dx + dy * dy);
-
-        if (distance < BlockSize * 0.8f) {
-            collision = true;
-            break;
-        }
-    }
-
-    if (collision) {
-        player->Position = originalPos;
-    }
 
     if (!NpcGroup->GetObjects().empty()) {
         for (auto& npc:NpcGroup->GetObjects()) {
@@ -318,7 +311,6 @@ void PlayScene::Update(float deltaTime) {
             mapSwitched = true;
         }
 
-        // End transition after full cycle (2.0f)
         if (transitionAlpha >= 2.0f) {
             transitionAlpha = -1.0f;
             isTransitioning = false;
@@ -331,7 +323,6 @@ void PlayScene::Update(float deltaTime) {
         AudioHelper::StopSample(deathBGMInstance);
     if (deathCountDown == -1 && lives > 0) {
         AudioHelper::StopSample(deathBGMInstance);
-        // dangerIndicator->Tint.a = 0;
     }
     if (SpeedMult == 0)
         deathCountDown = -1;
@@ -345,7 +336,6 @@ void PlayScene::Update(float deltaTime) {
     }
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
-        // To keep responding when paused.
         preview->Update(deltaTime);
     }
 }
@@ -377,17 +367,21 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
 bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
     const float playerRadius = BlockSize * 0.4f;
     const float npcRadius = BlockSize * 0.4f;
+    const float collisionDistance = playerRadius + npcRadius;
+    bool collision = false;
 
     for (auto& npc : NpcGroup->GetObjects()) {
         float dx = newPos.x - npc->Position.x;
         float dy = newPos.y - npc->Position.y;
         float distance = sqrt(dx * dx + dy * dy);
 
-        if (distance < (playerRadius + npcRadius)) {
-            return true;
+        if (distance < collisionDistance) {
+            Engine::LOG(Engine::INFO) << "Collision detected with NPC at ("
+                                     << npc->Position.x << ", " << npc->Position.y << ")";
+            collision = true;
         }
     }
-    return false;
+    return collision;
 }
 
 void PlayScene::Draw() const {
@@ -484,6 +478,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
 void PlayScene::OnKeyUp(int keyCode) {
     IScene::OnKeyUp(keyCode);
     keyDown.erase(keyCode);
+    if (player) player->OnKeyUp(keyCode);
 }
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
@@ -495,6 +490,10 @@ void PlayScene::OnKeyDown(int keyCode) {
             SetPauseUIVisible(isPaused);
         }
         return;
+    }
+    if (!activeTextbox) {
+        keyDown.insert(keyCode);
+        if (player) player->OnKeyDown(keyCode);
     }
 
     if (isPaused) return;
@@ -519,6 +518,7 @@ void PlayScene::OnKeyDown(int keyCode) {
                 UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                 activeTextbox = nullptr;
                 nameDiag = "";
+
             }
         }
     }
@@ -638,10 +638,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     if (overrideSpawn.x != -1 && overrideSpawn.y != -1) spawnPoint = overrideSpawn;
     int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
     int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
-    player = new Player("play/enemy-11.png",
-                       spawnPoint.x ? spawnPoint.x : halfW,
-                       spawnPoint.y ? spawnPoint.y : halfH,
-                       10, 200);
+    player = new Player("play/panda.png",
+                   spawnPoint.x ? spawnPoint.x : halfW,
+                   spawnPoint.y ? spawnPoint.y : halfH,
+                   10, 200,
+                   32, 32, 2);
     AddNewObject(player);
 }
 
