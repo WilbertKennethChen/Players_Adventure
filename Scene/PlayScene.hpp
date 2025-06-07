@@ -12,6 +12,7 @@
 #include "Engine/Point.hpp"
 #include "Player/Player.hpp"
 #include "UI/Component/Textbox.hpp"
+#include "UI/Component/Slider.hpp"
 
 class Turret;
 namespace Engine {
@@ -28,7 +29,10 @@ private:
         TILE_FLOOR,
         TILE_OCCUPIED,
     };
+    Slider* sliderBGM;
+    Slider* sliderSFX;
     ALLEGRO_SAMPLE_ID bgmId;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> bgmInstance;
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> deathBGMInstance;
 
 protected:
@@ -73,6 +77,7 @@ public:
     static Engine::Point GetClientSize();
     explicit PlayScene() = default;
     void Initialize() override;
+    void PauseInitialize();
     void Terminate() override;
     void Update(float deltaTime) override;
     bool CheckPlayerCollision(const Engine::Point& newPos);
@@ -98,6 +103,25 @@ public:
     float transitionAlpha = -1.0f;
     bool isTransitioning = false;
     Engine::Point pendingSpawnPoint;
+    bool isPaused = false;
+    Engine::Label* pauseLabel;
+    Engine::Label* continueLabel;
+    Engine::Label* exitLabel;
+    Engine::ImageButton* retryBtn = nullptr;
+    Engine::Label* retryLabel = nullptr;
+    Engine::Image* pauseBackground = nullptr;
+    Engine::ImageButton* continueBtn = nullptr;
+    Engine::ImageButton* exitBtn = nullptr;
+    void SetPauseUIVisible(bool visible);
+    void OnBGMSlideValueChanged(float value);
+    void OnSFXSlideValueChanged(float value);
+    Engine::Label* BGMLabel;
+    Engine::Label* SFXLabel;
+    bool draggingBGM = false;
+    bool draggingSFX = false;
+    void ContinueOnClick();
+    void RetryOnClick();
+    void ExitOnClick();
 
     // void ModifyReadMapTiles();
 };
