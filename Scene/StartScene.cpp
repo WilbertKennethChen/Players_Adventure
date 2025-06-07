@@ -27,12 +27,14 @@ void StartScene::Initialize() {
     int halfW = w / 2;
     int halfH = h / 2;
 
-
+    //initialized player state
     GameData::getInstance().playerMaxHp = 10;
     GameData::getInstance().playerHp = 10;
     GameData::getInstance().playerPosX = halfW;
     GameData::getInstance().playerPosY = halfH;
     GameData::getInstance().currentEnemy = "";
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
 
     //Add new enemy
     GameData::getInstance().enemyList["enemy1"] = Enemy{"enemy1",20,"img","furious","Regular enemy","tiles"};

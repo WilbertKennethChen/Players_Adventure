@@ -11,6 +11,8 @@
 
 class GameData {
 public:
+    bool spawned;
+    bool changeMap;
     std::string currentEnemy;
     float playerHp;
     float playerMaxHp;
