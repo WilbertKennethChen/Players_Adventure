@@ -9,18 +9,34 @@
 #include "Engine/Sprite.hpp"
 
 
-class Player : public Engine::Sprite{
-protected:
+#include <unordered_map>
 
+class Player : public Engine::Sprite {
+protected:
     float hp;
     float speed;
+
+    int frameWidth, frameHeight;
+    int currentFrame;
+    int frameCount;
+    float frameTime;
+    float elapsedTime;
+    bool wasMoving;
+    int currentAnimationRow;
+
+    std::unordered_map<int, bool> keyState;
+    std::vector<int> rowFrameCounts;
+    std::vector<float> rowFrameTimes;
 public:
-    Player(std::string img,float x, float y, float hp, float speed);
+    Player(std::string img, float x, float y, float hp, float speed,
+           int frameWidth, int frameHeight, int frameCount);
+
     void Update(float dt) override;
     void Draw() const override;
-    void HandleKey(int keycode,float dt);
-};
 
+    void OnKeyDown(int keycode);
+    void OnKeyUp(int keycode);
+};
 
 
 #endif //PLAYER_HPP

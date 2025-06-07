@@ -11,6 +11,7 @@
 #include <filesystem>
 #include "Player/Player.hpp"
 #include "NPC/Npc.hpp"
+#include "Turret/Turret.hpp"
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
@@ -21,9 +22,10 @@
 
 #include <allegro5/allegro_primitives.h>
 
-
+#include "UI/Component/Slider.hpp"
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
+#include "UI/Component/ImageButton.hpp"
 
 // TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
 // TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
@@ -80,18 +82,119 @@ void PlayScene::Initialize() {
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
-    // imgTarget = new Engine::Image("play/target.png", 0, 0);
-    // imgTarget->Visible = false;
-    // preview = nullptr;
+    imgTarget = new Engine::Image("play/target.png", 0, 0);
+    imgTarget->Visible = false;
+    preview = nullptr;
     // UIGroup->AddNewObject(imgTarget);
     // Preload Lose Scene
     deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
-    Engine::Resources::GetInstance().GetBitmap("lose/benjamin-happy.png");
+    if (deathBGMInstance) {
+        al_attach_sample_instance_to_mixer(deathBGMInstance.get(), al_get_default_mixer());
+    }
     // Start BGM.
-    bgmId = AudioHelper::PlayBGM("play.ogg");
+    bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+    if (bgmInstance) {
+        al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
+    }
+    PauseInitialize();
 }
+
+void PlayScene::PauseInitialize()
+{
+     const int mapPixelWidth = MapWidth * BlockSize;
+    const int mapPixelHeight = MapHeight * BlockSize;
+
+    const int pauseW = 640;
+    const int pauseH = 650;
+    const int pauseX = (mapPixelWidth - pauseW) / 2;
+    const int pauseY = (mapPixelHeight - pauseH) / 2;
+    pauseBackground = new Engine::Image("play/sand.png", pauseX, pauseY, pauseW, pauseH);
+    pauseBackground->Visible = false;
+    UIGroup->AddNewObject(pauseBackground);
+
+    const int centerX = pauseX + pauseW / 2;
+    int currentY = pauseY + 40;
+
+    pauseLabel = new Engine::Label("Pause", "pirulen.ttf", 64,
+                                 centerX, currentY,
+                                 0, 0, 0, 255, 0.5, 0.5);
+    pauseLabel->Visible = false;
+    UIGroup->AddNewObject(pauseLabel);
+    currentY += 100;
+
+    const int sliderOffsetX = pauseX + (pauseW - 190) / 2; // Center sliders
+    const int sliderWidth = 190;
+    const int sliderHeight = 4;
+
+    BGMLabel = new Engine::Label("BGM Volume", "pirulen.ttf", 24,
+                               centerX, currentY,
+                               0, 0, 0, 255, 0.5, 0.5);
+    BGMLabel->Visible = false;
+    UIGroup->AddNewObject(BGMLabel);
+    currentY += 40;
+
+    sliderBGM = new Slider(sliderOffsetX, currentY, sliderWidth, sliderHeight);
+    sliderBGM->SetOnValueChangedCallback(std::bind(&PlayScene::OnBGMSlideValueChanged, this, std::placeholders::_1));
+    sliderBGM->SetValue(AudioHelper::BGMVolume);
+    sliderBGM->Visible = false;
+    UIGroup->AddNewControlObject(sliderBGM);
+    currentY += 40;
+
+    SFXLabel = new Engine::Label("SFX Volume", "pirulen.ttf", 24,
+                               centerX, currentY,
+                               0, 0, 0, 255, 0.5, 0.5);
+    SFXLabel->Visible = false;
+    UIGroup->AddNewObject(SFXLabel);
+    currentY += 40;
+
+    sliderSFX = new Slider(sliderOffsetX, currentY, sliderWidth, sliderHeight);
+    sliderSFX->SetOnValueChangedCallback(std::bind(&PlayScene::OnSFXSlideValueChanged, this, std::placeholders::_1));
+    sliderSFX->SetValue(AudioHelper::SFXVolume);
+    sliderSFX->Visible = false;
+    UIGroup->AddNewControlObject(sliderSFX);
+    currentY += 80;
+
+    const int buttonWidth = 370;
+    const int buttonHeight = 60;
+    const int buttonX = pauseX + (pauseW - buttonWidth) / 2;
+    const int buttonSpacing = 20;
+
+    continueBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
+    UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
+    continueBtn->Visible = false;
+    continueLabel = new Engine::Label("Continue", "pirulen.ttf", 48,
+                                    buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
+                                    0, 0, 0, 255, 0.5, 0.5);
+    continueLabel->Visible = false;
+    UIGroup->AddNewObject(continueLabel);
+    currentY += buttonHeight + buttonSpacing;
+
+    retryBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
+    UIGroup->AddNewControlObject(retryBtn);
+    retryBtn->Visible = false;
+    retryLabel = new Engine::Label("Retry", "pirulen.ttf", 48,
+                                buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
+                                0, 0, 0, 255, 0.5, 0.5);
+    retryLabel->Visible = false;
+    UIGroup->AddNewObject(retryLabel);
+    currentY += buttonHeight + buttonSpacing;
+
+    exitBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
+    UIGroup->AddNewControlObject(exitBtn);
+    exitBtn->Visible = false;
+    exitLabel = new Engine::Label("Back", "pirulen.ttf", 48,
+                                buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
+                                0, 0, 0, 255, 0.5, 0.5);
+    exitLabel->Visible = false;
+    UIGroup->AddNewObject(exitLabel);
+    currentY += buttonHeight + buttonSpacing;
+}
+
 void PlayScene::Terminate() {
-    AudioHelper::StopBGM(bgmId);
+    AudioHelper::StopSample(bgmInstance);
     AudioHelper::StopSample(deathBGMInstance);
     deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     IScene::Terminate();
@@ -99,6 +202,11 @@ void PlayScene::Terminate() {
 void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
+    if (isPaused) {
+        if (preview)
+            preview->Update(deltaTime);
+        return;
+    }
     Engine::Point originalPos = player->Position;
     if (isTransitioning) {
         transitionAlpha += deltaTime;
@@ -118,12 +226,20 @@ void PlayScene::Update(float deltaTime) {
         return;
     }
     if (player && !activeTextbox) {
-        for (auto& key:keyDown) {
-            player->HandleKey(key,deltaTime);
+        if (CheckPlayerCollision(player->Position)) {
+            player->Position = originalPos;
         }
-        if (player->Position != originalPos) {
-            if (CheckPlayerCollision(player->Position)) {
-                player->Position = originalPos;
+        const float pushBack = 1.0f;
+        for (auto& npc : NpcGroup->GetObjects()) {
+            float dx = player->Position.x - npc->Position.x;
+            float dy = player->Position.y - npc->Position.y;
+            float distance = sqrt(dx * dx + dy * dy);
+            float minDistance = BlockSize * 0.8f; // Same as collision check
+
+            if (distance < minDistance) {
+                float overlap = minDistance - distance;
+                player->Position.x += (dx / distance) * overlap * pushBack;
+                player->Position.y += (dy / distance) * overlap * pushBack;
             }
         }
         player->Position.x = std::max(BlockSize/2.f, std::min(player->Position.x, (float)(MapWidth * BlockSize - BlockSize/2)));
@@ -157,21 +273,6 @@ void PlayScene::Update(float deltaTime) {
                  }
     }
 
-    bool collision = false;
-    for (auto& npc : NpcGroup->GetObjects()) {
-        float dx = player->Position.x - npc->Position.x;
-        float dy = player->Position.y - npc->Position.y;
-        float distance = sqrt(dx * dx + dy * dy);
-
-        if (distance < BlockSize * 0.8f) {
-            collision = true;
-            break;
-        }
-    }
-
-    if (collision) {
-        player->Position = originalPos;
-    }
 
     if (!NpcGroup->GetObjects().empty()) {
         for (auto& npc:NpcGroup->GetObjects()) {
@@ -210,7 +311,6 @@ void PlayScene::Update(float deltaTime) {
             mapSwitched = true;
         }
 
-        // End transition after full cycle (2.0f)
         if (transitionAlpha >= 2.0f) {
             transitionAlpha = -1.0f;
             isTransitioning = false;
@@ -223,7 +323,6 @@ void PlayScene::Update(float deltaTime) {
         AudioHelper::StopSample(deathBGMInstance);
     if (deathCountDown == -1 && lives > 0) {
         AudioHelper::StopSample(deathBGMInstance);
-        // dangerIndicator->Tint.a = 0;
     }
     if (SpeedMult == 0)
         deathCountDown = -1;
@@ -234,7 +333,10 @@ void PlayScene::Update(float deltaTime) {
 
 
         // Compensate the time lost.
-
+    }
+    if (preview) {
+        preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
+        preview->Update(deltaTime);
     }
 }
 
@@ -255,6 +357,7 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
         spawnPosition.y -= BlockSize;
     }
 
+    PauseInitialize();
     ReadMap(spawnPosition);
 
     lives = savedLives;
@@ -264,17 +367,21 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
 bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
     const float playerRadius = BlockSize * 0.4f;
     const float npcRadius = BlockSize * 0.4f;
+    const float collisionDistance = playerRadius + npcRadius;
+    bool collision = false;
 
     for (auto& npc : NpcGroup->GetObjects()) {
         float dx = newPos.x - npc->Position.x;
         float dy = newPos.y - npc->Position.y;
         float distance = sqrt(dx * dx + dy * dy);
 
-        if (distance < (playerRadius + npcRadius)) {
-            return true;
+        if (distance < collisionDistance) {
+            Engine::LOG(Engine::INFO) << "Collision detected with NPC at ("
+                                     << npc->Position.x << ", " << npc->Position.y << ")";
+            collision = true;
         }
     }
-    return false;
+    return collision;
 }
 
 void PlayScene::Draw() const {
@@ -302,29 +409,95 @@ void PlayScene::Draw() const {
         float alpha = (transitionAlpha < 1.0f) ? transitionAlpha : (2.0f - transitionAlpha);
         al_draw_filled_rectangle(0, 0, screenW, screenH, al_map_rgba_f(0, 0, 0, alpha));
     }
+    if (isPaused) {
+        al_draw_filled_rectangle(
+            0, 0,
+            MapWidth * BlockSize, MapHeight * BlockSize,
+            al_map_rgba(0, 0, 0, 128)
+        );
+        if (pauseBackground) pauseBackground->Draw();
+        if (continueBtn) continueBtn->Draw();
+        if (retryBtn) retryBtn->Draw();
+        if (exitBtn) exitBtn->Draw();
+        if (pauseLabel) pauseLabel->Draw();
+        if (continueLabel) continueLabel->Draw();
+        if (retryLabel) retryLabel->Draw();
+        if (exitLabel) exitLabel->Draw();
+        if (sliderBGM) sliderBGM->Draw();
+        if (sliderSFX) sliderSFX->Draw();
+        if (BGMLabel) BGMLabel->Draw();
+        if (SFXLabel) SFXLabel->Draw();
+
+    }
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
+    if (!Visible) return;
+    if (isPaused) {
+        if ((button & 1)) {
+            if (sliderBGM->Visible) {
+                sliderBGM->OnMouseDown(button, mx, my);
+            }
+            if (sliderSFX->Visible){
+                sliderSFX->OnMouseDown(button, mx, my);
+            }
+            UIGroup->OnMouseDown(button, mx, my);
+        }
+        return;
+    }
     IScene::OnMouseDown(button, mx, my);
 }
 void PlayScene::OnMouseMove(int mx, int my) {
+    if (!Visible) return;
     IScene::OnMouseMove(mx, my);
+    if (isPaused) {
+        if (sliderBGM->Visible) sliderBGM->OnMouseMove(mx, my);
+        if (sliderSFX->Visible) sliderSFX->OnMouseMove(mx, my);
+        UIGroup->OnMouseMove(mx, my);
+        imgTarget->Visible = false;
+        return;
+    }
+    UIGroup->OnMouseMove(mx, my);
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
-
+    imgTarget->Visible = true;
+    imgTarget->Position.x = x * BlockSize;
+    imgTarget->Position.y = y * BlockSize;
 }
 void PlayScene::OnMouseUp(int button, int mx, int my) {
+    if (!Visible) return;
     IScene::OnMouseUp(button, mx, my);
-
+    if (isPaused) {
+        if (sliderBGM->Visible) sliderBGM->OnMouseUp(button, mx, my);
+        if (sliderSFX->Visible) sliderSFX->OnMouseUp(button, mx, my);
+        draggingBGM = false;
+        draggingSFX = false;
+    }
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
 }
 void PlayScene::OnKeyUp(int keyCode) {
     IScene::OnKeyUp(keyCode);
     keyDown.erase(keyCode);
+    if (player) player->OnKeyUp(keyCode);
 }
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
     keyDown.insert(keyCode);
+    if (keyCode == ALLEGRO_KEY_ESCAPE)
+    {
+        isPaused = !isPaused;
+        if (UIGroup) {
+            SetPauseUIVisible(isPaused);
+        }
+        return;
+    }
+    if (!activeTextbox) {
+        keyDown.insert(keyCode);
+        if (player) player->OnKeyDown(keyCode);
+    }
+
+    if (isPaused) return;
+
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
     }
@@ -345,6 +518,7 @@ void PlayScene::OnKeyDown(int keyCode) {
                 UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                 activeTextbox = nullptr;
                 nameDiag = "";
+
             }
         }
     }
@@ -364,6 +538,30 @@ void PlayScene::OnKeyDown(int keyCode) {
         SpeedMult = keyCode - ALLEGRO_KEY_0;
     }
 }
+
+void PlayScene::SetPauseUIVisible(bool visible) {
+    if (visible) {
+        // Clear active previews
+        if (preview && UIGroup) {
+            UIGroup->RemoveObject(preview->GetObjectIterator());
+            preview = nullptr;
+        }
+    }
+
+    if (pauseBackground) pauseBackground->Visible = visible;
+    if (continueBtn) continueBtn->Visible = visible;
+    if (retryBtn) retryBtn->Visible = visible;
+    if (exitBtn) exitBtn->Visible = visible;
+    if (pauseLabel) pauseLabel->Visible = visible;
+    if (continueLabel) continueLabel->Visible = visible;
+    if (retryLabel) retryLabel->Visible = visible;
+    if (exitLabel) exitLabel->Visible = visible;
+    if (BGMLabel) BGMLabel->Visible = visible;
+    if (SFXLabel) SFXLabel->Visible = visible;
+    if (sliderBGM) sliderBGM->Visible = visible;
+    if (sliderSFX) sliderSFX->Visible = visible;
+}
+
 void PlayScene::Hit() {
     lives--;
     if (lives <= 0) {
@@ -440,10 +638,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     if (overrideSpawn.x != -1 && overrideSpawn.y != -1) spawnPoint = overrideSpawn;
     int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
     int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
-    player = new Player("play/enemy-11.png",
-                       spawnPoint.x ? spawnPoint.x : halfW,
-                       spawnPoint.y ? spawnPoint.y : halfH,
-                       10, 200);
+    player = new Player("play/panda.png",
+                   spawnPoint.x ? spawnPoint.x : halfW,
+                   spawnPoint.y ? spawnPoint.y : halfH,
+                   10, 200,
+                   32, 32, 2);
     AddNewObject(player);
 }
 
@@ -451,6 +650,11 @@ void PlayScene::ConstructUI() {
 }
 
 void PlayScene::UIBtnClicked(int id) {
+    if (preview){
+        UIGroup->RemoveObject(preview->GetObjectIterator());
+        preview = nullptr;
+    }
+    if (!preview) return;
     OnMouseMove(Engine::GameEngine::GetInstance().GetMousePosition().x, Engine::GameEngine::GetInstance().GetMousePosition().y);
 }
 
@@ -522,4 +726,34 @@ void PlayScene::RenderTextbox(std::string key) {
     activeTextbox = new Engine::Textbox(text,ScreenSize);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
+}
+
+void PlayScene::OnBGMSlideValueChanged(float value) {
+    if (bgmInstance) {
+        al_set_sample_instance_gain(bgmInstance.get(), value);
+    }
+    AudioHelper::BGMVolume = value;
+}
+
+void PlayScene::OnSFXSlideValueChanged(float value) {
+    AudioHelper::SFXVolume = value;
+    if (deathBGMInstance) {
+        al_set_sample_instance_gain(deathBGMInstance.get(), value);
+    }
+}
+void PlayScene::ContinueOnClick() {
+    isPaused = false;
+    SetPauseUIVisible(false);
+}
+
+void PlayScene::RetryOnClick() {
+    isPaused = false;
+    SetPauseUIVisible(false);
+    Engine::GameEngine::GetInstance().ChangeScene("play");
+}
+
+void PlayScene::ExitOnClick() {
+    isPaused = false;
+    SetPauseUIVisible(false);
+    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
 }
