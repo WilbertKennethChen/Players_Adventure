@@ -78,11 +78,11 @@ void PlayScene::Initialize() {
     // AddNewObject(EffectGroup = new Group());
     // Should support buttons.
     AddNewObject(NpcGroup = new Group());
-    Npc *npc = new Npc("play/enemy-10.png",halfW/2,halfH/2,"npc1");
-    NpcGroup->AddNewObject(npc);
-
-    npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
-    NpcGroup->AddNewObject(npc);
+    // Npc *npc = new Npc("play/enemy-10.png",halfW/2,halfH/2,"npc1");
+    // NpcGroup->AddNewObject(npc);
+    //
+    // npc = new Npc("play/enemy-9.png",halfW * 1.5,halfH/2,"npc2");
+    // NpcGroup->AddNewObject(npc);
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
@@ -405,7 +405,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '1': mapData.push_back(1); break;  // Floor
             case '2': mapData.push_back(2); break;  // NPC1
             case '3': mapData.push_back(3); break;  // NPC2
-            case 'S': mapData.push_back(4); break;  // Player Spawn
+            // case 'S': mapData.push_back(4); break;  // Player Spawn
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
