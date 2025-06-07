@@ -19,7 +19,7 @@ public:
     float playerPosX;
     float playerPosY;
 
-    std::unordered_map<std::string,Enemy> enemyList;
+    std::unordered_map<std::string,EnemyStruct> enemyList;
 
     static GameData& getInstance() {
         static GameData instance;

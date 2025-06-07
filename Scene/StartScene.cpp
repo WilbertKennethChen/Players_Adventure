@@ -37,7 +37,7 @@ void StartScene::Initialize() {
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = Enemy{"enemy1",20,"img","furious","Regular enemy","tiles"};
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"img","furious","Regular enemy","tiles"};
 
 
 

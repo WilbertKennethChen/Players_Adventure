@@ -11,7 +11,7 @@
 #include <filesystem>
 #include "Player/Player.hpp"
 #include "NPC/Npc.hpp"
-
+#include "Turret/Turret.hpp"
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -90,7 +90,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/enemy-11.png",playerposx, playerposy,playerhp,200);
+    player = new Player("play/panda.png",playerposx, playerposy,playerhp,200,32,32,4);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -381,8 +381,7 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
     PauseInitialize();
     ReadMap(spawnPosition);
 
-    lives = savedLives;
-    money = savedMoney;
+
 }
 
 bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
@@ -751,12 +750,16 @@ void PlayScene::ContinueOnClick() {
 }
 
 void PlayScene::RetryOnClick() {
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
     Engine::GameEngine::GetInstance().ChangeScene("play");
 }
 
 void PlayScene::ExitOnClick() {
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
     Engine::GameEngine::GetInstance().ChangeScene("stage-select");

@@ -37,7 +37,7 @@ public:
     void HandleKey(int keycode,float dt);
     float getHp();
     void getHit(int damage);
-};
+
 
     void OnKeyDown(int keycode);
     void OnKeyUp(int keycode);
