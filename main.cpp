@@ -9,7 +9,8 @@
 #include "Scene/StartScene.h"
 #include "Scene/SettingsScene.hpp"
 #include "Scene/PreStartScene.hpp"
-#include "Scene/DoorTransitionScene.hpp""
+#include "Scene/DoorTransitionScene.hpp"
+#include "Scene/LeaderboardScene.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -24,6 +25,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("lose", new LoseScene());
 	game.AddNewScene("win", new WinScene());
     game.AddNewScene("settings", new SettingsScene());
+    game.AddNewScene("leaderboard", new LeaderboardScene());
 
 
     // Change the start scene
