@@ -1,4 +1,3 @@
-// [main.cpp]
 // This is the entry point of your game.
 // You can register your scenes here, and start the game.
 #include "Engine/GameEngine.hpp"
@@ -12,7 +11,8 @@
 #include "Scene/BattleScene.hpp"
 #include "Scene/BattleScene.hpp"
 #include "Scene/PreStartScene.hpp"
-#include "Scene/DoorTransitionScene.hpp""
+#include "Scene/DoorTransitionScene.hpp"
+#include "Scene/LeaderboardScene.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("lose", new LoseScene());
 	game.AddNewScene("win", new WinScene());
     game.AddNewScene("settings", new SettingsScene());
+    game.AddNewScene("leaderboard", new LeaderboardScene());
 	game.AddNewScene("battle",new BattleScene());
 
 

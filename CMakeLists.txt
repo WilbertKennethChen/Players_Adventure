@@ -96,6 +96,10 @@ add_executable(2025_I2P2_TowerDefense
         Player/GameData.cpp
         Player/GameData.hpp
         Enemy/EnemyStruct.hpp
+        Scene/BattleUI.cpp
+        Scene/BattleUI.hpp
+        Scene/LeaderboardScene.cpp
+        Scene/LeaderboardScene.hpp
 )
 
 IF (WIN32)
