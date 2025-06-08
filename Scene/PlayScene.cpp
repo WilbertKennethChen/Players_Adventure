@@ -242,12 +242,7 @@ void PlayScene::Update(float deltaTime) {
     }
 
     // Store the player's position at the beginning of the frame.
-    Engine::Point originalPos = player ? player->Position : Engine::Point(0,0);
-
-    // Let the engine update everything, including player's position from keyboard input.
-    for (int i = 0; i < SpeedMult; i++) {
-        IScene::Update(deltaTime);
-    }
+    Engine::Point originalPos = player->Position;
 
     // --- POST-UPDATE COLLISION AND BOUNDARY CHECKS ---
     if (player && !activeTextbox) {
