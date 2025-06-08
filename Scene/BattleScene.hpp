@@ -32,7 +32,7 @@ public:
     int playerMaxHp;
     int playerHp;
 
-    Group * BoxGroup;
+    Group * LabelGroup;
 
 
     explicit BattleScene() = default;

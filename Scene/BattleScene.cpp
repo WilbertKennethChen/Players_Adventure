@@ -15,14 +15,17 @@
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 Player* player;
+Npc *enemy;
 
 bool statusDisplayed;
 Engine::Label * labelDesc = nullptr;
 Engine::Label * labelEmo = nullptr;
+Engine::Label * labelHpEnemy = nullptr;
+Engine::Label * labelHpPlayer = nullptr;
 
 void BattleScene::Initialize() {
-
-    enemyName = GameData::getInstance().currentEnemy;
+    enemy = GameData::getInstance().currentEnemy;
+    enemyName = enemy->getName();
     enemyMaxHp = GameData::getInstance().enemyList[enemyName].hp;
     img = GameData::getInstance().enemyList[enemyName].img;
     emotion = GameData::getInstance().enemyList[enemyName].emotion;
@@ -53,22 +56,24 @@ void BattleScene::Initialize() {
     int halfH = h / 2;
     //Initialize group for rectangle box
 
-    AddNewControlObject(BoxGroup = new Group());
+    AddNewControlObject(LabelGroup = new Group());
 
     //Enemy
-    AddNewObject(new Engine::Image("lose/benjamin-happy.png", halfW, halfH/2 - 50, 300, 300, 0.5, 0.5));
+    AddNewObject(new Engine::Image(img, halfW, halfH/2 - 50, 300, 300, 0.5, 0.5));
 
     char buff[20];
     sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
 
-    AddNewObject(new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5));
+    labelHpEnemy = new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    LabelGroup->AddNewObject(labelHpEnemy);
     Engine::ImageButton *btn;
 
 
 
     //player hp
     sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    AddNewObject(new Engine::Label(buff, "pirulen.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5));
+    labelHpPlayer = new Engine::Label(buff, "pirulen.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
+    LabelGroup->AddNewObject(labelHpPlayer);
 
     //attack button
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 100, h-125, w/4, 100);
@@ -99,7 +104,7 @@ void BattleScene::Initialize() {
 
 
 void BattleScene::Update(float dt) {
-    std::cout << idle << std::endl;
+    // std::cout << idle << std::endl;
     if (idle && !statusDisplayed) {
         displayEnemyStatus();
     }
@@ -110,7 +115,7 @@ void BattleScene::Update(float dt) {
 
 void BattleScene::Draw() const {
     IScene::Draw();
-    BoxGroup->Draw();
+    LabelGroup->Draw();
 
     al_draw_rectangle(minigame_x1, minigame_y1, minigame_x2, minigame_y2, al_map_rgba(255,255,255,255), 2);
 }
@@ -128,18 +133,50 @@ void BattleScene::setEnemyName(std::string name) {
 
 void BattleScene::AttackOnClick() {
     idle = false;
+
+
+    //enemy get damage (update enemy health)
+    enemyHp = std::max(enemyHp-5,0);
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    int halfW = w / 2;
+    int halfH = h / 2;
+    LabelGroup->RemoveObject(labelHpEnemy->GetObjectIterator());
+    char buff[20];
+    sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
+    labelHpEnemy = new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    LabelGroup->AddNewObject(labelHpEnemy);
+
+
+    if (enemyHp == 5) {
+        LabelGroup->RemoveObject(labelEmo->GetObjectIterator());
+        labelEmo = new Engine::Label("~ " + enemyName + " is " + "pleading for mercy ~", "pirulen.ttf", 30, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
+        LabelGroup->AddNewObject(labelEmo);
+    }
+
+
+    if (enemyHp <= 0) {
+        GameData::getInstance().deadEnemies.insert(enemyName);
+        Engine::GameEngine::GetInstance().ChangeScene("play");
+    }
+    idle = true;
 }
 void BattleScene::NegotiateOnClick() {
     idle = true;
 }
 
 void BattleScene::RunOnClick() {
+    if (enemyHp == 5) {
+        std::cout << enemyName;
+        GameData::getInstance().friendlyEnemies.insert(enemyName);
+        Engine::GameEngine::GetInstance().ChangeScene("play");
 
+    }
 }
 
 void BattleScene::displayEnemyStatus() {
     char buff[20];
-    std::cout << "draw" << std::endl;
+    // std::cout << "draw" << std::endl;
 
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -151,14 +188,14 @@ void BattleScene::displayEnemyStatus() {
 
     labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "pirulen.ttf", 30, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
 
-    BoxGroup->AddNewObject(labelEmo);
-    BoxGroup->AddNewObject(labelDesc);
+    LabelGroup->AddNewObject(labelEmo);
+    LabelGroup->AddNewObject(labelDesc);
     statusDisplayed = true;
 }
 
 void BattleScene::deleteEnemyStatus() {
-    BoxGroup->RemoveObject(labelDesc->GetObjectIterator());
-    BoxGroup->RemoveObject(labelEmo->GetObjectIterator());
+    LabelGroup->RemoveObject(labelDesc->GetObjectIterator());
+    LabelGroup->RemoveObject(labelEmo->GetObjectIterator());
     statusDisplayed = false;
 }
 

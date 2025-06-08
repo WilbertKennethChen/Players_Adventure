@@ -32,12 +32,12 @@ void StartScene::Initialize() {
     GameData::getInstance().playerHp = 10;
     GameData::getInstance().playerPosX = halfW;
     GameData::getInstance().playerPosY = halfH;
-    GameData::getInstance().currentEnemy = "";
+    GameData::getInstance().currentEnemy = nullptr;
     GameData::getInstance().spawned = false;
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"img","furious","Regular enemy","tiles"};
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/enemy-1.png","calm","Regular enemy","tiles"};
 
 
 

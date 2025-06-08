@@ -14,38 +14,76 @@
 
   "dialogue" : {
     "npc1" : {
-      "intro" : {
-        "text" : "Intro text 1",
-        "next" : "body1"
-      },
-      "body1" : {
-        "text" : "Body 1 Hello world",
-        "next" : "body2"
-      },
-      "body2" : {
-        "text" : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer",
-        "next" : ""
+      "friendly" : {
+        "intro" : {
+          "text" : "Intro text 1",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Body 1 Hello world",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer",
+          "next" : ""
+        }
       }
     },
     "npc2" : {
-      "intro" : {
-        "text" : "Wowwwww, you meow like a cat! That means you are one, right? Shut the fuck up. If you really want to be put on a leash and treated like a domestic animal then that’s called a fetish, not “quirky” or “cute”. What part of you seriously thinks that any part of acting like a feline establishes a reputation of appreciation?",
-        "next" : "body1"
-      },
-      "body1" : {
-        "text" : "Is it your lack of any defining aspect of personality that urges you to resort to shitty representations of cats to create an illusion of meaning in your worthless life? Wearing “cat ears” in the shape of headbands further notes the complete absence of human attribution to your false sense of personality, such as intelligence or charisma in any form or shape. ",
-        "next" : "body2"
-      },
-      "body2" : {
-        "text" : "Where do you think this mindset’s gonna lead you? You think you’re funny, random, quirky even? What makes you think that acting like a fucking cat will make a goddamn hyena laugh? I, personally, feel extremely sympathetic towards you as your only escape from the worthless thing you call your existence is to pretend to be an animal.",
-        "next" : "body3"
-      },
-      "body3" : {
-        "text" : "But it’s not a worthy choice to assert this horrifying fact as a dominant trait, mainly because personality traits require an initial personality to lay their foundation on. You’re not worthy of anybody’s time, so go fuck off, “cat-girl”.",
-        "next" : ""
+      "friendly" : {
+        "intro" : {
+          "text" : "Wowwwww, you meow like a cat! That means you are one, right? Shut the fuck up. If you really want to be put on a leash and treated like a domestic animal then that’s called a fetish, not “quirky” or “cute”. What part of you seriously thinks that any part of acting like a feline establishes a reputation of appreciation?",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Is it your lack of any defining aspect of personality that urges you to resort to shitty representations of cats to create an illusion of meaning in your worthless life? Wearing “cat ears” in the shape of headbands further notes the complete absence of human attribution to your false sense of personality, such as intelligence or charisma in any form or shape. ",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Where do you think this mindset’s gonna lead you? You think you’re funny, random, quirky even? What makes you think that acting like a fucking cat will make a goddamn hyena laugh? I, personally, feel extremely sympathetic towards you as your only escape from the worthless thing you call your existence is to pretend to be an animal.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "But it’s not a worthy choice to assert this horrifying fact as a dominant trait, mainly because personality traits require an initial personality to lay their foundation on. You’re not worthy of anybody’s time, so go fuck off, “cat-girl”.",
+          "next" : ""
+        }
       }
     },
-    "npc3" : "lorem ipsum",
+    "enemy1" : {
+      "hostile" : {
+        "intro" : {
+          "text" : "Very well, where do I begin? My father was a relentlessly self-improving boulangerie owner from Belgium with low grade narcolepsy and a penchant for buggery. My mother was a fifteen year old French prostitute named Chloe with webbed feet.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "My father would womanize, he would drink, he would make outrageous claims like he invented the question mark. Some times he would accuse chestnuts of being lazy, the sort of general malaise that only the genius possess and the insane lament. ",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "My childhood was typical, summers in Rangoon, luge lessons. In the spring we'd make meat helmets. When I was insolent I was placed in a burlap bag and beaten with reeds, pretty standard really.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "At the age of 12 I received my first scribe. At the age of fourteen, a Zoroastrian named Vilma ritualistically shaved my testicles. There really is nothing like a shorn scrotum, it's breathtaking, I suggest you try it.",
+          "next" : ""
+        }
+      },
+      "friendly": {
+        "intro" : {
+          "text" : "Thank you, I Didn't Know You Were Chill Like That",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "There is other monster inside",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Stay safe friend :)",
+          "next" : ""
+        }
+      }
+
+    },
     "npc4" : "took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
 
 
