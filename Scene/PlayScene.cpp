@@ -12,16 +12,18 @@
 #include "Player/Player.hpp"
 #include "NPC/Npc.hpp"
 #include "Turret/Turret.hpp"
-
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
 #include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
+#include "Player/GameData.hpp"
 
 #include <allegro5/allegro_primitives.h>
 
+
+#include "BattleScene.hpp"
 #include "UI/Component/Slider.hpp"
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
@@ -50,14 +52,19 @@ const std::vector<int> PlayScene::code = {
 std::set<int> keyDown;
 std::string nextDiag;
 std::string nameDiag;
-bool interactable = false;
-float interactRange = 64.0;
-Npc* interactingNPC= nullptr;
+bool interactable;
+float interactRange;
+Npc* interactingNPC;
+std::string enemyName;
 
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
 }
 void PlayScene::Initialize() {
+    interactable = false;
+    interactRange = 64.0;
+    interactingNPC = nullptr;
+    enemyName = "";
     keyDown.clear();
     activeTextbox = nullptr;
     mapState.clear();
@@ -67,6 +74,7 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
+    std::cout << mapSwitched << std::endl;
     mapSwitched = false;
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
@@ -79,6 +87,13 @@ void PlayScene::Initialize() {
     AddNewObject(NpcGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
     ReadMap(Engine::Point(-1, -1));
+    float playerhp = GameData::getInstance().playerHp;
+    float playerposx = GameData::getInstance().playerPosX;
+    float playerposy = GameData::getInstance().playerPosY;
+    player = new Player("play/panda.png",playerposx, playerposy,playerhp,200,32,32,4);
+    AddNewObject(player);
+    std::cout << playerhp << std::endl;
+
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
@@ -311,6 +326,7 @@ void PlayScene::Update(float deltaTime) {
             mapSwitched = true;
         }
 
+        // End transition after full cycle (2.0f)
         if (transitionAlpha >= 2.0f) {
             transitionAlpha = -1.0f;
             isTransitioning = false;
@@ -341,8 +357,7 @@ void PlayScene::Update(float deltaTime) {
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
-    float savedLives = lives;
-    float savedMoney = money;
+
 
     if (TileMapGroup) TileMapGroup->Clear();
     if (NpcGroup) NpcGroup->Clear();
@@ -356,12 +371,14 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
     if (spawnPosition.y >= (MapHeight * BlockSize - BlockSize)) {
         spawnPosition.y -= BlockSize;
     }
+    GameData::getInstance().changeMap = true;
+    AudioHelper::StopBGM(bgmId);
+    Initialize();
 
     PauseInitialize();
     ReadMap(spawnPosition);
 
-    lives = savedLives;
-    money = savedMoney;
+
 }
 
 bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
@@ -444,7 +461,7 @@ void PlayScene::OnMouseDown(int button, int mx, int my) {
         }
         return;
     }
-    IScene::OnMouseDown(button, mx, my);
+    // IScene::OnMouseDown(button, mx, my);
 }
 void PlayScene::OnMouseMove(int mx, int my) {
     if (!Visible) return;
@@ -472,6 +489,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
         draggingBGM = false;
         draggingSFX = false;
     }
+    if (!imgTarget->Visible)return;
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
 }
@@ -486,21 +504,27 @@ void PlayScene::OnKeyDown(int keyCode) {
     if (keyCode == ALLEGRO_KEY_ESCAPE)
     {
         isPaused = !isPaused;
-        if (UIGroup) {
-            SetPauseUIVisible(isPaused);
-        }
+        SetPauseUIVisible(isPaused);
         return;
     }
+
+    if (isPaused) return;
+
     if (!activeTextbox) {
         keyDown.insert(keyCode);
         if (player) player->OnKeyDown(keyCode);
     }
 
-    if (isPaused) return;
 
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
     }
+
+    if (keyCode == ALLEGRO_KEY_B) {
+        SaveState("enemy1");
+        Engine::GameEngine::GetInstance().ChangeScene("battle");
+    }
+
 
     // std::cout << interactable << std::endl;
     if (keyCode == ALLEGRO_KEY_E && interactable) {
@@ -518,7 +542,6 @@ void PlayScene::OnKeyDown(int keyCode) {
                 UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                 activeTextbox = nullptr;
                 nameDiag = "";
-
             }
         }
     }
@@ -582,6 +605,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '2': mapData.push_back(2); break;  // NPC1
             case '3': mapData.push_back(3); break;  // NPC2
             case 'S': mapData.push_back(4); break;  // Player Spawn
+            case 'T': mapData.push_back(5); break;  //Player spawned when change map
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -597,20 +621,21 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     // Store map in 2d array.
     mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth));
     Engine::Point spawnPoint;
+    Engine::Point teleportPoint;
     for (int i = 0; i < MapHeight; i++) {
         for (int j = 0; j < MapWidth; j++)
         {
             const int num = mapData[i * MapWidth + j];
             switch (num) {
-            case 0:  // Dirt
-                mapState[i][j] = TILE_DIRT;
-                TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                break;
-            case 1:  // Floor
-                mapState[i][j] = TILE_FLOOR;
-                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                break;
-            case 2: // NPC1
+                case 0:  // Dirt
+                    mapState[i][j] = TILE_DIRT;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 1:  // Floor
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 2: // NPC1
                 {
 
                     mapState[i][j] = TILE_FLOOR;
@@ -619,7 +644,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     NpcGroup->AddNewObject(npc1);
                     break;
                 }
-            case 3: // NPC2
+                case 3: // NPC2
                 {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
@@ -627,23 +652,38 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     NpcGroup->AddNewObject(npc2);
                     break;
                 }
-            case 4:  // Spawn point
-                mapState[i][j] = TILE_FLOOR;
-                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
-                break;
+                case 4:  // Spawn point
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                    break;
+
+                case 5: //Teleport point
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                    break;
             }
         }
     }
+    if (!GameData::getInstance().spawned) {
+        GameData::getInstance().spawned = true;
+        GameData::getInstance().playerPosX = spawnPoint.x;
+        GameData::getInstance().playerPosY = spawnPoint.y;
+    }
+    if (GameData::getInstance().spawned && GameData::getInstance().changeMap) {
+        GameData::getInstance().playerPosX = teleportPoint.x;
+        GameData::getInstance().playerPosY = teleportPoint.y;
+        GameData::getInstance().changeMap = false;
+    }
     if (overrideSpawn.x != -1 && overrideSpawn.y != -1) spawnPoint = overrideSpawn;
-    int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
-    int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
-    player = new Player("play/panda.png",
-                   spawnPoint.x ? spawnPoint.x : halfW,
-                   spawnPoint.y ? spawnPoint.y : halfH,
-                   10, 200,
-                   32, 32, 2);
-    AddNewObject(player);
+    // int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
+    // int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
+    // player = new Player("play/enemy-11.png",
+    //                    spawnPoint.x ? spawnPoint.x : halfW,
+    //                    spawnPoint.y ? spawnPoint.y : halfH,
+    //                    10, 200);
+    // AddNewObject(player);
 }
 
 void PlayScene::ConstructUI() {
@@ -658,53 +698,7 @@ void PlayScene::UIBtnClicked(int id) {
     OnMouseMove(Engine::GameEngine::GetInstance().GetMousePosition().x, Engine::GameEngine::GetInstance().GetMousePosition().y);
 }
 
-bool PlayScene::CheckSpaceValid(int x, int y) {
-    return true;
-    // if (x < 0 || x >= MapWidth || y < 0 || y >= MapHeight)
-    //     return false;
-    // auto map00 = mapState[y][x];
-    // mapState[y][x] = TILE_OCCUPIED;
-    // std::vector<std::vector<int>> map = CalculateBFSDistance();
-    // mapState[y][x] = map00;
-    // if (map[0][0] == -1)
-    //     return false;
-    // for (auto &it : EnemyGroup->GetObjects()) {
-    //     Engine::Point pnt;
-    //     pnt.x = floor(it->Position.x / BlockSize);
-    //     pnt.y = floor(it->Position.y / BlockSize);
-    //     if (pnt.x < 0) pnt.x = 0;
-    //     if (pnt.x >= MapWidth) pnt.x = MapWidth - 1;
-    //     if (pnt.y < 0) pnt.y = 0;
-    //     if (pnt.y >= MapHeight) pnt.y = MapHeight - 1;
-    //     if (map[pnt.y][pnt.x] == -1)
-    //         return false;
-    // }
-    // // All enemy have path to exit.
-    // mapState[y][x] = TILE_OCCUPIED;
-    // mapDistance = map;
-    // for (auto &it : EnemyGroup->GetObjects())
-    //     dynamic_cast<Enemy *>(it)->UpdatePath(mapDistance);
-    // return true;
-}
-// std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
-//     // Reverse BFS to find path.
-//     std::vector<std::vector<int>> map(MapHeight, std::vector<int>(std::vector<int>(MapWidth, -1)));
-//     std::queue<Engine::Point> que;
-//     // Push end point.
-//     // BFS from end point.
-//     if (mapState[MapHeight - 1][MapWidth - 1] != TILE_DIRT)
-//         return map;
-//     que.push(Engine::Point(MapWidth - 1, MapHeight - 1));
-//     map[MapHeight - 1][MapWidth - 1] = 0;
-//     while (!que.empty()) {
-//         Engine::Point p = que.front();
-//         que.pop();
-//         // TODO PROJECT-1 (1/1): Implement a BFS starting from the most right-bottom block in the map.
-//         //               For each step you should assign the corresponding distance to the most right-bottom block.
-//         //               mapState[y][x] is TILE_DIRT if it is empty.
-//     }
-//     return map;
-// }
+
 
 Engine::Point PlayScene::getScreenSize() {
     return Engine::GameEngine::GetInstance().GetScreenSize();
@@ -728,6 +722,13 @@ void PlayScene::RenderTextbox(std::string key) {
     jsonFileStream.close();
 }
 
+void PlayScene::SaveState(std::string enemyName) {
+    GameData::getInstance().playerHp = player->getHp();
+    GameData::getInstance().playerPosX = player->Position.x;
+    GameData::getInstance().playerPosY = player->Position.y;
+    GameData::getInstance().currentEnemy = enemyName;
+}
+
 void PlayScene::OnBGMSlideValueChanged(float value) {
     if (bgmInstance) {
         al_set_sample_instance_gain(bgmInstance.get(), value);
@@ -747,12 +748,16 @@ void PlayScene::ContinueOnClick() {
 }
 
 void PlayScene::RetryOnClick() {
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
     Engine::GameEngine::GetInstance().ChangeScene("play");
 }
 
 void PlayScene::ExitOnClick() {
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
     Engine::GameEngine::GetInstance().ChangeScene("stage-select");

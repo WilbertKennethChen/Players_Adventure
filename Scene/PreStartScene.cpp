@@ -34,7 +34,7 @@ void PreStartScene::Initialize() {
 
     // Create the label and store it
     instructionLabel = new Engine::Label(instructionText, "undertale.ttf", fontSize,
-                                   halfW, h - 40,      // x, y position
+                                   halfW - 125, h - 40,      // x, y position
                                    255, 255, 255, initialAlpha, // r, g, b, a (white color, with initial alpha)
                                    0.5, 1.0);         // anchorX, anchorY (center, bottom)
     AddNewObject(instructionLabel); // Add it to the scene objects

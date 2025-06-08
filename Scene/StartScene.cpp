@@ -7,13 +7,17 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cmath>
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Point.hpp"
+#include "Engine/LOG.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Scene/StartScene.h"
+
+#include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/Slider.hpp"
@@ -24,24 +28,73 @@ void StartScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
+
+    //initialized player state
+    GameData::getInstance().playerMaxHp = 10;
+    GameData::getInstance().playerHp = 10;
+    GameData::getInstance().playerPosX = halfW;
+    GameData::getInstance().playerPosY = halfH;
+    GameData::getInstance().currentEnemy = "";
+    GameData::getInstance().spawned = false;
+    GameData::getInstance().changeMap = false;
+
+    //Add new enemy
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"img","furious","Regular enemy","tiles"};
+
+
+    std::string instructionText = "Click the tunnel to start...";
+    float fontSize = 36;
     Engine::ImageButton *btn;
 
     // ADD THIS LINE: Set the bonfire background for the main menu.
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
-    AddNewObject(new Engine::Label("Tower Defense", "undertale.ttf", 120, halfW, halfH / 3 + 50, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
+    AddNewObject(new Engine::Label("GameLore", "undertale.ttf", 120, halfW - 50, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH / 2 + 200, 400, 100);
+    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/empty.png", halfW - 250, halfH / 2, 400, 400);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Play", "undertale.ttf", 48, halfW, halfH / 2 + 250, 0, 0, 0, 255, 0.5, 0.5));
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 200, halfH * 3 / 2 - 50, 400, 100);
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 690, halfH * 3 / 2 + 100, 100, 100);
     btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Settings", "undertale.ttf", 48, halfW, halfH * 3 / 2, 0, 0, 0, 255, 0.5, 0.5));
+
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 575, halfH * 3 / 2 + 100, 100, 100);
+    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    AddNewControlObject(btn);
+
+    unsigned char initialAlpha = 128;
+    instructionLabel = new Engine::Label(instructionText, "undertale.ttf", fontSize,
+                                   halfW - 45, h - 40,
+                                   255, 255, 255, initialAlpha,
+                                   0.5, 1.0);
+    AddNewObject(instructionLabel);
+    Engine::LOG(Engine::INFO) << "PreStartScene instruction label added.";
+    animationTime = 0.0f;
+
+}
+
+void StartScene::Update(float deltaTime) {
+    IScene::Update(deltaTime);
+
+    animationTime += deltaTime;
+
+    float pulseSpeed = 1.5f;
+    float minAlpha = 25.0f;
+    float maxAlpha = 100.0f;
+
+    float normalizedSin = (sin(animationTime * pulseSpeed) + 1.0f) / 2.0f;
+    float currentAlphaFloat = minAlpha + normalizedSin * (maxAlpha - minAlpha);
+
+    currentAlphaFloat = std::max(0.0f, std::min(255.0f, currentAlphaFloat));
+    unsigned char currentAlphaByte = static_cast<unsigned char>(currentAlphaFloat);
+
+    if (instructionLabel) {
+        instructionLabel->Color = al_map_rgba(255, 255, 255, currentAlphaByte);
+    }
 }
 void StartScene::Terminate() {
+    instructionLabel = nullptr;
     IScene::Terminate();
 }
 void StartScene::PlayOnClick(int stage) {
@@ -49,4 +102,8 @@ void StartScene::PlayOnClick(int stage) {
 }
 void StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("settings");
+}
+void StartScene::LeaderboardOnClick(int stage)
+{
+    Engine::GameEngine::GetInstance().ChangeScene("leaderboard");
 }

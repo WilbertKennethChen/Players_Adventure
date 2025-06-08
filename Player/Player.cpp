@@ -97,3 +97,10 @@ void Player::OnKeyDown(int keycode) {
 void Player::OnKeyUp(int keycode) {
     keyState[keycode] = false;
 }
+    float Player::getHp() {
+        return hp;
+    }
+    void Player::getHit(int damage) {
+        hp-= damage;
+    }
+
