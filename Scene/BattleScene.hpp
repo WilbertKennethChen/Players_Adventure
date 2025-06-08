@@ -4,7 +4,10 @@
 
 #ifndef BATTLEUI_HPP
 #define BATTLEUI_HPP
+#include <queue>
 #include <string>
+#include <vector>
+#include <iostream>
 #include <unordered_map>
 
 #include "Engine/IScene.hpp"
@@ -20,8 +23,9 @@ protected:
     float minigame_y1;
     float minigame_y2;
 
+    bool minigameNotesActive;
 public:
-    bool done = false;
+
     // std::unordered_map<std::string,>;
     int enemyMaxHp;
     int enemyHp;
@@ -31,9 +35,13 @@ public:
     std::string miniGame;
     int playerMaxHp;
     int playerHp;
-
+    //notes miniGame
+    float notesTime;
+    int notesGap;
+    int notesSpeed;
+    std::vector<std::queue<float>> notesWave;
     Group * LabelGroup;
-
+    Group * NotesGroup;
 
     explicit BattleScene() = default;
     void Initialize() override;
@@ -46,6 +54,12 @@ public:
     void RunOnClick();
     void displayEnemyStatus();
     void deleteEnemyStatus();
+    void updatePlayerHp();
+    //notes game
+    void createNotesGame();
+    void readNotesWave();
+    void enemyHit();
+
 };
 
 
