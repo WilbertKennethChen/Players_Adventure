@@ -28,10 +28,10 @@ int main(int argc, char **argv) {
 	game.AddNewScene("win", new WinScene());
     game.AddNewScene("settings", new SettingsScene());
     game.AddNewScene("leaderboard", new LeaderboardScene());
-	game.AddNewScene("battle",new BattleScene());
+	game.AddNewScene("battle", new BattleScene());
 
 
     // Change the start scene
-	game.Start("settings", 60, 1600, 832);
+	game.Start("prestart", 60, 1600, 832);
 	return 0;
 }

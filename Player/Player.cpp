@@ -29,45 +29,69 @@ Player::Player(std::string img, float x, float y, float hp, float speed,
 
 
 bool facingleft = true;
+
 void Player::Update(float dt) {
-        float move = speed * dt;
-        bool isMovingNow = false;
+    float move = speed * dt;
+    bool isMovingNow = false;
+    Engine::Point originalPosition = Position;
 
-        auto& keyManager = KeyBindingManager::GetInstance();
+    auto& keyManager = KeyBindingManager::GetInstance();
 
-        if (keyState[keyManager.GetKeyForAction("up")]) {
+    if (keyState[keyManager.GetKeyForAction("up")]) {
+        Engine::Point newPos = Position;
+        newPos.y -= move;
+        // Check collision before moving
+        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
+        if (scene && !scene->CheckPlayerCollision(newPos)) {
             Position.y -= move;
-            isMovingNow = true;
         }
-        if (keyState[keyManager.GetKeyForAction("down")]) {
+        isMovingNow = true;
+    }
+    if (keyState[keyManager.GetKeyForAction("down")]) {
+        Engine::Point newPos = Position;
+        newPos.y += move;
+        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
+        if (scene && !scene->CheckPlayerCollision(newPos)) {
             Position.y += move;
-            isMovingNow = true;
         }
-        if (keyState[keyManager.GetKeyForAction("right")]) {
+        isMovingNow = true;
+    }
+    if (keyState[keyManager.GetKeyForAction("right")]) {
+        Engine::Point newPos = Position;
+        newPos.x += move;
+        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
+        if (scene && !scene->CheckPlayerCollision(newPos)) {
             Position.x += move;
-            isMovingNow = true;
-            facingleft = false;
         }
-        if (keyState[keyManager.GetKeyForAction("left")]) {
+        isMovingNow = true;
+        facingleft = false;
+    }
+    if (keyState[keyManager.GetKeyForAction("left")]) {
+        Engine::Point newPos = Position;
+        newPos.x -= move;
+        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
+        if (scene && !scene->CheckPlayerCollision(newPos)) {
             Position.x -= move;
-            isMovingNow = true;
-            facingleft = true;
         }
+        isMovingNow = true;
+        facingleft = true;
+    }
 
-        if (isMovingNow != wasMoving) {
-            wasMoving = isMovingNow;
-            currentAnimationRow = wasMoving ? 1 : 0;
-            currentFrame = 0;
-            elapsedTime = 0;
-        }
+    // Rest of the animation logic remains the same
+    if (isMovingNow != wasMoving) {
+        wasMoving = isMovingNow;
+        currentAnimationRow = wasMoving ? 1 : 0;
+        currentFrame = 0;
+        elapsedTime = 0;
+    }
 
-        elapsedTime += dt;
-        float currentRowFrameTime = rowFrameTimes[currentAnimationRow];
-        if (elapsedTime >= currentRowFrameTime) {
-            elapsedTime = 0;
-            int maxFrames = rowFrameCounts[currentAnimationRow];
-            currentFrame = (currentFrame + 1) % maxFrames;
-        }
+    elapsedTime += dt;
+    float currentRowFrameTime = rowFrameTimes[currentAnimationRow];
+    if (elapsedTime >= currentRowFrameTime) {
+        elapsedTime = 0;
+        int maxFrames = rowFrameCounts[currentAnimationRow];
+        currentFrame = (currentFrame + 1) % maxFrames;
+    }
 }
 
 
