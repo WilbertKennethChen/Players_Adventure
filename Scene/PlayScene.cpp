@@ -246,26 +246,10 @@ void PlayScene::Update(float deltaTime) {
 
     // --- POST-UPDATE COLLISION AND BOUNDARY CHECKS ---
     if (player && !activeTextbox) {
-        // Check for tile collision (House and Dirt walls) at the new position.
-        int gridX = static_cast<int>(player->Position.x / BlockSize);
-        int gridY = static_cast<int>(player->Position.y / BlockSize);
-
-        // Only revert position if we're actually colliding with a blocking tile
-        if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
-            TileType currentTile = mapState[gridY][gridX];
-            if (currentTile == TILE_DIRT || currentTile == TILE_HOUSE) {
-                // Calculate a small offset to push player back
-                Engine::Point direction = player->Position - originalPos;
-                if (direction.x != 0 || direction.y != 0) {
-                    direction = direction.Normalize() * 2.0f; // Small pushback
-                    player->Position = originalPos + direction;
-                } else {
-                    player->Position = originalPos;
-                }
-            }
+        if (CheckPlayerCollision(player->Position)) {
+            player->Position = originalPos;
         }
-
-        // Handle "soft" collision with NPCs (pushback)
+        const float pushBack = 1.0f;
         for (auto& npc : NpcGroup->GetObjects()) {
             float dx = player->Position.x - npc->Position.x;
             float dy = player->Position.y - npc->Position.y;
@@ -273,17 +257,14 @@ void PlayScene::Update(float deltaTime) {
             float minDistance = BlockSize * 0.8f; // Same as collision check
 
             if (distance < minDistance) {
-                // Push player away from NPC instead of full revert
-                Engine::Point pushDirection = (player->Position - npc->Position).Normalize();
-                player->Position = npc->Position + pushDirection * minDistance;
-                break;
+                float overlap = minDistance - distance;
+                player->Position.x += (dx / distance) * overlap * pushBack;
+                player->Position.y += (dy / distance) * overlap * pushBack;
             }
         }
+        player->Position.x = std::max(BlockSize/2.f, std::min(player->Position.x, (float)(MapWidth * BlockSize - BlockSize/2)));
+        player->Position.y = std::max(BlockSize/2.f, std::min(player->Position.y, (float)(MapHeight * BlockSize - BlockSize/2)));
 
-        // Enforce map boundaries as a final check
-        float buffer = BlockSize * 0.4f;
-        player->Position.x = std::max(buffer, std::min(player->Position.x, (float)(MapWidth * BlockSize - buffer)));
-        player->Position.y = std::max(buffer, std::min(player->Position.y, (float)(MapHeight * BlockSize - buffer)));
     }
     // --- END OF COLLISION CHECKS ---
 
