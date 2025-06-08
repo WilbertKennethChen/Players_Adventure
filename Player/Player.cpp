@@ -11,6 +11,8 @@
 #include "Engine/LOG.hpp"
 #include "Scene/PlayScene.hpp"
 #include "Player.hpp"
+#include "Scene/SettingsScene.hpp"
+#include "Scene/keybinding.h"
 
 Player::Player(std::string img, float x, float y, float hp, float speed,
                int frameWidth, int frameHeight, int frameCount)
@@ -28,42 +30,44 @@ Player::Player(std::string img, float x, float y, float hp, float speed,
 
 bool facingleft = true;
 void Player::Update(float dt) {
-    float move = speed * dt;
-    bool isMovingNow = false;
+        float move = speed * dt;
+        bool isMovingNow = false;
 
-    if (keyState[ALLEGRO_KEY_W]) {
-        Position.y -= move;
-        isMovingNow = true;
-    }
-    if (keyState[ALLEGRO_KEY_S]) {
-        Position.y += move;
-        isMovingNow = true;
-    }
-    if (keyState[ALLEGRO_KEY_D]) {
-        Position.x += move;
-        isMovingNow = true;
-        facingleft = false;
-    }
-    if (keyState[ALLEGRO_KEY_A]) {
-        Position.x -= move;
-        isMovingNow = true;
-        facingleft = true;
-    }
+        auto& keyManager = KeyBindingManager::GetInstance();
 
-    if (isMovingNow != wasMoving) {
-        wasMoving = isMovingNow;
-        currentAnimationRow = wasMoving ? 1 : 0;
-        currentFrame = 0;
-        elapsedTime = 0;
-    }
+        if (keyState[keyManager.GetKeyForAction("up")]) {
+            Position.y -= move;
+            isMovingNow = true;
+        }
+        if (keyState[keyManager.GetKeyForAction("down")]) {
+            Position.y += move;
+            isMovingNow = true;
+        }
+        if (keyState[keyManager.GetKeyForAction("right")]) {
+            Position.x += move;
+            isMovingNow = true;
+            facingleft = false;
+        }
+        if (keyState[keyManager.GetKeyForAction("left")]) {
+            Position.x -= move;
+            isMovingNow = true;
+            facingleft = true;
+        }
 
-    elapsedTime += dt;
-    float currentRowFrameTime = rowFrameTimes[currentAnimationRow];
-    if (elapsedTime >= currentRowFrameTime) {
-        elapsedTime = 0;
-        int maxFrames = rowFrameCounts[currentAnimationRow];
-        currentFrame = (currentFrame + 1) % maxFrames;
-    }
+        if (isMovingNow != wasMoving) {
+            wasMoving = isMovingNow;
+            currentAnimationRow = wasMoving ? 1 : 0;
+            currentFrame = 0;
+            elapsedTime = 0;
+        }
+
+        elapsedTime += dt;
+        float currentRowFrameTime = rowFrameTimes[currentAnimationRow];
+        if (elapsedTime >= currentRowFrameTime) {
+            elapsedTime = 0;
+            int maxFrames = rowFrameCounts[currentAnimationRow];
+            currentFrame = (currentFrame + 1) % maxFrames;
+        }
 }
 
 

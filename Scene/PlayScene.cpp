@@ -645,7 +645,6 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 2: // NPC1
                 {
-
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");

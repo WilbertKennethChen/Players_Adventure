@@ -98,6 +98,8 @@ add_executable(2025_I2P2_TowerDefense
         Enemy/EnemyStruct.hpp
         Scene/LeaderboardScene.cpp
         Scene/LeaderboardScene.hpp
+        Scene/keybinding.cpp
+        Scene/keybinding.h
 )
 
 IF (WIN32)
