@@ -78,11 +78,8 @@ void PlayScene::Initialize() {
     mapSwitched = false;
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
-    // AddNewObject(GroundEffectGroup = new Group());
-    // AddNewObject(TowerGroup = new Group());
-    // AddNewObject(EnemyGroup = new Group());
-    // AddNewObject(BulletGroup = new Group());
-    // AddNewObject(EffectGroup = new Group());
+
+
     // Should support buttons.
     AddNewObject(NpcGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
@@ -112,6 +109,9 @@ void PlayScene::Initialize() {
         al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
     }
     PauseInitialize();
+
+    //set all friendly enemy into friendly
+
 }
 
 void PlayScene::PauseInitialize()
@@ -305,6 +305,7 @@ void PlayScene::Update(float deltaTime) {
                 // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
                 nameDiag = interactingNPC->getName();
                 break;
+
             } else {
                 interactingNPC = nullptr;
                 nameDiag = "";
@@ -521,8 +522,7 @@ void PlayScene::OnKeyDown(int keyCode) {
     }
 
     if (keyCode == ALLEGRO_KEY_B) {
-        SaveState("enemy1");
-        Engine::GameEngine::GetInstance().ChangeScene("battle");
+
     }
 
 
@@ -539,9 +539,16 @@ void PlayScene::OnKeyDown(int keyCode) {
                 UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                 RenderTextbox(nextDiag);
             } else {
+
                 UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                 activeTextbox = nullptr;
                 nameDiag = "";
+
+                if (interactingNPC->isHostile()) {
+                    SaveState(interactingNPC->getName());
+                    Engine::GameEngine::GetInstance().ChangeScene("battle");
+                }
+
             }
         }
     }
@@ -606,6 +613,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '3': mapData.push_back(3); break;  // NPC2
             case 'S': mapData.push_back(4); break;  // Player Spawn
             case 'T': mapData.push_back(5); break;  //Player spawned when change map
+            case 'G': mapData.push_back(6); break;  //Enemy ghost
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -663,6 +671,23 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
+                case 6:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "enemy1";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                        }
+                        NpcGroup->AddNewObject(npc3);
+                    }
+
+                    break;
             }
         }
     }
@@ -710,8 +735,16 @@ void PlayScene::RenderTextbox(std::string key) {
     std::ifstream jsonFileStream("Resource/jsonData/dialogue.json");
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
     nlohmann::json data = nlohmann::json::parse(jsonFileStream);
-    std::string text = data["dialogue"][nameDiag][key]["text"];
-    nextDiag = data["dialogue"][nameDiag][key]["next"];
+    std::string text;
+    if (interactingNPC->isHostile()) {
+        text = data["dialogue"][nameDiag]["hostile"][key]["text"];
+        nextDiag = data["dialogue"][nameDiag]["hostile"][key]["next"];
+    } else {
+        text = data["dialogue"][nameDiag]["friendly"][key]["text"];
+        nextDiag = data["dialogue"][nameDiag]["friendly"][key]["next"];
+    }
+
+
 
 
     // std::cout << std::filesystem::current_path() << std::endl;
@@ -726,7 +759,7 @@ void PlayScene::SaveState(std::string enemyName) {
     GameData::getInstance().playerHp = player->getHp();
     GameData::getInstance().playerPosX = player->Position.x;
     GameData::getInstance().playerPosY = player->Position.y;
-    GameData::getInstance().currentEnemy = enemyName;
+    GameData::getInstance().currentEnemy = interactingNPC;
 }
 
 void PlayScene::OnBGMSlideValueChanged(float value) {

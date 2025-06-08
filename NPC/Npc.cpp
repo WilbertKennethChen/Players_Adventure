@@ -18,7 +18,7 @@
 #include "Engine/LOG.hpp"
 #include "Scene/PlayScene.hpp"
 
-Npc::Npc(std::string img, float x, float y,std::string name) : Engine::Sprite(img,x,y), name(name) {};
+Npc::Npc(std::string img, float x, float y,std::string name,bool hostile) : Engine::Sprite(img,x,y), name(name), hostile(hostile) {};
 
 
 
@@ -33,4 +33,14 @@ void Npc::Draw() const {
 std::string Npc::getName() const {
     return name;
 }
+
+bool Npc::isHostile() const {
+        return this->hostile;
+}
+
+void Npc::setFriendly() {
+    hostile = false;
+}
+
+
 

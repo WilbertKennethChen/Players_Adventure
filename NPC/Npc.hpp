@@ -12,12 +12,14 @@ class Npc: public Engine::Sprite {
 protected:
     float hp;
     std::string name;
+    bool hostile;
 public:
-    Npc(std::string img, float x, float y, std::string name);
+    Npc(std::string img, float x, float y, std::string name, bool hostile = false);
     void Update(float dt);
     void Draw() const override;
     std::string getName() const;
-
+    bool isHostile() const;
+    void setFriendly();
 };
 
 
