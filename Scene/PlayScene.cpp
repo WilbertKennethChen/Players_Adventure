@@ -94,9 +94,6 @@ void PlayScene::Initialize() {
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
-
-    AddNewControlObject(UIGroup = new Group());
-
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
@@ -464,7 +461,7 @@ void PlayScene::OnMouseDown(int button, int mx, int my) {
         }
         return;
     }
-    IScene::OnMouseDown(button, mx, my);
+    // IScene::OnMouseDown(button, mx, my);
 }
 void PlayScene::OnMouseMove(int mx, int my) {
     if (!Visible) return;
@@ -492,6 +489,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
         draggingBGM = false;
         draggingSFX = false;
     }
+    if (!imgTarget->Visible)return;
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
 }
@@ -506,17 +504,17 @@ void PlayScene::OnKeyDown(int keyCode) {
     if (keyCode == ALLEGRO_KEY_ESCAPE)
     {
         isPaused = !isPaused;
-        if (UIGroup) {
-            SetPauseUIVisible(isPaused);
-        }
+        SetPauseUIVisible(isPaused);
         return;
     }
+
+    if (isPaused) return;
+
     if (!activeTextbox) {
         keyDown.insert(keyCode);
         if (player) player->OnKeyDown(keyCode);
     }
 
-    if (isPaused) return;
 
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
@@ -631,7 +629,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             switch (num) {
                 case 0:  // Dirt
                     mapState[i][j] = TILE_DIRT;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 1:  // Floor
                     mapState[i][j] = TILE_FLOOR;

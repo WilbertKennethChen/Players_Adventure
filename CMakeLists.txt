@@ -57,8 +57,8 @@ add_executable(2025_I2P2_TowerDefense
     Scene/StartScene.h
     Scene/WinScene.cpp
     Scene/WinScene.hpp
-        Scene/SettingsScene.cpp
-        Scene/SettingsScene.hpp
+    Scene/SettingsScene.cpp
+    Scene/SettingsScene.hpp
 
 
 
@@ -96,8 +96,6 @@ add_executable(2025_I2P2_TowerDefense
         Player/GameData.cpp
         Player/GameData.hpp
         Enemy/EnemyStruct.hpp
-        Scene/BattleUI.cpp
-        Scene/BattleUI.hpp
         Scene/LeaderboardScene.cpp
         Scene/LeaderboardScene.hpp
 )
