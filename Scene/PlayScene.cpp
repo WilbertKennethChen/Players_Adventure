@@ -214,37 +214,59 @@ void PlayScene::Terminate() {
     deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     IScene::Terminate();
 }
+
 void PlayScene::Update(float deltaTime) {
-    // If we use deltaTime directly, then we might have Bullet-through-paper problem.
-    // Reference: Bullet-Through-Paper
     if (isPaused) {
         if (preview)
             preview->Update(deltaTime);
         return;
     }
-    Engine::Point originalPos = player->Position;
+
     if (isTransitioning) {
         transitionAlpha += deltaTime;
-
         if (transitionAlpha >= 1.0f && !mapSwitched) {
             MapId = (MapId == 1) ? 2 : 1;
             ResetScene(pendingSpawnPoint);
             mapSwitched = true;
         }
-
         if (transitionAlpha >= 2.0f) {
             transitionAlpha = -1.0f;
             isTransitioning = false;
             mapSwitched = false;
         }
-
         return;
     }
+
+    // Store the player's position at the beginning of the frame.
+    Engine::Point originalPos = player ? player->Position : Engine::Point(0,0);
+
+    // Let the engine update everything, including player's position from keyboard input.
+    for (int i = 0; i < SpeedMult; i++) {
+        IScene::Update(deltaTime);
+    }
+
+    // --- POST-UPDATE COLLISION AND BOUNDARY CHECKS ---
     if (player && !activeTextbox) {
-        if (CheckPlayerCollision(player->Position)) {
-            player->Position = originalPos;
+        // Check for tile collision (House and Dirt walls) at the new position.
+        int gridX = static_cast<int>(player->Position.x / BlockSize);
+        int gridY = static_cast<int>(player->Position.y / BlockSize);
+
+        // Only revert position if we're actually colliding with a blocking tile
+        if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
+            TileType currentTile = mapState[gridY][gridX];
+            if (currentTile == TILE_DIRT || currentTile == TILE_HOUSE) {
+                // Calculate a small offset to push player back
+                Engine::Point direction = player->Position - originalPos;
+                if (direction.x != 0 || direction.y != 0) {
+                    direction = direction.Normalize() * 2.0f; // Small pushback
+                    player->Position = originalPos + direction;
+                } else {
+                    player->Position = originalPos;
+                }
+            }
         }
-        const float pushBack = 1.0f;
+
+        // Handle "soft" collision with NPCs (pushback)
         for (auto& npc : NpcGroup->GetObjects()) {
             float dx = player->Position.x - npc->Position.x;
             float dy = player->Position.y - npc->Position.y;
@@ -252,17 +274,22 @@ void PlayScene::Update(float deltaTime) {
             float minDistance = BlockSize * 0.8f; // Same as collision check
 
             if (distance < minDistance) {
-                float overlap = minDistance - distance;
-                player->Position.x += (dx / distance) * overlap * pushBack;
-                player->Position.y += (dy / distance) * overlap * pushBack;
+                // Push player away from NPC instead of full revert
+                Engine::Point pushDirection = (player->Position - npc->Position).Normalize();
+                player->Position = npc->Position + pushDirection * minDistance;
+                break;
             }
         }
-        player->Position.x = std::max(BlockSize/2.f, std::min(player->Position.x, (float)(MapWidth * BlockSize - BlockSize/2)));
-        player->Position.y = std::max(BlockSize/2.f, std::min(player->Position.y, (float)(MapHeight * BlockSize - BlockSize/2)));
 
+        // Enforce map boundaries as a final check
+        float buffer = BlockSize * 0.4f;
+        player->Position.x = std::max(buffer, std::min(player->Position.x, (float)(MapWidth * BlockSize - buffer)));
+        player->Position.y = std::max(buffer, std::min(player->Position.y, (float)(MapHeight * BlockSize - buffer)));
     }
-    if (!isTransitioning && player)
-    {
+    // --- END OF COLLISION CHECKS ---
+
+    // Transition check to other maps
+    if (!isTransitioning && player) {
         const float transitionRange = BlockSize * 1.5f;
         const float bottomEdge = (MapHeight * BlockSize) - BlockSize;
         const float playerRightEdge = player->Position.x + (BlockSize / 2);
@@ -272,25 +299,21 @@ void PlayScene::Update(float deltaTime) {
             player->Position.y >= bottomEdge + 10) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
-            pendingSpawnPoint = Engine::Point(
-                BlockSize,
-                player->Position.y
-            );
-            }
-        else if (MapId == 2 && playerLeftEdge <= transitionRange &&
+            pendingSpawnPoint = Engine::Point(BlockSize, player->Position.y);
+        } else if (MapId == 2 && playerLeftEdge <= transitionRange &&
                  player->Position.y >= bottomEdge + 10) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
-            pendingSpawnPoint = Engine::Point(
-                (MapWidth * BlockSize) - BlockSize,
-                player->Position.y
-            );
-                 }
+            pendingSpawnPoint = Engine::Point((MapWidth * BlockSize) - BlockSize, player->Position.y);
+        }
     }
 
-
+    // NPC interaction logic
     if (!NpcGroup->GetObjects().empty()) {
-        for (auto& npc:NpcGroup->GetObjects()) {
+        interactable = false;
+        interactingNPC = nullptr;
+        nameDiag = "";
+        for (auto& npc : NpcGroup->GetObjects()) {
             float npcPosX = npc->Position.x;
             float npcPosY = npc->Position.y;
             float playerPosX = player->Position.x;
@@ -298,59 +321,14 @@ void PlayScene::Update(float deltaTime) {
 
             if (std::abs(playerPosX - npcPosX) < interactRange &&
                 std::abs(playerPosY - npcPosY) < interactRange) {
-
                 interactable = true;
-
                 interactingNPC = dynamic_cast<Npc*>(npc);
-                // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
                 nameDiag = interactingNPC->getName();
                 break;
-
-            } else {
-                interactingNPC = nullptr;
-                nameDiag = "";
-                interactable = false;
             }
-
         }
     }
 
-    if (isTransitioning) {
-        transitionAlpha += deltaTime;
-        if (transitionAlpha >= 1.0f && !mapSwitched) {
-            if (MapId == 1) {
-                MapId = 2;
-            } else if (MapId == 2) {
-                MapId = 1;
-            }
-            ResetScene(pendingSpawnPoint);
-            mapSwitched = true;
-        }
-
-        // End transition after full cycle (2.0f)
-        if (transitionAlpha >= 2.0f) {
-            transitionAlpha = -1.0f;
-            isTransitioning = false;
-            mapSwitched = false;
-        }
-        return;
-    }
-
-    if (SpeedMult == 0)
-        AudioHelper::StopSample(deathBGMInstance);
-    if (deathCountDown == -1 && lives > 0) {
-        AudioHelper::StopSample(deathBGMInstance);
-    }
-    if (SpeedMult == 0)
-        deathCountDown = -1;
-
-    for (int i = 0; i < SpeedMult; i++) {
-        IScene::Update(deltaTime);
-        // Check if we should create new enemy.
-
-
-        // Compensate the time lost.
-    }
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
@@ -388,6 +366,7 @@ bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
     const float collisionDistance = playerRadius + npcRadius;
     bool collision = false;
 
+    // Check NPC collisions
     for (auto& npc : NpcGroup->GetObjects()) {
         float dx = newPos.x - npc->Position.x;
         float dy = newPos.y - npc->Position.y;
@@ -399,8 +378,20 @@ bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
             collision = true;
         }
     }
+
+    // Check house tile collisions
+    int gridX = static_cast<int>(newPos.x / BlockSize);
+    int gridY = static_cast<int>(newPos.y / BlockSize);
+
+    if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
+        if (mapState[gridY][gridX] == TILE_HOUSE) {
+            collision = true;
+        }
+    }
+
     return collision;
 }
+
 
 void PlayScene::Draw() const {
     IScene::Draw();
@@ -612,8 +603,9 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '2': mapData.push_back(2); break;  // NPC1
             case '3': mapData.push_back(3); break;  // NPC2
             case 'S': mapData.push_back(4); break;  // Player Spawn
-            case 'T': mapData.push_back(5); break;  //Player spawned when change map
-            case 'G': mapData.push_back(6); break;  //Enemy ghost
+            case 'T': mapData.push_back(5); break;  // Player spawned when change map
+            case 'G': mapData.push_back(6); break;  // Enemy ghost
+            case 'H': mapData.push_back(7); break;  // House Tile
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -630,6 +622,21 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth));
     Engine::Point spawnPoint;
     Engine::Point teleportPoint;
+
+    // Find the top-left 'H' to anchor the single large image
+    int houseAnchorX = -1, houseAnchorY = -1;
+    for (int i = 0; i < MapHeight; i++) {
+        for (int j = 0; j < MapWidth; j++) {
+            if (mapData[i * MapWidth + j] == 7) { // 7 corresponds to 'H'
+                houseAnchorY = i;
+                houseAnchorX = j;
+                goto found_anchor; // Exit loops once the first 'H' is found
+            }
+        }
+    }
+    found_anchor:;
+
+    // Process the map tiles
     for (int i = 0; i < MapHeight; i++) {
         for (int j = 0; j < MapWidth; j++)
         {
@@ -644,34 +651,27 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 2: // NPC1
-                {
-
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
-                    NpcGroup->AddNewObject(npc1);
+                    NpcGroup->AddNewObject(new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1"));
                     break;
-                }
                 case 3: // NPC2
-                {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
-                    NpcGroup->AddNewObject(npc2);
+                    NpcGroup->AddNewObject(new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2"));
                     break;
-                }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
-
                 case 5: //Teleport point
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
-                case 6:
+                case 6: // Ghost
+                    {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
@@ -686,11 +686,27 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         }
                         NpcGroup->AddNewObject(npc3);
                     }
-
                     break;
+                    }
+                case 7: // House tile
+                {
+                    mapState[i][j] = TILE_HOUSE;
+                    // Draw a background tile underneath each part of the house
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                }
             }
         }
     }
+
+    // Now, draw the single large house image over the top
+    if (houseAnchorX != -1) {
+        const int houseWidthInTiles = 3;
+        const int houseHeightInTiles = 4;
+        TileMapGroup->AddNewObject(new Engine::Image("play/house.png", houseAnchorX * BlockSize, houseAnchorY * BlockSize, houseWidthInTiles * BlockSize, houseHeightInTiles * BlockSize));
+    }
+
+    // Resume original spawning logic
     if (!GameData::getInstance().spawned) {
         GameData::getInstance().spawned = true;
         GameData::getInstance().playerPosX = spawnPoint.x;
@@ -702,13 +718,6 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
         GameData::getInstance().changeMap = false;
     }
     if (overrideSpawn.x != -1 && overrideSpawn.y != -1) spawnPoint = overrideSpawn;
-    // int halfW = Engine::GameEngine::GetInstance().GetScreenSize().x / 2;
-    // int halfH = Engine::GameEngine::GetInstance().GetScreenSize().y / 2;
-    // player = new Player("play/enemy-11.png",
-    //                    spawnPoint.x ? spawnPoint.x : halfW,
-    //                    spawnPoint.y ? spawnPoint.y : halfH,
-    //                    10, 200);
-    // AddNewObject(player);
 }
 
 void PlayScene::ConstructUI() {
