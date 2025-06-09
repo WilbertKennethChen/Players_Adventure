@@ -104,7 +104,11 @@ void PlayScene::Initialize() {
         al_attach_sample_instance_to_mixer(deathBGMInstance.get(), al_get_default_mixer());
     }
     // Start BGM.
-    bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+    if (MapId == 1) {
+        bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+    } else {
+        bgmInstance = AudioHelper::PlaySample("dungeon.mp3", true, AudioHelper::BGMVolume); // or whatever your second map BGM is
+    }
     if (bgmInstance) {
         al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
     }
@@ -374,6 +378,7 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
     }
     GameData::getInstance().changeMap = true;
     AudioHelper::StopBGM(bgmId);
+    Terminate();
     Initialize();
 
     PauseInitialize();
@@ -626,6 +631,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case 'T': mapData.push_back(5); break;  // Player spawned when change map
             case 'G': mapData.push_back(6); break;  // Enemy ghost
             case 'H': mapData.push_back(7); break;  // House Tile
+            case '8':mapData.push_back(8); break;   // vertical floor
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -668,13 +674,13 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 1:  // Floor
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/dirtpaths.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 2: // NPC1
                 {
 
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
                     NpcGroup->AddNewObject(npc1);
                     break;
@@ -682,26 +688,26 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 3: // NPC2
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
                     NpcGroup->AddNewObject(npc2);
                     break;
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
                 case 5: //Teleport point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
                 case 6: // Ghost
                     {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
@@ -724,6 +730,10 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/grass2512.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 }
+                case 8:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/vertical.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
             }
         }
     }
