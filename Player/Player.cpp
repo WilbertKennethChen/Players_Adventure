@@ -34,50 +34,84 @@ void Player::Update(float dt) {
     float move = speed * dt;
     bool isMovingNow = false;
     Engine::Point originalPosition = Position;
+    Engine::Point movementDirection(0.0f, 0.0f);
 
     auto& keyManager = KeyBindingManager::GetInstance();
 
+    // Movement handling - track direction
     if (keyState[keyManager.GetKeyForAction("up")]) {
-        Engine::Point newPos = Position;
-        newPos.y -= move;
-        // Check collision before moving
-        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
-        if (scene && !scene->CheckPlayerCollision(newPos)) {
-            Position.y -= move;
-        }
+        Position.y -= move;
         isMovingNow = true;
     }
     if (keyState[keyManager.GetKeyForAction("down")]) {
-        Engine::Point newPos = Position;
-        newPos.y += move;
-        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
-        if (scene && !scene->CheckPlayerCollision(newPos)) {
-            Position.y += move;
-        }
+        Position.y += move;
         isMovingNow = true;
     }
     if (keyState[keyManager.GetKeyForAction("right")]) {
-        Engine::Point newPos = Position;
-        newPos.x += move;
-        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
-        if (scene && !scene->CheckPlayerCollision(newPos)) {
-            Position.x += move;
-        }
+         Position.x += move;
         isMovingNow = true;
         facingleft = false;
     }
     if (keyState[keyManager.GetKeyForAction("left")]) {
-        Engine::Point newPos = Position;
-        newPos.x -= move;
-        PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
-        if (scene && !scene->CheckPlayerCollision(newPos)) {
-            Position.x -= move;
-        }
+        Position.x -= move;
         isMovingNow = true;
         facingleft = true;
     }
 
-    // Rest of the animation logic remains the same
+    // Apply movement
+    Position.x += movementDirection.x * move;
+    Position.y += movementDirection.y * move;
+
+    // --- IMPROVED COLLISION HANDLING ---
+    PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
+    if (scene) {
+        const float pushBackForce = 1.0f; // Increased pushback force
+
+        // Check collision with all collidable objects (including houses)
+        bool collided = false;
+        Engine::Point collisionResponse(0.0f, 0.0f);
+
+        // Check against environment
+        if (scene->CheckPlayerCollision(Position)) {
+            collided = true;
+            // Push back along movement direction
+            collisionResponse.x = -movementDirection.x * pushBackForce;
+            collisionResponse.y = -movementDirection.y * pushBackForce;
+        }
+
+        // Check against NPCs
+        for (auto& npc : scene->NpcGroup->GetObjects()) {
+            float dx = Position.x - npc->Position.x;
+            float dy = Position.y - npc->Position.y;
+            float distance = sqrt(dx * dx + dy * dy);
+            float minDistance = scene->BlockSize * 0.8f;
+
+            if (distance < minDistance && distance > 0) {
+                collided = true;
+                float overlap = minDistance - distance;
+                collisionResponse.x += (dx / distance) * overlap;
+                collisionResponse.y += (dy / distance) * overlap;
+            }
+        }
+
+        // Apply collision response
+        if (collided) {
+            Position.x += collisionResponse.x;
+            Position.y += collisionResponse.y;
+
+            // Additional check to prevent getting stuck
+            if (scene->CheckPlayerCollision(Position)) {
+                Position = originalPosition;
+            }
+        }
+
+        // Boundary checks
+        Position.x = std::max(scene->BlockSize/2.f, std::min(Position.x,
+                      (float)(scene->MapWidth * scene->BlockSize - scene->BlockSize/2)));
+        Position.y = std::max(scene->BlockSize/2.f, std::min(Position.y,
+                      (float)(scene->MapHeight * scene->BlockSize - scene->BlockSize/2)));
+    }
+
     if (isMovingNow != wasMoving) {
         wasMoving = isMovingNow;
         currentAnimationRow = wasMoving ? 1 : 0;

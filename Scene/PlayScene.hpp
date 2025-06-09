@@ -29,6 +29,7 @@ private:
         TILE_FLOOR,
         TILE_OCCUPIED,
         TILE_HOUSE,
+        TILE_WATER
     };
     Slider* sliderBGM;
     Slider* sliderSFX;
