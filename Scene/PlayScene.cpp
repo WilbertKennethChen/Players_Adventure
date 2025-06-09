@@ -245,6 +245,7 @@ void PlayScene::Update(float deltaTime) {
 
     // --- POST-UPDATE COLLISION AND BOUNDARY CHECKS ---
     if (player && !activeTextbox) {
+        player->Update(deltaTime);
         if (CheckPlayerCollision(player->Position)) {
             player->Position = originalPos;
         }
