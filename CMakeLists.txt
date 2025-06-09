@@ -100,6 +100,8 @@ add_executable(2025_I2P2_TowerDefense
         Scene/LeaderboardScene.hpp
         Scene/keybinding.cpp
         Scene/keybinding.h
+        Engine/AnimatedSprite.cpp
+        Engine/AnimatedSprite.hpp
 )
 
 IF (WIN32)
