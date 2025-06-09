@@ -16,6 +16,7 @@
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
 #include "Engine/LOG.hpp"
+#include "Engine/AnimatedSprite.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Player/GameData.hpp"
@@ -740,10 +741,31 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 9:
+                case 9: {
+                    // mapState[i][j] = TILE_WATER;
+                    //
+                    // // Define the sequence of water animation frames.
+                    // std::vector<std::string> waterFrames = {
+                    //     "Resource/images/play/water1.png",
+                    //     "Resource/images/play/water2.png",
+                    //     "Resource/images/play/water3.png",
+                    //     "Resource/images/play/water4.png",
+                    //     "Resource/images/play/water5.png",
+                    //     "Resource/images/play/water6.png",
+                    //     "Resource/images/play/water7.png",
+                    //     "Resource/images/play/water8.png"
+                    // };
+                    //
+                    // // --- ADD THESE TWO LINES ---
+                    // // Create the animated sprite and add it to the tile group.
+                    // auto* waterTile = new Engine::AnimatedSprite(waterFrames, j * BlockSize, i * BlockSize, BlockSize, BlockSize, 0.0f, 0.0f, 1.2f);
+                    // TileMapGroup->AddNewObject(waterTile);
+                    // // -------------------------
+                    // break;
                     mapState[i][j] = TILE_WATER;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/lava.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/water.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
+                }
             }
         }
     }
