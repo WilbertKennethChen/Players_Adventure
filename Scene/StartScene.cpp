@@ -63,6 +63,10 @@ void StartScene::Initialize() {
     btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
     AddNewControlObject(btn);
 
+    btn = new Engine::ImageButton("stage-select/icon1.png", "stage-select/icon2.png", halfW + 360, halfH * 3 / 2 + 25, 200, 200);
+    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    AddNewControlObject(btn);
+
     unsigned char initialAlpha = 128;
     instructionLabel = new Engine::Label(instructionText, "undertale.ttf", fontSize,
                                    halfW - 45, h - 40,

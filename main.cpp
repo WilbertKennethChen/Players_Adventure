@@ -32,6 +32,6 @@ int main(int argc, char **argv) {
 
 
     // Change the start scene
-	game.Start("start", 60, 1600, 832);
+	game.Start("lose", 60, 1600, 832);
 	return 0;
 }

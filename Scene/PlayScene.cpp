@@ -99,10 +99,6 @@ void PlayScene::Initialize() {
     preview = nullptr;
     // UIGroup->AddNewObject(imgTarget);
     // Preload Lose Scene
-    deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
-    if (deathBGMInstance) {
-        al_attach_sample_instance_to_mixer(deathBGMInstance.get(), al_get_default_mixer());
-    }
     // Start BGM.
     if (MapId == 1) {
         bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
@@ -214,8 +210,6 @@ void PlayScene::PauseInitialize()
 
 void PlayScene::Terminate() {
     AudioHelper::StopSample(bgmInstance);
-    AudioHelper::StopSample(deathBGMInstance);
-    deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     IScene::Terminate();
 }
 void PlayScene::Update(float deltaTime) {
@@ -340,21 +334,6 @@ void PlayScene::Update(float deltaTime) {
         return;
     }
 
-    if (SpeedMult == 0)
-        AudioHelper::StopSample(deathBGMInstance);
-    if (deathCountDown == -1 && lives > 0) {
-        AudioHelper::StopSample(deathBGMInstance);
-    }
-    if (SpeedMult == 0)
-        deathCountDown = -1;
-
-    for (int i = 0; i < SpeedMult; i++) {
-        IScene::Update(deltaTime);
-        // Check if we should create new enemy.
-
-
-        // Compensate the time lost.
-    }
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
@@ -836,9 +815,6 @@ void PlayScene::OnBGMSlideValueChanged(float value) {
 
 void PlayScene::OnSFXSlideValueChanged(float value) {
     AudioHelper::SFXVolume = value;
-    if (deathBGMInstance) {
-        al_set_sample_instance_gain(deathBGMInstance.get(), value);
-    }
 }
 void PlayScene::ContinueOnClick() {
     isPaused = false;
