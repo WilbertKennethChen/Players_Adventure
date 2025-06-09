@@ -24,6 +24,7 @@ protected:
     float minigame_y2;
 
     bool minigameNotesActive;
+    bool negotiateActive;
 public:
 
     // std::unordered_map<std::string,>;
@@ -40,8 +41,18 @@ public:
     int notesGap;
     int notesSpeed;
     std::vector<std::queue<float>> notesWave;
+
+    //negotiate
+    std::string negotiateText;
+    std::vector<int> negotiateKeys;
+    std::list<int> keyStrokes;
+    int inputPos;
+    bool negotiationFailed;
+
+
     Group * LabelGroup;
     Group * NotesGroup;
+    Group * NegotiateGroup;
 
     explicit BattleScene() = default;
     void Initialize() override;
@@ -51,7 +62,7 @@ public:
     void OnKeyDown(int keyCode) override;
     void AttackOnClick();
     void NegotiateOnClick();
-    void RunOnClick();
+    void SpareOnClick();
     void displayEnemyStatus();
     void deleteEnemyStatus();
     void updatePlayerHp();
@@ -60,6 +71,9 @@ public:
     void readNotesWave();
     void enemyHit();
 
+
+    //negotiate
+    void convertNegotiateText();
 };
 
 

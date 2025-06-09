@@ -24,6 +24,8 @@ Engine::Label * labelDesc = nullptr;
 Engine::Label * labelEmo = nullptr;
 Engine::Label * labelHpEnemy = nullptr;
 Engine::Label * labelHpPlayer = nullptr;
+Engine::Label * labelNegotiate = nullptr;
+Engine::Label * labelNegotiateInput = nullptr;
 
 void BattleScene::Initialize() {
     enemy = GameData::getInstance().currentEnemy;
@@ -33,7 +35,7 @@ void BattleScene::Initialize() {
     emotion = GameData::getInstance().enemyList[enemyName].emotion;
     desc = GameData::getInstance().enemyList[enemyName].desc;
     miniGame = GameData::getInstance().enemyList[enemyName].minigame;
-
+    negotiateText = GameData::getInstance().enemyList[enemyName].negotiation;
     playerHp = GameData::getInstance().playerHp;
     playerMaxHp = GameData::getInstance().playerMaxHp;
     enemyHp = enemyMaxHp;
@@ -41,11 +43,14 @@ void BattleScene::Initialize() {
     //Init Groups
     AddNewControlObject(LabelGroup = new Group());
     AddNewControlObject(NotesGroup = new Group());
-
+    AddNewControlObject(NegotiateGroup = new Group());
 
     idle = true;
     minigameNotesActive = false;
+    negotiateActive = false;
+    convertNegotiateText();
     statusDisplayed = false;
+    negotiationFailed = false;
 
     //
     // std::cout << enemyName << " " << enemyMaxHp << " " << enemyDamage << " " << img << std::endl;
@@ -66,7 +71,7 @@ void BattleScene::Initialize() {
     char buff[20];
     sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
 
-    labelHpEnemy = new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
     Engine::ImageButton *btn;
 
@@ -74,26 +79,26 @@ void BattleScene::Initialize() {
 
     //player hp
     sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "pirulen.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 32, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
 
     //attack button
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 100, h-125, w/4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::AttackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Attack", "pirulen.ttf", 48, 295, h-75, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h-75, 0, 0, 0, 255, 0.5, 0.5));
 
     //negotiate button
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w/2 - w/8, h-125, w/4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::NegotiateOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Negotiate", "pirulen.ttf", 40, w/2 - w/8 + 200, h-75, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w/2 - w/8 + 200, h-75, 0, 0, 0, 255, 0.5, 0.5));
 
     //Run Button
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w - w/4-100, h-125, w/4, 100);
-    btn->SetOnClickCallback(std::bind(&BattleScene::RunOnClick, this));
+    btn->SetOnClickCallback(std::bind(&BattleScene::SpareOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Run", "pirulen.ttf", 48, w- w/4 + 100, h-75, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w- w/4 + 100, h-75, 0, 0, 0, 255, 0.5, 0.5));
 
     //minigame screen
     minigame_x1 = 10;
@@ -163,7 +168,7 @@ void BattleScene::Update(float dt) {
             NotesGroup->RemoveObject(note->GetObjectIterator());
         }
         if (NotesGroup->GetObjects().empty() && notesWave[0].empty() && notesWave[1].empty() && notesWave[2].empty()) {
-            std::cout << "empty notes" << std::endl;
+
             minigameNotesActive = false;
             enemyHit();
         }
@@ -180,6 +185,10 @@ void BattleScene::Draw() const {
 
 
         al_draw_rectangle(minigame_x2 - 300,minigame_y1,minigame_x2-notesGap,minigame_y2,al_map_rgba(255,255,0,255),1);
+    }
+    if (negotiateActive) {
+        std::cout << "negotiate" << std::endl;
+        NegotiateGroup->Draw();
     }
 }
 
@@ -232,6 +241,26 @@ void BattleScene::OnKeyDown(int keyCode) {
 
     }
 
+    if (negotiateActive) {
+        if (keyCode != negotiateKeys[inputPos]) {
+            inputPos = 0;
+            idle = true;
+            negotiateActive = false;
+            // std::cout << "clear" << std::endl;
+            NegotiateGroup->Clear();
+            negotiationFailed = true;
+        } else {
+            labelNegotiateInput->Text = negotiateText.substr(0, inputPos+1);
+            inputPos++;
+        }
+
+        if (inputPos == negotiateKeys.size()) {
+
+            GameData::getInstance().friendlyEnemies.insert(enemyName);
+            Engine::GameEngine::GetInstance().ChangeScene("play");
+        }
+    }
+
 
 }
 
@@ -249,15 +278,26 @@ void BattleScene::AttackOnClick() {
     //enemy get damage (update enemy health)
 }
 void BattleScene::NegotiateOnClick() {
-    idle = true;
+
+    if (!negotiateActive && !negotiationFailed) {
+
+        labelNegotiate = new Engine::Label(negotiateText, "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 255, 100, 0.5, 0.5,minigame_x2);
+        labelNegotiateInput = new Engine::Label("", "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 0, 255, 0.5, 0.5, minigame_x2);
+
+        NegotiateGroup->AddNewObject(labelNegotiate);
+        NegotiateGroup->AddNewObject(labelNegotiateInput);
+        keyStrokes.clear();
+        negotiateActive = true;
+        idle = false;
+        inputPos = 0;
+    }
 }
 
-void BattleScene::RunOnClick() {
+void BattleScene::SpareOnClick() {
     if (enemyHp == 5) {
-        std::cout << enemyName;
+        // std::cout << enemyName;
         GameData::getInstance().friendlyEnemies.insert(enemyName);
         Engine::GameEngine::GetInstance().ChangeScene("play");
-
     }
 }
 
@@ -270,10 +310,10 @@ void BattleScene::displayEnemyStatus() {
     int halfW = w / 2;
     int halfH = h / 2;
 
-    labelDesc = new Engine::Label("~ " + desc + " ~", "pirulen.ttf", 30, minigame_x2/2, minigame_y1 + 40, 255, 255, 255, 255, 0.5, 0.5);
+    labelDesc = new Engine::Label("~ " + desc + " ~", "undertale.ttf", 48, minigame_x2/2, minigame_y1 + 40, 255, 255, 255, 255, 0.5, 0.5);
 
     if (enemyHp == 5) emotion = "scared";
-    labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "pirulen.ttf", 30, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
+    labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "undertale.ttf", 48, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
 
     LabelGroup->AddNewObject(labelEmo);
     LabelGroup->AddNewObject(labelDesc);
@@ -316,7 +356,7 @@ void BattleScene::enemyHit() {
     LabelGroup->RemoveObject(labelHpEnemy->GetObjectIterator());
     char buff[20];
     sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
-    labelHpEnemy = new Engine::Label(buff, "pirulen.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
 
 
@@ -349,8 +389,107 @@ void BattleScene::updatePlayerHp(){
     LabelGroup->RemoveObject(labelHpPlayer->GetObjectIterator());
     char buff[20];
     sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "pirulen.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
+}
+
+
+void BattleScene::convertNegotiateText() {
+    int pos=0;
+    int n = negotiateText.length();
+    while (pos < n) {
+        char c = negotiateText[pos];
+        switch (c) {
+            case 'a' :
+                negotiateKeys.push_back(ALLEGRO_KEY_A);
+                break;
+            case 'b' :
+                negotiateKeys.push_back(ALLEGRO_KEY_B);
+                break;
+            case 'c' :
+                negotiateKeys.push_back(ALLEGRO_KEY_C);
+                break;
+            case 'd' :
+                negotiateKeys.push_back(ALLEGRO_KEY_D);
+                break;
+            case 'e' :
+                negotiateKeys.push_back(ALLEGRO_KEY_E);
+                break;
+            case 'f' :
+                negotiateKeys.push_back(ALLEGRO_KEY_F);
+                break;
+            case 'g' :
+                negotiateKeys.push_back(ALLEGRO_KEY_G);
+                break;
+            case 'h' :
+                negotiateKeys.push_back(ALLEGRO_KEY_H);
+                break;
+            case 'i' :
+                negotiateKeys.push_back(ALLEGRO_KEY_I);
+                break;
+            case 'j' :
+                negotiateKeys.push_back(ALLEGRO_KEY_J);
+                break;
+            case 'k' :
+                negotiateKeys.push_back(ALLEGRO_KEY_K);
+                break;
+            case 'l' :
+                negotiateKeys.push_back(ALLEGRO_KEY_L);
+                break;
+            case 'm' :
+                negotiateKeys.push_back(ALLEGRO_KEY_M);
+                break;
+            case 'n' :
+                negotiateKeys.push_back(ALLEGRO_KEY_N);
+                break;
+            case 'o' :
+                negotiateKeys.push_back(ALLEGRO_KEY_O);
+                break;
+            case 'p' :
+                negotiateKeys.push_back(ALLEGRO_KEY_P);
+                break;
+            case 'q' :
+                negotiateKeys.push_back(ALLEGRO_KEY_Q);
+                break;
+            case 'r' :
+                negotiateKeys.push_back(ALLEGRO_KEY_R);
+                break;
+            case 's' :
+                negotiateKeys.push_back(ALLEGRO_KEY_S);
+                break;
+            case 't' :
+                negotiateKeys.push_back(ALLEGRO_KEY_T);
+                break;
+            case 'u' :
+                negotiateKeys.push_back(ALLEGRO_KEY_U);
+                break;
+            case 'v' :
+                negotiateKeys.push_back(ALLEGRO_KEY_V);
+                break;
+            case 'w' :
+                negotiateKeys.push_back(ALLEGRO_KEY_W);
+                break;
+            case 'x' :
+                negotiateKeys.push_back(ALLEGRO_KEY_X);
+                break;
+            case 'y' :
+                negotiateKeys.push_back(ALLEGRO_KEY_Y);
+                break;
+            case 'z' :
+                negotiateKeys.push_back(ALLEGRO_KEY_Z);
+                break;
+            case '.' :
+                negotiateKeys.push_back(ALLEGRO_KEY_FULLSTOP);
+                break;
+            case ',' :
+                negotiateKeys.push_back(ALLEGRO_KEY_COMMA);
+                break;
+            case ' ' :
+                negotiateKeys.push_back(ALLEGRO_KEY_SPACE);
+                break;
+        }
+        pos++;
+    }
 }
 
 

@@ -12,6 +12,7 @@ typedef struct _enemy {
     std::string emotion;
     std::string desc;
     std::string minigame;
+    std::string negotiation;
 }EnemyStruct;
 
 
