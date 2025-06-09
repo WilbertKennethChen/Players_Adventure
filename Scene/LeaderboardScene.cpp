@@ -174,7 +174,8 @@ void LeaderboardScene::UpdateScoreboardDisplay() {
     int halfW = w / 2;
 
     Clear();
-    AddNewObject(new Engine::Label("LEADERBOARD", "pirulen.ttf", 60, halfW, 80, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
+    AddNewObject(new Engine::Label("LEADERBOARD", "undertale.ttf", 60, halfW, 80, 255, 255, 255, 255, 0.5, 0.5));
 
     int totalEntries = leaderboardEntries.size();
     int totalPages = (totalEntries + maxEntriesPerPage - 1) / maxEntriesPerPage;
@@ -191,53 +192,53 @@ void LeaderboardScene::UpdateScoreboardDisplay() {
         int startIdx = currentPage * maxEntriesPerPage;
         int endIdx = std::min(startIdx + maxEntriesPerPage, (int)leaderboardEntries.size());
 
-        AddNewObject(new Engine::Label("RANK", "pirulen.ttf", 32, rankX, 140, 255, 255, 0, 255, 0.5, 0.5));
-        AddNewObject(new Engine::Label("PLAYERS", "pirulen.ttf", 32, nameX, 140, 255, 255, 0, 255, 0.5, 0.5));
-        AddNewObject(new Engine::Label("DATE", "pirulen.ttf", 32, dateX, 140, 255, 255, 0, 255, 0.5, 0.5));
-        AddNewObject(new Engine::Label("SCORE", "pirulen.ttf", 32, scoreX, 140, 255, 255, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Rank", "undertale.ttf", 32, rankX, 140, 255, 255, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Players", "undertale.ttf", 32, nameX, 140, 255, 255, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Date", "undertale.ttf", 32, dateX, 140, 255, 255, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Score", "undertale.ttf", 32, scoreX, 140, 255, 255, 0, 255, 0.5, 0.5));
 
         for (int i = startIdx; i < endIdx; i++) {
             const auto& entry = leaderboardEntries[i];
             int yPos = entryStartY + (i - startIdx) * entrySpacing;
 
-            AddNewObject(new Engine::Label(std::to_string(i + 1) + ".", "pirulen.ttf", 32, rankX, yPos, 255, 255, 255, 255, 0.5, 0.5));
-            AddNewObject(new Engine::Label(std::get<0>(entry), "pirulen.ttf", 32, nameX, yPos, 255, 255, 255, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Label(std::to_string(i + 1) + ".", "undertale.ttf", 32, rankX, yPos, 255, 255, 255, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Label(std::get<0>(entry), "undertale.ttf", 32, nameX, yPos, 255, 255, 255, 255, 0.5, 0.5));
 
             std::string dateStr = std::get<2>(entry);
             if (dateStr.empty() || dateStr == " ") {
                 dateStr = "N/A";
             }
-            AddNewObject(new Engine::Label(dateStr, "pirulen.ttf", 24, dateX, yPos, 200, 200, 200, 255, 0.5, 0.5));
-            AddNewObject(new Engine::Label(std::to_string(std::get<1>(entry)), "pirulen.ttf", 32, scoreX, yPos, 255, 255, 255, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Label(dateStr, "undertale.ttf", 24, dateX, yPos, 200, 200, 200, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Label(std::to_string(std::get<1>(entry)), "undertale.ttf", 32, scoreX, yPos, 255, 255, 255, 255, 0.5, 0.5));
         }
 
-        std::string pageText = "PAGE " + std::to_string(currentPage + 1) + " OF " + std::to_string(totalPages);
-        AddNewObject(new Engine::Label(pageText, "pirulen.ttf", 36, halfW, h - 200, 255, 255, 255, 255, 0.5, 0.5));
+        std::string pageText = "Page " + std::to_string(currentPage + 1) + " OF " + std::to_string(totalPages);
+        AddNewObject(new Engine::Label(pageText, "undertale.ttf", 36, halfW, h - 200, 255, 255, 255, 255, 0.5, 0.5));
 
         if (totalPages > 1) {
             if (currentPage > 0) {
-                Engine::ImageButton* prevBtn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300, h - 170, 200, 80);
+                Engine::ImageButton* prevBtn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 320, h - 90, 200, 80);
                 prevBtn->SetOnClickCallback(std::bind(&LeaderboardScene::PrevPage, this));
                 AddNewControlObject(prevBtn);
-                AddNewObject(new Engine::Label("PREV", "pirulen.ttf", 36, halfW - 200, h - 130, 0, 0, 0, 255, 0.5, 0.5));
+                AddNewObject(new Engine::Label("PREV", "undertale.ttf", 36, halfW - 220, h - 50, 0, 0, 0, 255, 0.5, 0.5));
             }
 
             if (currentPage < totalPages - 1) {
-                Engine::ImageButton* nextBtn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 100, h - 170, 200, 80);
+                Engine::ImageButton* nextBtn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 120, h - 90, 200, 80);
                 nextBtn->SetOnClickCallback(std::bind(&LeaderboardScene::NextPage, this));
                 AddNewControlObject(nextBtn);
-                AddNewObject(new Engine::Label("NEXT", "pirulen.ttf", 36, halfW + 200, h - 130, 0, 0, 0, 255, 0.5, 0.5));
+                AddNewObject(new Engine::Label("Next", "undertale.ttf", 36, halfW + 220, h - 50, 0, 0, 0, 255, 0.5, 0.5));
             }
         }
     } else {
-        AddNewObject(new Engine::Label("No leaderboard entries found", "pirulen.ttf", 36, halfW, h / 2 - 40, 255, 255, 255, 255, 0.5, 0.5));
-        AddNewObject(new Engine::Label("Play the game to add scores!", "pirulen.ttf", 28, halfW, h / 2 + 20, 255, 255, 255, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("No leaderboard entries found", "undertale.ttf", 36, halfW, h / 2 - 40, 255, 255, 255, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Play the game to add scores!", "undertale.ttf", 28, halfW, h / 2 + 20, 255, 255, 255, 255, 0.5, 0.5));
     }
 
     Engine::ImageButton* backBtn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 100, h - 90, 200, 80);
     backBtn->SetOnClickCallback(std::bind(&LeaderboardScene::BackOnClick, this, 0));
     AddNewControlObject(backBtn);
-    AddNewObject(new Engine::Label("BACK", "pirulen.ttf", 36, halfW, h - 50, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 36, halfW, h - 50, 0, 0, 0, 255, 0.5, 0.5));
 }
 
 void LeaderboardScene::Initialize() {
@@ -271,7 +272,7 @@ void LeaderboardScene::NextPage() {
     if (currentPage < totalPages - 1) {
         currentPage++;
         changingPages = true;
-        Engine::GameEngine::GetInstance().ChangeScene("scoreboard");
+        Engine::GameEngine::GetInstance().ChangeScene("leaderboard");
     }
 }
 
@@ -279,7 +280,7 @@ void LeaderboardScene::PrevPage() {
     if (currentPage > 0) {
         currentPage--;
         changingPages = true;
-        Engine::GameEngine::GetInstance().ChangeScene("scoreboard");
+        Engine::GameEngine::GetInstance().ChangeScene("leaderboard");
     }
 }
 
