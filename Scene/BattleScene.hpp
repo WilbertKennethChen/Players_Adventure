@@ -129,6 +129,14 @@ public:
 
     std::list<HitEffect> hitEffects;
 
+    bool enemyDying = false;
+    float deathAnimTimer = 2.0f;
+    float deathFrameInterval = 0.4f;
+    int deathFrameIndex = 0;
+    bool deathAnimationCompleted = false;
+    float deathEndTimer = 0.0f;
+    std::vector<ALLEGRO_BITMAP*> enemyDeathFrames;
+
 };
 
 

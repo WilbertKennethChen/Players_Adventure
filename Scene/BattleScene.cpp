@@ -40,6 +40,8 @@ void BattleScene::Initialize() {
     introAnimationPlaying = true;
     introRadius = 0;
     playerHitTimer = 0.0f;
+    bool deathAnimationCompleted = false;
+    float deathEndTimer = 0.0f;
      int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -83,7 +85,12 @@ void BattleScene::Initialize() {
         if (bmp) enemyFrames.push_back(bmp);
         else std::cerr << "Failed to load: " << path << std::endl;
     }
-
+    for (int i = 6; i <= 9; ++i) {
+        std::string path = img + "_" + std::to_string(i) + ".png";
+        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+        if (bmp) enemyDeathFrames.push_back(bmp);
+        else std::cerr << "Failed to load death frame: " << path << std::endl;
+    }
     //Init Groups
     AddNewControlObject(LabelGroup = new Group());
     AddNewControlObject(NotesGroup = new Group());
@@ -311,6 +318,42 @@ void BattleScene::Update(float dt) {
         frameTime = 0.0f;
         currentEnemyFrame = (currentEnemyFrame + 1) % enemyFrames.size();
     }
+    if (enemyDying) {
+        deathAnimTimer += dt;
+        if (deathAnimTimer >= deathFrameInterval) {
+            deathAnimTimer = 0;
+            deathFrameIndex++;
+            if (deathFrameIndex >= enemyDeathFrames.size()) {
+                // Animation finished
+                float remainingTime = deathAnimTimer - (deathFrameInterval * enemyDeathFrames.size());
+                if (remainingTime > 0) {
+                    if (!deathAnimationCompleted) {
+                        deathAnimationCompleted = true;
+                        deathEndTimer = remainingTime;
+                    } else {
+                        deathEndTimer -= dt;
+                        if (deathEndTimer <= 0) {
+                            // Animation finished
+                            for (auto bmp : enemyDeathFrames) {
+                                if (bmp) al_destroy_bitmap(bmp);
+                            }
+                            enemyDeathFrames.clear();
+                            GameData::getInstance().deadEnemies.insert(enemyName);
+                            Engine::GameEngine::GetInstance().ChangeScene("play");
+                        }
+                    }
+                } else {
+                    // Animation finished
+                    for (auto bmp : enemyDeathFrames) {
+                        if (bmp) al_destroy_bitmap(bmp);
+                    }
+                    enemyDeathFrames.clear();
+                    GameData::getInstance().deadEnemies.insert(enemyName);
+                    Engine::GameEngine::GetInstance().ChangeScene("play");
+                }
+            }
+        }
+    }
 }
 
 void BattleScene::Draw() const {
@@ -405,7 +448,14 @@ void BattleScene::Draw() const {
         float radius = std::max(enemyW, enemyH) / 2 + 10;
         al_draw_filled_circle(centerX, centerY, radius, al_map_rgb(255, 255, 255));
 
-        if (!enemyFrames.empty()) {
+        if (enemyDying && !enemyDeathFrames.empty() && deathFrameIndex < enemyDeathFrames.size()) {
+            ALLEGRO_BITMAP* deathBmp = enemyDeathFrames[deathFrameIndex];
+            al_draw_scaled_bitmap(deathBmp, 0, 0,
+                al_get_bitmap_width(deathBmp),
+                al_get_bitmap_height(deathBmp),
+                enemyX, enemyY, enemyW, enemyH, 0);
+        }
+        else if (!enemyFrames.empty()) {
             ALLEGRO_BITMAP* currentBmp = enemyFrames[currentEnemyFrame];
             al_draw_scaled_bitmap(currentBmp, 0, 0,
                 al_get_bitmap_width(currentBmp),
@@ -639,25 +689,14 @@ void BattleScene::enemyHit() {
     LabelGroup->AddNewObject(labelHpEnemy);
 
 
-    if (enemyHp <= 0) {
-        al_destroy_bitmap(enemyBitmap);
-        enemyBitmap = nullptr;
+    if (enemyHp <= 0 && !enemyDying) {
+        enemyDying = true;
+        idle = false;
+        frameTime = 0.0f;
+        deathAnimTimer = 0.0f;
+
         AudioHelper::StopSample(bgmInstance);
         bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
-        LabelGroup->Clear();
-        NotesGroup->Clear();
-        NegotiateGroup->Clear();
-        BoxGameGroup->Clear();
-        labelHpEnemy = nullptr;
-        labelHpPlayer = nullptr;
-        labelDesc = nullptr;
-        labelEmo = nullptr;
-        for (auto bmp : enemyFrames) {
-            if (bmp) al_destroy_bitmap(bmp);
-        }
-        enemyFrames.clear();
-        GameData::getInstance().deadEnemies.insert(enemyName);
-        Engine::GameEngine::GetInstance().ChangeScene("play");
     }
 
     idle = true;
