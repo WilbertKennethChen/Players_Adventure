@@ -51,7 +51,7 @@ void StartScene::Initialize() {
 
     AddNewObject(new Engine::Label("GameLore", "undertale.ttf", 120, halfW - 50, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
 
-    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/empty.png", halfW - 250, halfH / 2, 400, 400);
+    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400, 400);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
 
