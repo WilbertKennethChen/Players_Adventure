@@ -245,10 +245,7 @@ void BattleScene::Update(float dt) {
                 float dy = mouseY - circlePos.y;
 
                 if (activeTime >= spawnCD) {
-                    if (std::sqrt(dx * dx + dy * dy) <= circleRad) {
-                        hitEffects.push_back({circlePos.x, circlePos.y, 0.3f, true});
-                    }
-                    else {
+                    if (std::sqrt(dx * dx + dy * dy) > circleRad) {
                         updatePlayerHp(3);
                     }
                     circleActive = false;
@@ -276,14 +273,11 @@ void BattleScene::Update(float dt) {
                 activeTime += dt;
                 float dx = mouseX - circlePos.x;
                 float dy = mouseY - circlePos.y;
-                float dist = std::sqrt(dx * dx + dy * dy);
 
-                if (dist <= circleRad) {
-                    hitEffects.push_back({circlePos.x, circlePos.y, 0.3f, true});
-                    circleActive = false;
-                    timeSinceSpawn = 0;
-                } else if (activeTime >= spawnCD) {
-                    updatePlayerHp(3);
+                if (activeTime >= spawnCD) {
+                    if (std::sqrt(dx * dx + dy * dy) > circleRad) {
+                        updatePlayerHp(3);
+                    }
                     circleActive = false;
                     timeSinceSpawn = 0;
                 }
@@ -352,17 +346,10 @@ void BattleScene::Draw() const {
 
         for (const auto& effect : hitEffects) {
             float alpha = effect.timeLeft / 0.3f;
+            ALLEGRO_COLOR glow = al_map_rgba_f(1.0, 1.0, 1.0, alpha);
             float radius = 64 + 64 * (1.0f - alpha); // pulse
-            ALLEGRO_COLOR glow;
-
-            if (effect.isBox) {
-                glow = al_map_rgba_f(1.0, 1.0, 0.0, alpha); // yellow for box game
-            } else {
-                glow = al_map_rgba_f(1.0, 1.0, 1.0, alpha); // white for notes game
-            }
 
             al_draw_circle(effect.x, effect.y, radius, glow, 4);
-
         }
     }
     if (negotiateActive) {
@@ -652,7 +639,7 @@ void BattleScene::enemyHit() {
     LabelGroup->AddNewObject(labelHpEnemy);
 
 
-    if (enemyHp <= 0 && enemyBitmap) {
+    if (enemyHp <= 0) {
         al_destroy_bitmap(enemyBitmap);
         enemyBitmap = nullptr;
         AudioHelper::StopSample(bgmInstance);
