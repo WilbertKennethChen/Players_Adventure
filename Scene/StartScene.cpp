@@ -39,7 +39,7 @@ void StartScene::Initialize() {
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/enemy-1.png","calm","Regular enemy","notes", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/archivist_shade","calm","Regular enemy","box", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
 
 
     std::string instructionText = "Click the tunnel to start...";
