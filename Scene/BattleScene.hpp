@@ -78,7 +78,8 @@ public:
     void SpareOnClick();
     void displayEnemyStatus();
     void deleteEnemyStatus();
-    void updatePlayerHp();
+    void updatePlayerHp(int min);
+
     //notes game
     void createNotesGame();
     void readNotesWave();

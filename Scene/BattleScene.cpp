@@ -152,8 +152,7 @@ void BattleScene::Update(float dt) {
             //delete if outside screen
             if (note->Position.x >= Engine::GameEngine::GetInstance().GetScreenSize().x) {
                 remove.push_back(note);
-                playerHp-=1;
-                updatePlayerHp();
+                updatePlayerHp(1);
             }
             // mark as can be targeted
             Notes * insideNote = dynamic_cast<Notes*>(note);
@@ -197,8 +196,7 @@ void BattleScene::Update(float dt) {
 
             if (activeTime >= spawnCD) {
                 if (std::sqrt(dx*dx + dy*dy) > circleRad) {
-                    playerHp-=3;
-                    updatePlayerHp();
+                    updatePlayerHp(3);
                 }
                 circleActive = false;
                 timeSinceSpawn = 0;
@@ -293,8 +291,7 @@ void BattleScene::OnKeyDown(int keyCode) {
             inputPos = 0;
             idle = true;
             negotiateActive = false;
-            playerHp -= 3;
-            updatePlayerHp();
+            updatePlayerHp(3);
             NegotiateGroup->Clear();
             negotiationFailed = true;
         } else {
@@ -435,7 +432,8 @@ void BattleScene::readNotesWave() {
     fin.close();
 }
 
-void BattleScene::updatePlayerHp(){
+void BattleScene::updatePlayerHp(int min){
+    playerHp -= min;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -445,6 +443,10 @@ void BattleScene::updatePlayerHp(){
     sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
     labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
+    if (playerHp <= 0) {
+        al_show_mouse_cursor(al_get_current_display());
+        Engine::GameEngine::GetInstance().ChangeScene("lose");
+    }
 }
 
 
