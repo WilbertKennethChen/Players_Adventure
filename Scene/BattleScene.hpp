@@ -4,7 +4,10 @@
 
 #ifndef BATTLEUI_HPP
 #define BATTLEUI_HPP
+#include <queue>
 #include <string>
+#include <vector>
+#include <iostream>
 #include <unordered_map>
 
 #include "Engine/IScene.hpp"
@@ -19,9 +22,13 @@ protected:
     float minigame_x2;
     float minigame_y1;
     float minigame_y2;
-
+    float mouseX;
+    float mouseY;
+    bool minigameNotesActive;
+    bool negotiateActive;
+    bool minigameBoxActive;
 public:
-    bool done = false;
+
     // std::unordered_map<std::string,>;
     int enemyMaxHp;
     int enemyHp;
@@ -31,9 +38,33 @@ public:
     std::string miniGame;
     int playerMaxHp;
     int playerHp;
+    //notes miniGame
+    float notesTime;
+    int notesGap;
+    int notesSpeed;
+    std::vector<std::queue<float>> notesWave;
 
-    Group * BoxGroup;
+    //negotiate
+    std::string negotiateText;
+    std::vector<int> negotiateKeys;
+    std::list<int> keyStrokes;
+    int inputPos;
+    bool negotiationFailed;
 
+    //boxGame
+    bool drawBox;
+    Engine::Point circlePos;
+    float timeSinceSpawn;
+    float spawnCD;
+    float activeTime;
+    float circleRad;
+    bool circleActive;
+
+
+    Group * LabelGroup;
+    Group * NotesGroup;
+    Group * NegotiateGroup;
+    Group * BoxGameGroup;
 
     explicit BattleScene() = default;
     void Initialize() override;
@@ -41,11 +72,27 @@ public:
     void Update(float dt) override;
     void Draw() const override;
     void OnKeyDown(int keyCode) override;
+    void OnMouseMove(int mx, int my) override;
     void AttackOnClick();
     void NegotiateOnClick();
-    void RunOnClick();
+    void SpareOnClick();
     void displayEnemyStatus();
     void deleteEnemyStatus();
+    void updatePlayerHp(int min);
+
+    //notes game
+    void createNotesGame();
+    void readNotesWave();
+    void enemyHit();
+
+
+    //negotiate
+    void convertNegotiateText();
+
+    //box game
+    void createBoxGame();
+    std::pair<int,int> generateRandomPos()const;
+
 };
 
 

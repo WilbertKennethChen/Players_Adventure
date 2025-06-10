@@ -34,12 +34,12 @@ void StartScene::Initialize() {
     GameData::getInstance().playerHp = 10;
     GameData::getInstance().playerPosX = halfW;
     GameData::getInstance().playerPosY = halfH;
-    GameData::getInstance().currentEnemy = "";
+    GameData::getInstance().currentEnemy = nullptr;
     GameData::getInstance().spawned = false;
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"img","furious","Regular enemy","tiles"};
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/enemy-1.png","calm","Regular enemy","tiles", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
 
 
     std::string instructionText = "Click the tunnel to start...";
@@ -55,11 +55,15 @@ void StartScene::Initialize() {
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 690, halfH * 3 / 2 + 100, 100, 100);
+    btn = new Engine::ImageButton("stage-select/settingok.png", "stage-select/settinggud.png", halfW + 490, halfH * 3 / 2 + 25, 200, 200);
     btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
     AddNewControlObject(btn);
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW + 575, halfH * 3 / 2 + 100, 100, 100);
+    btn = new Engine::ImageButton("stage-select/champ.png", "stage-select/champione.png", halfW + 620, halfH * 3 / 2 + 25, 200, 200);
+    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    AddNewControlObject(btn);
+
+    btn = new Engine::ImageButton("stage-select/icon1.png", "stage-select/icon2.png", halfW + 360, halfH * 3 / 2 + 25, 200, 200);
     btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
     AddNewControlObject(btn);
 
