@@ -175,7 +175,7 @@ void BattleScene::Update(float dt) {
         return;
     }
     NotesGroup->Update(dt);
-    if (idle && !statusDisplayed) {
+    if (idle && !statusDisplayed && !enemyDying) {
         displayEnemyStatus();
     }
     if (!idle && statusDisplayed) {
@@ -449,11 +449,18 @@ void BattleScene::Draw() const {
         al_draw_filled_circle(centerX, centerY, radius, al_map_rgb(255, 255, 255));
 
         if (enemyDying && !enemyDeathFrames.empty() && deathFrameIndex < enemyDeathFrames.size()) {
+            const ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("undertale.ttf", 48).get();
+            ALLEGRO_COLOR white = al_map_rgb(255, 255, 255);
+            float centerX = (minigame_x1 + minigame_x2) / 2.0f;
+            float centerY = (minigame_y1 + minigame_y2) / 2.0f;
+            al_draw_text(font, white, centerX, centerY, ALLEGRO_ALIGN_CENTER, "Enemy Death");
+
             ALLEGRO_BITMAP* deathBmp = enemyDeathFrames[deathFrameIndex];
             al_draw_scaled_bitmap(deathBmp, 0, 0,
                 al_get_bitmap_width(deathBmp),
                 al_get_bitmap_height(deathBmp),
                 enemyX, enemyY, enemyW, enemyH, 0);
+
         }
         else if (!enemyFrames.empty()) {
             ALLEGRO_BITMAP* currentBmp = enemyFrames[currentEnemyFrame];
@@ -694,7 +701,11 @@ void BattleScene::enemyHit() {
         idle = false;
         frameTime = 0.0f;
         deathAnimTimer = 0.0f;
-
+        LabelGroup->Clear();
+        labelDesc = nullptr;
+        labelEmo = nullptr;
+        labelHpEnemy = nullptr;
+        labelHpPlayer = nullptr;
         AudioHelper::StopSample(bgmInstance);
         bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     }
