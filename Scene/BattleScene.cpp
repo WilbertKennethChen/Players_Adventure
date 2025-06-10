@@ -293,7 +293,8 @@ void BattleScene::OnKeyDown(int keyCode) {
             inputPos = 0;
             idle = true;
             negotiateActive = false;
-            // std::cout << "clear" << std::endl;
+            playerHp -= 3;
+            updatePlayerHp();
             NegotiateGroup->Clear();
             negotiationFailed = true;
         } else {
@@ -331,7 +332,7 @@ void BattleScene::AttackOnClick() {
 }
 void BattleScene::NegotiateOnClick() {
 
-    if (!negotiateActive && !negotiationFailed) {
+    if (!negotiateActive) {
 
         labelNegotiate = new Engine::Label(negotiateText, "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 255, 100, 0.5, 0.5,minigame_x2);
         labelNegotiateInput = new Engine::Label("", "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 0, 255, 0.5, 0.5, minigame_x2);
@@ -569,7 +570,7 @@ void BattleScene::createBoxGame() {
     minigameBoxActive = true;
     imageSprite = new Engine::Image("play/bullet-8.png", mouseX, mouseY, 70, 70, 0.5, 0.5);
     BoxGameGroup->AddNewObject(imageSprite);
-    // al_hide_mouse_cursor(al_get_current_display());
+    al_hide_mouse_cursor(al_get_current_display());
 }
 
 
