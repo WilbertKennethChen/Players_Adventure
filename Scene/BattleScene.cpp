@@ -316,38 +316,46 @@ void BattleScene::setEnemyName(std::string name) {
 }
 
 void BattleScene::AttackOnClick() {
-    idle = false;
-    // if (!minigameNotesActive) {
-    //     createNotesGame();
-    // }
-
-    if (!minigameBoxActive) {
-        createBoxGame();
+    if (idle) {
+        idle = false;
+        if (miniGame == "notes") {
+            if (!minigameNotesActive) {
+                createNotesGame();
+            }
+        } else if (miniGame == "box") {
+            if (!minigameBoxActive) {
+                createBoxGame();
+            }
+        }
     }
+
 
     //enemy get damage (update enemy health)
 }
 void BattleScene::NegotiateOnClick() {
+    if (idle) {
+        if (!negotiateActive) {
 
-    if (!negotiateActive) {
+            labelNegotiate = new Engine::Label(negotiateText, "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 255, 100, 0.5, 0.5,minigame_x2);
+            labelNegotiateInput = new Engine::Label("", "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 0, 255, 0.5, 0.5, minigame_x2);
 
-        labelNegotiate = new Engine::Label(negotiateText, "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 255, 100, 0.5, 0.5,minigame_x2);
-        labelNegotiateInput = new Engine::Label("", "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 0, 255, 0.5, 0.5, minigame_x2);
-
-        NegotiateGroup->AddNewObject(labelNegotiate);
-        NegotiateGroup->AddNewObject(labelNegotiateInput);
-        keyStrokes.clear();
-        negotiateActive = true;
-        idle = false;
-        inputPos = 0;
+            NegotiateGroup->AddNewObject(labelNegotiate);
+            NegotiateGroup->AddNewObject(labelNegotiateInput);
+            keyStrokes.clear();
+            negotiateActive = true;
+            idle = false;
+            inputPos = 0;
+        }
     }
 }
 
 void BattleScene::SpareOnClick() {
-    if (enemyHp == 5) {
-        // std::cout << enemyName;
-        GameData::getInstance().friendlyEnemies.insert(enemyName);
-        Engine::GameEngine::GetInstance().ChangeScene("play");
+    if (idle) {
+        if (enemyHp == 5) {
+            // std::cout << enemyName;
+            GameData::getInstance().friendlyEnemies.insert(enemyName);
+            Engine::GameEngine::GetInstance().ChangeScene("play");
+        }
     }
 }
 
