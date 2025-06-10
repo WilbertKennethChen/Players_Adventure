@@ -16,6 +16,7 @@
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
 #include "Engine/LOG.hpp"
+#include "Engine/AnimatedSprite.hpp"
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Player/GameData.hpp"
@@ -60,6 +61,8 @@ std::string enemyName;
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
 }
+
+
 void PlayScene::Initialize() {
     interactable = false;
     interactRange = 64.0;
@@ -91,9 +94,6 @@ void PlayScene::Initialize() {
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
-
-    AddNewControlObject(UIGroup = new Group());
-
     // ReadEnemyWave();
     // mapDistance = CalculateBFSDistance();
     // ConstructUI();
@@ -107,7 +107,11 @@ void PlayScene::Initialize() {
         al_attach_sample_instance_to_mixer(deathBGMInstance.get(), al_get_default_mixer());
     }
     // Start BGM.
-    bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+    if (MapId == 1) {
+        bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+    } else {
+        bgmInstance = AudioHelper::PlaySample("dungeon.mp3", true, AudioHelper::BGMVolume); // or whatever your second map BGM is
+    }
     if (bgmInstance) {
         al_attach_sample_instance_to_mixer(bgmInstance.get(), al_get_default_mixer());
     }
@@ -225,7 +229,7 @@ void PlayScene::Update(float deltaTime) {
             preview->Update(deltaTime);
         return;
     }
-    Engine::Point originalPos = player->Position;
+
     if (isTransitioning) {
         transitionAlpha += deltaTime;
 
@@ -243,6 +247,11 @@ void PlayScene::Update(float deltaTime) {
 
         return;
     }
+
+    // Store the player's position at the beginning of the frame.
+    Engine::Point originalPos = player->Position;
+
+    // --- POST-UPDATE COLLISION AND BOUNDARY CHECKS ---
     if (player && !activeTextbox) {
         if (CheckPlayerCollision(player->Position)) {
             player->Position = originalPos;
@@ -264,8 +273,10 @@ void PlayScene::Update(float deltaTime) {
         player->Position.y = std::max(BlockSize/2.f, std::min(player->Position.y, (float)(MapHeight * BlockSize - BlockSize/2)));
 
     }
-    if (!isTransitioning && player)
-    {
+    // --- END OF COLLISION CHECKS ---
+
+    // Transition check to other maps
+    if (!isTransitioning && player) {
         const float transitionRange = BlockSize * 1.5f;
         const float bottomEdge = (MapHeight * BlockSize) - BlockSize;
         const float playerRightEdge = player->Position.x + (BlockSize / 2);
@@ -275,20 +286,13 @@ void PlayScene::Update(float deltaTime) {
             player->Position.y >= bottomEdge + 10) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
-            pendingSpawnPoint = Engine::Point(
-                BlockSize,
-                player->Position.y
-            );
-            }
-        else if (MapId == 2 && playerLeftEdge <= transitionRange &&
+            pendingSpawnPoint = Engine::Point(BlockSize, player->Position.y);
+        } else if (MapId == 2 && playerLeftEdge <= transitionRange &&
                  player->Position.y >= bottomEdge + 10) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
-            pendingSpawnPoint = Engine::Point(
-                (MapWidth * BlockSize) - BlockSize,
-                player->Position.y
-            );
-                 }
+            pendingSpawnPoint = Engine::Point((MapWidth * BlockSize) - BlockSize, player->Position.y);
+        }
     }
 
 
@@ -377,6 +381,7 @@ void PlayScene::ResetScene(Engine::Point spawnPosition) {
     }
     GameData::getInstance().changeMap = true;
     AudioHelper::StopBGM(bgmId);
+    Terminate();
     Initialize();
 
     PauseInitialize();
@@ -402,24 +407,46 @@ bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
             collision = true;
         }
     }
+
+    // Check house tile collisions
+    int gridX = static_cast<int>(newPos.x / BlockSize);
+    int gridY = static_cast<int>(newPos.y / BlockSize);
+
+    if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
+        if (mapState[gridY][gridX] == TILE_HOUSE ||
+            mapState[gridY][gridX] == TILE_TREE) {
+            collision = true;
+        }
+        else if (mapState[gridY][gridX] == TILE_WATER) {
+            if (newPos.y < (gridY * BlockSize + BlockSize * 1.0f)) {
+                collision = true;
+            }
+        }
+    }
+
+    // trunk‐only collisions:
+    for (auto &b : treeColliders) {
+        if ( newPos.x >= b.x &&
+             newPos.x <= b.x + b.w &&
+             newPos.y >= b.y &&
+             newPos.y <= b.y + b.h )
+        {
+            return true;
+        }
+    }
+
     return collision;
 }
+
+
 
 void PlayScene::Draw() const {
     IScene::Draw();
     int screenW = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int screenH = Engine::GameEngine::GetInstance().GetScreenSize().y;
     if (DebugMode) {
-        // Draw reverse BFS distance on all reachable blocks.
-        for (int i = 0; i < MapHeight; i++) {
-            for (int j = 0; j < MapWidth; j++) {
-                if (mapDistance[i][j] != -1) {
-                    // Not elegant nor efficient, but it's quite enough for debugging.
-                    Engine::Label label(std::to_string(mapDistance[i][j]), "pirulen.ttf", 32, (j + 0.5) * BlockSize, (i + 0.5) * BlockSize);
-                    label.Anchor = Engine::Point(0.5, 0.5);
-                    label.Draw();
-                }
-            }
+        for (const auto& b : treeColliders) {
+            al_draw_rectangle(b.x, b.y, b.x + b.w, b.y + b.h, al_map_rgb(255, 0, 0), 2);
         }
     }
     if (activeTextbox) {
@@ -465,7 +492,7 @@ void PlayScene::OnMouseDown(int button, int mx, int my) {
         }
         return;
     }
-    IScene::OnMouseDown(button, mx, my);
+    // IScene::OnMouseDown(button, mx, my);
 }
 void PlayScene::OnMouseMove(int mx, int my) {
     if (!Visible) return;
@@ -493,6 +520,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
         draggingBGM = false;
         draggingSFX = false;
     }
+    if (!imgTarget->Visible)return;
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
 }
@@ -507,17 +535,17 @@ void PlayScene::OnKeyDown(int keyCode) {
     if (keyCode == ALLEGRO_KEY_ESCAPE)
     {
         isPaused = !isPaused;
-        if (UIGroup) {
-            SetPauseUIVisible(isPaused);
-        }
+        SetPauseUIVisible(isPaused);
         return;
     }
+
+    if (isPaused) return;
+
     if (!activeTextbox) {
         keyDown.insert(keyCode);
         if (player) player->OnKeyDown(keyCode);
     }
 
-    if (isPaused) return;
 
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
@@ -614,8 +642,13 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '2': mapData.push_back(2); break;  // NPC1
             case '3': mapData.push_back(3); break;  // NPC2
             case 'S': mapData.push_back(4); break;  // Player Spawn
-            case 'T': mapData.push_back(5); break;  //Player spawned when change map
-            case 'G': mapData.push_back(6); break;  //Enemy ghost
+            case 'T': mapData.push_back(5); break;  // Player spawned when change map
+            case 'G': mapData.push_back(6); break;  // Enemy ghost
+            case 'H': mapData.push_back(7); break;  // House Tile
+            case '8': mapData.push_back(8); break;  // Another dirt
+            case 'W': mapData.push_back(9); break;  // Water
+            case 'R': mapData.push_back(10); break; // Tree Tile
+            case 'r': mapData.push_back(11); break; // Small Tree
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -632,6 +665,40 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth));
     Engine::Point spawnPoint;
     Engine::Point teleportPoint;
+
+    std::vector<Engine::Point> bigTreeAnchors;
+    std::vector<Engine::Point> smallTreeAnchors;
+    for (int i = 0; i < MapHeight; i++) {
+        for (int j = 0; j < MapWidth; j++) {
+            int num = mapData[i*MapWidth + j];
+            if (num == 10) { // 'R' = 128×128 tree
+                // only top‐left of the 2×2 block
+                bool top    = (i == 0 || mapData[(i-1)*MapWidth + j] != 10);
+                bool left   = (j == 0 || mapData[i*MapWidth + j-1] != 10);
+                if (top && left) bigTreeAnchors.emplace_back(j, i);
+            }
+            if (num == 11) { // 'r' = 64×128 tree
+                // only the top row of each 2-high column
+                bool top = (i == 0 || mapData[(i-1)*MapWidth + j] != 11);
+                if (top) smallTreeAnchors.emplace_back(j, i);
+            }
+        }
+    }
+
+    // Find the top-left 'H' to anchor the single large image
+    int houseAnchorX = -1, houseAnchorY = -1;
+    for (int i = 0; i < MapHeight; i++) {
+        for (int j = 0; j < MapWidth; j++) {
+            if (mapData[i * MapWidth + j] == 7) { // 7 corresponds to 'H'
+                houseAnchorY = i;
+                houseAnchorX = j;
+                goto found_anchor; // Exit loops once the first 'H' is found
+            }
+        }
+    }
+    found_anchor:;
+
+    // Process the map tiles
     for (int i = 0; i < MapHeight; i++) {
         for (int j = 0; j < MapWidth; j++)
         {
@@ -639,17 +706,17 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             switch (num) {
                 case 0:  // Dirt
                     mapState[i][j] = TILE_DIRT;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 1:  // Floor
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 2: // NPC1
                 {
 
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
                     NpcGroup->AddNewObject(npc1);
                     break;
@@ -657,25 +724,26 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 3: // NPC2
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
                     NpcGroup->AddNewObject(npc2);
                     break;
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
                 case 5: //Teleport point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
-                case 6:
+                case 6: // Ghost
+                    {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
@@ -690,9 +758,130 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     }
 
                     break;
+                    }
+                case 7: // House tile
+                {
+                    mapState[i][j] = TILE_HOUSE;
+                    // Draw a background tile underneath each part of the house
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                }
+                case 8:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 9: {
+                    // mapState[i][j] = TILE_WATER;
+                    //
+                    // // Define the sequence of water animation frames.
+                    // std::vector<std::string> waterFrames = {
+                    //     "Resource/images/play/water1.png",
+                    //     "Resource/images/play/water2.png",
+                    //     "Resource/images/play/water3.png",
+                    //     "Resource/images/play/water4.png",
+                    //     "Resource/images/play/water5.png",
+                    //     "Resource/images/play/water6.png",
+                    //     "Resource/images/play/water7.png",
+                    //     "Resource/images/play/water8.png"
+                    // };
+                    //
+                    // // --- ADD THESE TWO LINES ---
+                    // // Create the animated sprite and add it to the tile group.
+                    // auto* waterTile = new Engine::AnimatedSprite(waterFrames, j * BlockSize, i * BlockSize, BlockSize, BlockSize, 0.0f, 0.0f, 1.2f);
+                    // TileMapGroup->AddNewObject(waterTile);
+                    // // -------------------------
+                    // break;
+                    mapState[i][j] = TILE_WATER;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/water.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                }
+                case 10: // 'R' = big tree
+                    // mapState[i][j] = TILE_TREE;               // ← was TILE_OCCUPIED
+                    // TileMapGroup->AddNewObject(
+                    //   new Engine::Image("play/cao.png", j*BlockSize, i*BlockSize, BlockSize, BlockSize)
+                    // );
+                    // break;
+
+                case 11: // 'r' = small tree
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(
+                      new Engine::Image("play/cao.png", j*BlockSize, i*BlockSize, BlockSize, BlockSize)
+                    );
+                    break;
+
             }
         }
     }
+
+    // Now, draw the single large house image over the top
+    if (houseAnchorX != -1) {
+        const int houseWidthInTiles = 3;
+        const int houseHeightInTiles = 4;
+        TileMapGroup->AddNewObject(new Engine::Image("play/house.png",
+            houseAnchorX * BlockSize,
+            houseAnchorY * BlockSize,
+            houseWidthInTiles * BlockSize,
+            houseHeightInTiles * BlockSize));
+
+        // Draw tree to the right of the house (96x128 = 1.5x2 tiles)
+        TileMapGroup->AddNewObject(new Engine::Image("play/tree1.png",
+            (houseAnchorX + houseWidthInTiles) * BlockSize,  // Right of house
+            houseAnchorY * BlockSize,                        // Same Y as house top
+            96, 128));                                      // Exact pixel dimensions
+    }
+
+//     for (auto &p : bigTreeAnchors) {
+//     TileMapGroup->AddNewObject(new Engine::Image(
+//         "play/tree1.png",
+//         p.x * BlockSize - 32,      // center 128px over 2 tiles
+//         p.y * BlockSize - 32,
+//         128, 128
+//     ));
+// }
+
+    // for (auto &p : smallTreeAnchors) {
+    //     Box b;
+    //     b.w = 24;
+    //     b.h = 40;
+    //     b.x = p.x * BlockSize + (64 - b.w)/2.0f;
+    //     b.y = (p.y * BlockSize - 64) + (128 - b.h); // Corrected to match actual draw position
+    //     treeColliders.push_back(b);
+    // }
+
+    for (auto &p : smallTreeAnchors) {
+        TileMapGroup->AddNewObject(new Engine::Image(
+            "play/tree2.png",
+            p.x * BlockSize,           // left aligned
+            p.y * BlockSize - 64 + 106,      // 128px high → raise 1 tile
+            64, 128
+        ));
+    }
+
+    treeColliders.clear();
+
+    // big 128×128 trees:
+    for (auto &p : bigTreeAnchors) {
+        // Sprite is 128×128, bottom‐half is trunk, ~32px wide at center:
+        Box b;
+        b.w = 32 + 12;
+        b.h = 64;
+        b.x = p.x*BlockSize + (128 - b.w)/2.0f - 16;   // center it horizontally over the 2 tiles
+        b.y = p.y * BlockSize + (128 - b.h) - 16;        // bottom half of sprite
+        treeColliders.push_back(b);
+    }
+
+    // small 64×128 trees:
+    for (auto &p : smallTreeAnchors) {
+        // Sprite is  64×128, trunk is maybe 24px wide, 40px tall at the bottom:
+        Box b;
+        b.w = 24 + 12;
+        b.h = 64;
+        b.x = p.x*BlockSize + (64 - b.w)/2.0f;    // center over this single tile
+        b.y = p.y*BlockSize + (128 - b.h);        // bottom of sprite
+        treeColliders.push_back(b);
+    }
+
+    // Resume original spawning logic
     if (!GameData::getInstance().spawned) {
         GameData::getInstance().spawned = true;
         GameData::getInstance().playerPosX = spawnPoint.x;

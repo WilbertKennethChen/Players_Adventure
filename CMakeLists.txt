@@ -57,8 +57,8 @@ add_executable(2025_I2P2_TowerDefense
     Scene/StartScene.h
     Scene/WinScene.cpp
     Scene/WinScene.hpp
-        Scene/SettingsScene.cpp
-        Scene/SettingsScene.hpp
+    Scene/SettingsScene.cpp
+    Scene/SettingsScene.hpp
 
 
 
@@ -98,6 +98,14 @@ add_executable(2025_I2P2_TowerDefense
         Enemy/EnemyStruct.hpp
         UI/Component/Notes.cpp
         UI/Component/Notes.hpp
+        Scene/LeaderboardScene.cpp
+        Scene/LeaderboardScene.hpp
+        Scene/keybinding.cpp
+        Scene/keybinding.h
+        Engine/AnimatedSprite.cpp
+        Engine/AnimatedSprite.hpp
+        Engine/Boundary.hpp
+        Engine/Boundary.cpp
 )
 
 IF (WIN32)

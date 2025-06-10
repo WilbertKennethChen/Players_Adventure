@@ -15,7 +15,7 @@ protected:
     bool hostile;
 public:
     Npc(std::string img, float x, float y, std::string name, bool hostile = false);
-    void Update(float dt);
+    void Update(float dt) override;
     void Draw() const override;
     std::string getName() const;
     bool isHostile() const;
