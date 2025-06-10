@@ -14,6 +14,10 @@
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Slider.hpp"
 
+// A simple AABB
+struct Box { float x, y, w, h; };
+inline std::vector<Box> treeColliders;
+
 class Turret;
 namespace Engine {
     class Group;
@@ -29,7 +33,8 @@ private:
         TILE_FLOOR,
         TILE_OCCUPIED,
         TILE_HOUSE,
-        TILE_WATER
+        TILE_WATER,
+        TILE_TREE,
     };
     Slider* sliderBGM;
     Slider* sliderSFX;
