@@ -22,9 +22,11 @@ protected:
     float minigame_x2;
     float minigame_y1;
     float minigame_y2;
-
+    float mouseX;
+    float mouseY;
     bool minigameNotesActive;
     bool negotiateActive;
+    bool minigameBoxActive;
 public:
 
     // std::unordered_map<std::string,>;
@@ -49,10 +51,20 @@ public:
     int inputPos;
     bool negotiationFailed;
 
+    //boxGame
+    bool drawBox;
+    Engine::Point circlePos;
+    float timeSinceSpawn;
+    float spawnCD;
+    float activeTime;
+    float circleRad;
+    bool circleActive;
+
 
     Group * LabelGroup;
     Group * NotesGroup;
     Group * NegotiateGroup;
+    Group * BoxGameGroup;
 
     explicit BattleScene() = default;
     void Initialize() override;
@@ -60,6 +72,7 @@ public:
     void Update(float dt) override;
     void Draw() const override;
     void OnKeyDown(int keyCode) override;
+    void OnMouseMove(int mx, int my) override;
     void AttackOnClick();
     void NegotiateOnClick();
     void SpareOnClick();
@@ -74,6 +87,11 @@ public:
 
     //negotiate
     void convertNegotiateText();
+
+    //box game
+    void createBoxGame();
+    std::pair<int,int> generateRandomPos()const;
+
 };
 
 

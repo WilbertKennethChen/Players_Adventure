@@ -26,6 +26,8 @@ Engine::Label * labelHpEnemy = nullptr;
 Engine::Label * labelHpPlayer = nullptr;
 Engine::Label * labelNegotiate = nullptr;
 Engine::Label * labelNegotiateInput = nullptr;
+Engine::Image * imageSprite = nullptr;
+
 
 void BattleScene::Initialize() {
     enemy = GameData::getInstance().currentEnemy;
@@ -44,9 +46,11 @@ void BattleScene::Initialize() {
     AddNewControlObject(LabelGroup = new Group());
     AddNewControlObject(NotesGroup = new Group());
     AddNewControlObject(NegotiateGroup = new Group());
+    AddNewControlObject(BoxGameGroup = new Group());
 
     idle = true;
     minigameNotesActive = false;
+    minigameBoxActive = false;
     negotiateActive = false;
     convertNegotiateText();
     statusDisplayed = false;
@@ -142,11 +146,6 @@ void BattleScene::Update(float dt) {
             }
         }
 
-
-
-
-
-
         const auto& notes = NotesGroup->GetObjects();
         std::list<IObject*>remove;
         for (auto& note : NotesGroup->GetObjects()) {
@@ -173,6 +172,48 @@ void BattleScene::Update(float dt) {
             enemyHit();
         }
     }
+
+    if (minigameBoxActive) {
+        notesTime += dt;
+        BoxGameGroup->Update(dt);
+
+        imageSprite->Position.x = mouseX;
+        imageSprite->Position.y = mouseY;
+        if (!circleActive) {
+            timeSinceSpawn += dt;
+            if (timeSinceSpawn >= spawnCD) {
+                float randX = minigame_x1 + rand() % int((minigame_x2-minigame_x1) - 2 * circleRad);
+                float randY = minigame_y1 + rand() % int((minigame_y2 - minigame_y1) - 2 * circleRad);
+                circlePos = Engine::Point(randX, randY);
+                circleActive = true;
+                activeTime = 0.0f;
+                timeSinceSpawn = 0.0f;
+            }
+        } else {
+            activeTime += dt;
+            float dx = mouseX - circlePos.x;
+            float dy = mouseY - circlePos.y;
+
+
+            if (activeTime >= spawnCD) {
+                if (std::sqrt(dx*dx + dy*dy) > circleRad) {
+                    playerHp-=3;
+                    updatePlayerHp();
+                }
+                circleActive = false;
+                timeSinceSpawn = 0;
+            }
+        }
+
+
+
+        if (notesTime >= 10) {
+            al_show_mouse_cursor(al_get_current_display());
+            minigameBoxActive = false;
+            enemyHit();
+            BoxGameGroup->Clear();
+        }
+    }
 }
 
 void BattleScene::Draw() const {
@@ -189,6 +230,12 @@ void BattleScene::Draw() const {
     if (negotiateActive) {
         std::cout << "negotiate" << std::endl;
         NegotiateGroup->Draw();
+    }
+    if (minigameBoxActive) {
+        if (circleActive) {
+            al_draw_circle(circlePos.x,circlePos.y,circleRad,al_map_rgba(255,255,0,255),2);
+        }
+        imageSprite->Draw();
     }
 }
 
@@ -262,6 +309,8 @@ void BattleScene::OnKeyDown(int keyCode) {
     }
 
 
+
+
 }
 
 void BattleScene::setEnemyName(std::string name) {
@@ -270,10 +319,13 @@ void BattleScene::setEnemyName(std::string name) {
 
 void BattleScene::AttackOnClick() {
     idle = false;
-    if (!minigameNotesActive) {
-        createNotesGame();
-    }
+    // if (!minigameNotesActive) {
+    //     createNotesGame();
+    // }
 
+    if (!minigameBoxActive) {
+        createBoxGame();
+    }
 
     //enemy get damage (update enemy health)
 }
@@ -364,6 +416,7 @@ void BattleScene::enemyHit() {
         GameData::getInstance().deadEnemies.insert(enemyName);
         Engine::GameEngine::GetInstance().ChangeScene("play");
     }
+
     idle = true;
 }
 
@@ -491,6 +544,53 @@ void BattleScene::convertNegotiateText() {
         pos++;
     }
 }
+
+void BattleScene::createBoxGame() {
+
+    timeSinceSpawn = 0;
+    activeTime = 0;
+    circleActive = false;
+    if (emotion == "calm") {
+        circleRad = 25;
+        spawnCD = 0.75;
+        activeTime = 0.4;
+    } else if (emotion == "scared") {
+        circleRad = 35;
+        spawnCD = 1;
+        activeTime = 0.5;
+    } else if (emotion == "furious") {
+        circleRad = 15;
+        spawnCD = 0.5;
+        activeTime = 0.25;
+    }
+
+    idle = false;
+    notesTime = 0;
+    minigameBoxActive = true;
+    imageSprite = new Engine::Image("play/bullet-8.png", mouseX, mouseY, 70, 70, 0.5, 0.5);
+    BoxGameGroup->AddNewObject(imageSprite);
+    // al_hide_mouse_cursor(al_get_current_display());
+}
+
+
+void BattleScene::OnMouseMove(int mx, int my) {
+    IScene::OnMouseMove(mx, my);
+    if (minigameBoxActive) {
+        mouseX = std::max(minigame_x1+10, std::min(minigame_x2-10, (float)mx));
+        mouseY = std::max(minigame_y1+10, std::min(minigame_y2-10, (float)my));
+        // std::cout << mouseX << " " << mouseY << std::endl;
+    }
+
+}
+
+std::pair<int, int> BattleScene::generateRandomPos() const{
+    srand(time(NULL));
+    int x = rand() % ((int)minigame_x2-50);
+    int y = (rand() % ((int) minigame_y2 - (int)minigame_y1)) + minigame_y1;
+    return {x,y};
+}
+
+
 
 
 
