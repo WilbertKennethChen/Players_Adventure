@@ -1,7 +1,6 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/color.h>
 #include <cmath>
-#include <random>
 #include <string>
 #include <vector>
 #include "Engine/AudioHelper.hpp"
@@ -13,32 +12,57 @@
 #include "Player.hpp"
 #include "Scene/SettingsScene.hpp"
 #include "Scene/keybinding.h"
-
-Player::Player(std::string img, float x, float y, float hp, float speed,
-               int frameWidth, int frameHeight, int frameCount)
-    : Engine::Sprite(img, x, y), hp(hp), speed(speed),
-      frameWidth(frameWidth), frameHeight(frameHeight),
-      currentFrame(0), frameCount(frameCount),
-      frameTime(0.1f), elapsedTime(0),
-      wasMoving(false), currentAnimationRow(0) {
-    Size.x = frameWidth;
-    Size.y = frameHeight;
-    rowFrameCounts = {2, 4};
-    rowFrameTimes = {0.4f, 0.1f};
-}
-
+#include "Engine/Allegro5Exception.hpp"
 
 bool facingleft = true;
+
+Player::Player(std::string baseImgPath, float x, float y, float hp, float speed)
+    : Engine::Sprite(baseImgPath + "1.png", x, y), hp(hp), speed(speed),
+      currentFrameIndex(0), frameTime(0.2f), elapsedTime(0),
+      wasMoving(false), isWalking(false) {
+
+    if (baseImgPath.empty()) {
+        throw Engine::Allegro5Exception("Base image path cannot be empty");
+    }
+    std::string base = "Resource/images/" + baseImgPath;
+
+    // Load idle frames (1–3)
+    for (int i = 1; i <= 3; ++i) {
+        std::string path = base + std::to_string(i) + ".png";
+        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+        if (bmp) {
+            idleFrames.push_back(bmp);
+        } else {
+            std::cerr << "[ERROR] Failed to load idle frame: " << path << std::endl;
+        }
+    }
+
+    // Load walking frames (4–6)
+    for (int i = 4; i <= 6; ++i) {
+        std::string path = base + std::to_string(i) + ".png";
+        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+        if (bmp) {
+            walkFrames.push_back(bmp);
+        } else {
+            std::cerr << "[ERROR] Failed to load walking frame: " << path << std::endl;
+        }
+    }
+
+
+    // Assume all frames are same size
+    if (!idleFrames.empty()) {
+        Size.x = al_get_bitmap_width(idleFrames[0]);
+        Size.y = al_get_bitmap_height(idleFrames[0]);
+    }
+}
 
 void Player::Update(float dt) {
     float move = speed * dt;
     bool isMovingNow = false;
     Engine::Point originalPosition = Position;
-    Engine::Point movementDirection(0.0f, 0.0f);
 
     auto& keyManager = KeyBindingManager::GetInstance();
 
-    // Movement handling - track direction
     if (keyState[keyManager.GetKeyForAction("up")]) {
         Position.y -= move;
         isMovingNow = true;
@@ -48,38 +72,27 @@ void Player::Update(float dt) {
         isMovingNow = true;
     }
     if (keyState[keyManager.GetKeyForAction("right")]) {
-         Position.x += move;
+        Position.x += move;
         isMovingNow = true;
-        facingleft = false;
+        facingleft = true;
     }
     if (keyState[keyManager.GetKeyForAction("left")]) {
         Position.x -= move;
         isMovingNow = true;
-        facingleft = true;
+        facingleft = false;
     }
 
-    // Apply movement
-    Position.x += movementDirection.x * move;
-    Position.y += movementDirection.y * move;
-
-    // --- IMPROVED COLLISION HANDLING ---
     PlayScene* scene = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
     if (scene) {
-        const float pushBackForce = 1.0f; // Increased pushback force
-
-        // Check collision with all collidable objects (including houses)
+        const float pushBackForce = 1.0f;
         bool collided = false;
         Engine::Point collisionResponse(0.0f, 0.0f);
 
-        // Check against environment
         if (scene->CheckPlayerCollision(Position)) {
             collided = true;
-            // Push back along movement direction
-            collisionResponse.x = -movementDirection.x * pushBackForce;
-            collisionResponse.y = -movementDirection.y * pushBackForce;
+            collisionResponse = Engine::Point(originalPosition.x - Position.x, originalPosition.y - Position.y);
         }
 
-        // Check against NPCs
         for (auto& npc : scene->NpcGroup->GetObjects()) {
             float dx = Position.x - npc->Position.x;
             float dy = Position.y - npc->Position.y;
@@ -94,62 +107,50 @@ void Player::Update(float dt) {
             }
         }
 
-        // Apply collision response
         if (collided) {
             Position.x += collisionResponse.x;
             Position.y += collisionResponse.y;
-
-            // Additional check to prevent getting stuck
             if (scene->CheckPlayerCollision(Position)) {
                 Position = originalPosition;
             }
         }
 
-        // Boundary checks
-        Position.x = std::max(scene->BlockSize/2.f, std::min(Position.x,
-                      (float)(scene->MapWidth * scene->BlockSize - scene->BlockSize/2)));
-        Position.y = std::max(scene->BlockSize/2.f, std::min(Position.y,
-                      (float)(scene->MapHeight * scene->BlockSize - scene->BlockSize/2)));
+        Position.x = std::max(scene->BlockSize / 2.f, std::min(Position.x, (float)(scene->MapWidth * scene->BlockSize - scene->BlockSize / 2)));
+        Position.y = std::max(scene->BlockSize / 2.f, std::min(Position.y, (float)(scene->MapHeight * scene->BlockSize - scene->BlockSize / 2)));
     }
 
     if (isMovingNow != wasMoving) {
         wasMoving = isMovingNow;
-        currentAnimationRow = wasMoving ? 1 : 0;
-        currentFrame = 0;
+        currentFrameIndex = 0;
         elapsedTime = 0;
+        isWalking = isMovingNow;
     }
 
     elapsedTime += dt;
-    float currentRowFrameTime = rowFrameTimes[currentAnimationRow];
-    if (elapsedTime >= currentRowFrameTime) {
+    std::vector<ALLEGRO_BITMAP*>& currentFrames = isWalking ? walkFrames : idleFrames;
+    if (elapsedTime >= frameTime && !currentFrames.empty()) {
         elapsedTime = 0;
-        int maxFrames = rowFrameCounts[currentAnimationRow];
-        currentFrame = (currentFrame + 1) % maxFrames;
+        currentFrameIndex = (currentFrameIndex + 1) % currentFrames.size();
     }
 }
 
-
 void Player::Draw() const {
-    float scaleX = (facingleft ? 1.0f : -1.0f) * (42.0f / frameWidth);
-    float scaleY = 46.0f / frameHeight;
-    float anchorX = facingleft ? Anchor.x : 1.0f - Anchor.x;
-    al_draw_tinted_scaled_rotated_bitmap_region(
-     bmp.get(),
-     currentFrame * frameWidth,
-     currentAnimationRow * frameHeight,
-     frameWidth,
-     frameHeight,
-     Tint,
-     Anchor.x * frameWidth,
-     Anchor.y * frameHeight,
-     Position.x,
-     Position.y,
-     scaleX,
-     scaleY,
-     Rotation,
-     0
- );
+    std::vector<ALLEGRO_BITMAP*> frames = isWalking ? walkFrames : idleFrames;
+    if (frames.empty()) return;
+    ALLEGRO_BITMAP* frame = frames[currentFrameIndex];
+    float drawScale = 0.2f;
+    float drawW = Size.x * drawScale;
+    float drawH = Size.y * drawScale;
+    float drawX = Position.x - drawW / 2;
+    float drawY = Position.y - drawH / 2;
+    float scaleX = facingleft ? 1.0f : -1.0f;
 
+    if (!facingleft) drawX += drawW;
+
+    al_draw_scaled_bitmap(frame,
+        0, 0, Size.x, Size.y,
+        drawX, drawY,
+        drawW * scaleX, drawH, 0);
 }
 
 void Player::OnKeyDown(int keycode) {
@@ -159,10 +160,11 @@ void Player::OnKeyDown(int keycode) {
 void Player::OnKeyUp(int keycode) {
     keyState[keycode] = false;
 }
-    float Player::getHp() {
-        return hp;
-    }
-    void Player::getHit(int damage) {
-        hp-= damage;
-    }
 
+float Player::getHp() {
+    return hp;
+}
+
+void Player::getHit(int damage) {
+    hp -= damage;
+}

@@ -5,7 +5,8 @@
         "test1234",
         "nathan77",
         "john",
-        "aaa"
+        "aaa",
+        "wb"
     ],
     "aaa": {
         "DeadEnemy": [],
@@ -42,5 +43,10 @@
         ],
         "FriendlyEnemy": [],
         "Pass": "bib"
+    },
+    "wb": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
     }
 }

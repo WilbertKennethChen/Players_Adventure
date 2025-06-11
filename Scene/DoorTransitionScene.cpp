@@ -23,7 +23,7 @@ void DoorTransitionScene::Initialize() {
     // Create black overlay for fading (initially transparent)
     fadeOverlay = new Engine::Sprite("menu/black_pixel.png", 0, 0, w, h, 0, 0);
     // Set initial alpha to 0 (completely transparent)
-    fadeOverlay->Tint = al_map_rgba(255, 255, 255, 0);
+    fadeOverlay->Tint = al_map_rgba(0, 0, 0, 0);
     AddNewObject(fadeOverlay);
 }
 
@@ -54,8 +54,12 @@ void DoorTransitionScene::Update(float deltaTime) {
             // Convert to alpha value (0-255 range)
             unsigned char alphaValue = static_cast<unsigned char>(fadeAlpha * 255);
 
+            if (stateTimer <= 0) {
+                alphaValue = 255;
+            }
+
             // Update the overlay tint
-            fadeOverlay->Tint = al_map_rgba(255, 255, 255, alphaValue);
+            fadeOverlay->Tint = al_map_rgba(0, 0, 0, alphaValue);
 
             if (stateTimer <= 0) {
                 currentState = State::COMPLETED;

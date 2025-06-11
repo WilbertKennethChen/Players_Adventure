@@ -66,7 +66,7 @@ void LeaderboardScene::SortLeaderboard() {
 
 void LeaderboardScene::Initialize() {
     // Play BGM once
-    bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
+    bgmInstance = AudioHelper::PlaySample("leaderboard.mp3", true, AudioHelper::BGMVolume);
 
     // Load entries
     for (auto& path : { "Resource/scoreboard.txt", "scoreboard.txt" }) {
@@ -108,31 +108,31 @@ void LeaderboardScene::SetupStaticUI() {
                                    halfW, 80, 255,255,255,255, 0.5,0.5));
 
     // Column headers
-    const int headerY = 140;
-    AddNewObject(new Engine::Label("Rank", "undertale.ttf", 32, w*0.2f,  headerY,255,255,0,255,0.5,0.5));
-    AddNewObject(new Engine::Label("Name", "undertale.ttf", 32, w*0.4f,  headerY,255,255,0,255,0.5,0.5));
-    AddNewObject(new Engine::Label("Date", "undertale.ttf", 32, w*0.65f, headerY,200,200,200,255,0.5,0.5));
-    AddNewObject(new Engine::Label("Score","undertale.ttf", 32, w*0.85f, headerY,255,255,0,255,0.5,0.5));
+    const int headerY = 160;
+    AddNewObject(new Engine::Label("Rank", "undertale.ttf", 32, w*0.25f,  headerY,255,255,0,255,0.5,0.5));
+    AddNewObject(new Engine::Label("Name", "undertale.ttf", 32, w*0.42f,  headerY,255,255,0,255,0.5,0.5));
+    AddNewObject(new Engine::Label("Date", "undertale.ttf", 32, w*0.59f, headerY,200,200,200,255,0.5,0.5));
+    AddNewObject(new Engine::Label("Score","undertale.ttf", 32, w*0.76f, headerY,255,255,0,255,0.5,0.5));
 
     // Persistent rows
-    const int startY = 180, spacing = 80;
+    const int startY = 230, spacing = 80;
     for (int i = 0; i < maxEntriesPerPage; ++i) {
         int y = startY + i * spacing;
-        auto* r = new Engine::Label("", "undertale.ttf",32, w*0.2f, y,255,255,255,255,0.5,0.5);
+        auto* r = new Engine::Label("", "undertale.ttf",32, w*0.25f, y,255,255,255,255,0.5,0.5);
         AddNewObject(r); rankLabels.push_back(r);
 
-        auto* n = new Engine::Label("", "undertale.ttf",32, w*0.4f, y,255,255,255,255,0.5,0.5);
+        auto* n = new Engine::Label("", "undertale.ttf",32, w*0.42f, y,255,255,255,255,0.5,0.5);
         AddNewObject(n); nameLabels.push_back(n);
 
-        auto* d = new Engine::Label("", "undertale.ttf",24, w*0.65f, y,200,200,200,255,0.5,0.5);
+        auto* d = new Engine::Label("", "undertale.ttf",24, w*0.59f, y,200,200,200,255,0.5,0.5);
         AddNewObject(d); dateLabels.push_back(d);
 
-        auto* s = new Engine::Label("", "undertale.ttf",32, w*0.85f, y,255,255,255,255,0.5,0.5);
+        auto* s = new Engine::Label("", "undertale.ttf",32, w*0.76f, y,255,255,255,255,0.5,0.5);
         AddNewObject(s); scoreLabels.push_back(s);
     }
 
     // Page number
-    pageLabel = new Engine::Label("", "undertale.ttf",36, halfW, h-180,255,255,255,255,0.5,0.5);
+    pageLabel = new Engine::Label("", "undertale.ttf",36, halfW, h-140,255,255,255,255,0.5,0.5);
     AddNewObject(pageLabel);
 
     // Buttons (all share same Y for perfect alignment)

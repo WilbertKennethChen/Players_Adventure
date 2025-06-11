@@ -24,7 +24,7 @@ void SettingsScene::Initialize() {
                                                      centerX - 200, h - 100, 400, 80);
     btn->SetOnClickCallback(std::bind(&SettingsScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "undertale.ttf", 36, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
 
     // ================== LEFT SIDE: Key Bindings ==================
     int leftSectionX = w / 4;
@@ -56,7 +56,7 @@ void SettingsScene::Initialize() {
     AddNewControlObject(sliderSFX);
     AddNewObject(new Engine::Label("SFX Volume", "undertale.ttf", 24, rightSectionX, slidersStartY + 50, 255, 255, 255, 255, 0.5, 0.5));
 
-    bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
+    bgmInstance = AudioHelper::PlaySample("wii.mp3", true, AudioHelper::BGMVolume);
     sliderBGM->SetValue(AudioHelper::BGMVolume);
     sliderSFX->SetValue(AudioHelper::SFXVolume);
 }

@@ -17,6 +17,7 @@ private:
     Engine::Label* instructionLabel = nullptr;
     Engine::Label* userLabel = nullptr;
     float animationTime = 0.0f;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> bgmInstance;
 public:
     explicit StartScene() = default;
     void Initialize() override;
