@@ -1107,7 +1107,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                     case 59: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/17.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/16.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                     case 60: // !
                     mapState[i][j] = TILE_FLOOR;
