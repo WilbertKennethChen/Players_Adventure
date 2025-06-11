@@ -1,0 +1,64 @@
+{
+    "Users": [
+        "nathan",
+        "test11",
+        "test1234",
+        "nathan77",
+        "john",
+        "aaa",
+        "wb",
+        "wb123",
+        "nathan11"
+    ],
+    "aaa": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "abc"
+    },
+    "john": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "john"
+    },
+    "nathan": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [
+            "enemy1"
+        ],
+        "Pass": "test123"
+    },
+    "nathan11": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "wilbertkontol"
+    },
+    "nathan77": {
+        "DeadEnemy": [
+            "enemy1"
+        ],
+        "FriendlyEnemy": [],
+        "Pass": "aaaaa"
+    },
+    "test11": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "lorem"
+    },
+    "test1234": {
+        "DeadEnemy": [
+            "enemy1"
+        ],
+        "FriendlyEnemy": [],
+        "Pass": "bib"
+    },
+    "wb": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
+    },
+    "wb123": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
+    }
+}

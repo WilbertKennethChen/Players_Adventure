@@ -13,6 +13,7 @@
 #include "Scene/PreStartScene.hpp"
 #include "Scene/DoorTransitionScene.hpp"
 #include "Scene/LeaderboardScene.hpp"
+#include "Scene/LoginScene.hpp"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -29,9 +30,12 @@ int main(int argc, char **argv) {
     game.AddNewScene("settings", new SettingsScene());
     game.AddNewScene("leaderboard", new LeaderboardScene());
 	game.AddNewScene("battle",new BattleScene());
+	game.AddNewScene("login",new LoginScene());
+
+
 
 
     // Change the start scene
-	game.Start("prestart", 60, 1600, 832);
+	game.Start("stage-select", 60, 1600, 832);
 	return 0;
 }

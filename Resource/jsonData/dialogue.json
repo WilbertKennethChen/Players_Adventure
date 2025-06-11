@@ -84,7 +84,96 @@
       }
 
     },
-    "npc4" : "took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
+    "groveDad" : {
+      "hostile" : {
+        "intro" : {
+          "text" : "Intruder. What brings you to the heart of my slumbering kin? Many seek passage. Few understand the life that thrives here. My roots run deep, protecting what is mine.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Promises are like leaves in the wind. Easily scattered. I sense your intentions, but the forest has witnessed many who speak of peace and bring only disruption. ",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "What truth lies behind your words? How can I be certain your path will not disturb my children, or the harmony I have cultivated here for countless seasons?",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "Harm my progeny, and you will become fertilizer for my deepest roots.",
+          "next" : ""
+        }
+      },
+      "friendly": {
+        "intro" : {
+          "text" : "Your actions... they carry the scent of honest rain after a long dry spell",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Few travelers speak with such understanding of the life that grows here, beneath my watchful eye",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "My children... they are the very essence of this forest, and their well-being is my paramount concern.",
+          "next" : ""
+        }
+      }
+
+    },
+    "groveChild" : {
+      "hostile" : {
+        "intro" : {
+          "text" : "Go away! Get out of here! You'll break our branches and tear our leaves, just like all the others!",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "We see you! We know what you are! Leave us alone, or we'll wrap you up and you'll never see the sun again!",
+          "next" : ""
+        }
+      },
+      "friendly": {
+        "intro" : {
+          "text" : "Oh... you're not like the others",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "You didn't try to pull our leaves... and you really understand about the sun? No one ever understands about the sun!",
+          "next" : ""
+        }
+      }
+
+    },
+    "jesterKnight" : {
+      "hostile" : {
+        "intro" : {
+          "text" : "Intruder. You stand before Sir Kaelen, eternal guardian of this threshold.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "My vigil is unbroken, my purpose absolute. There is no passage here for the living. ",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Your presence is an affront, and your existence, an inconvenience. Prepare yourself, for your journey ends where my duty begins.",
+          "next" : ""
+        }
+      },
+      "friendly": {
+        "intro" : {
+          "text" : "You possess a spirit, living one, that few who trespass here have ever shown,",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Your resolve is... commendable. My duty remains, but my honor dictates otherwise in this instance.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "You may pass this threshold. Go forth, and may your path be as steadfast as your will.",
+          "next" : ""
+        }
+      }
+
+    }
+
 
 
   }

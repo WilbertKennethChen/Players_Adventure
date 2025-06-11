@@ -20,6 +20,7 @@
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Player/GameData.hpp"
+#include "NPC/enemynpc.h"
 
 #include <allegro5/allegro_primitives.h>
 
@@ -29,6 +30,7 @@
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/ImageButton.hpp"
+#include "NPC/water.h"
 
 // TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
 // TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
@@ -44,11 +46,7 @@ const int PlayScene::BlockSize = 64;
 const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
 const Engine::Point PlayScene::EndGridPoint = Engine::Point(MapWidth, MapHeight - 1);
-const std::vector<int> PlayScene::code = {
-    ALLEGRO_KEY_UP, ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN, ALLEGRO_KEY_DOWN,
-    ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT, ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT,
-    ALLEGRO_KEY_B, ALLEGRO_KEY_A, ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_ENTER
-};
+
 
 std::set<int> keyDown;
 std::string nextDiag;
@@ -90,7 +88,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/panda.png",playerposx, playerposy,playerhp,200,32,32,4);
+    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -113,7 +111,13 @@ void PlayScene::Initialize() {
     }
     PauseInitialize();
 
-    //set all friendly enemy into friendly
+    //if groveChild is dead cannot groveDad will always be hostile
+    if (GameData::getInstance().deadEnemies.count("groveChild")) {
+       if (GameData::getInstance().friendlyEnemies.count("groveDad")) {
+           GameData::getInstance().friendlyEnemies.erase("groveDad");
+       }
+    }
+
 
 }
 
@@ -122,29 +126,29 @@ void PlayScene::PauseInitialize()
      const int mapPixelWidth = MapWidth * BlockSize;
     const int mapPixelHeight = MapHeight * BlockSize;
 
-    const int pauseW = 640;
-    const int pauseH = 650;
+    const int pauseW = 670;
+    const int pauseH = 720;
     const int pauseX = (mapPixelWidth - pauseW) / 2;
     const int pauseY = (mapPixelHeight - pauseH) / 2;
-    pauseBackground = new Engine::Image("play/sand.png", pauseX, pauseY, pauseW, pauseH);
+    pauseBackground = new Engine::Image("play/pause.png", pauseX, pauseY, pauseW, pauseH);
     pauseBackground->Visible = false;
     UIGroup->AddNewObject(pauseBackground);
 
-    const int centerX = pauseX + pauseW / 2;
-    int currentY = pauseY + 40;
+    const int centerX = pauseX + pauseW / 2 + 10;
+    int currentY = pauseY + 52;
 
-    pauseLabel = new Engine::Label("Pause", "pirulen.ttf", 64,
+    pauseLabel = new Engine::Label("Pause", "undertale.ttf", 64,
                                  centerX, currentY,
                                  0, 0, 0, 255, 0.5, 0.5);
     pauseLabel->Visible = false;
     UIGroup->AddNewObject(pauseLabel);
     currentY += 100;
 
-    const int sliderOffsetX = pauseX + (pauseW - 190) / 2; // Center sliders
-    const int sliderWidth = 190;
+    const int sliderOffsetX = pauseX + (pauseW - 490) / 2; // Center sliders
+    const int sliderWidth = 490;
     const int sliderHeight = 4;
 
-    BGMLabel = new Engine::Label("BGM Volume", "pirulen.ttf", 24,
+    BGMLabel = new Engine::Label("BGM Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     BGMLabel->Visible = false;
@@ -158,7 +162,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewControlObject(sliderBGM);
     currentY += 40;
 
-    SFXLabel = new Engine::Label("SFX Volume", "pirulen.ttf", 24,
+    SFXLabel = new Engine::Label("SFX Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     SFXLabel->Visible = false;
@@ -181,7 +185,7 @@ void PlayScene::PauseInitialize()
     continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
     UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
     continueBtn->Visible = false;
-    continueLabel = new Engine::Label("Continue", "pirulen.ttf", 48,
+    continueLabel = new Engine::Label("Continue", "undertale.ttf", 48,
                                     buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                     0, 0, 0, 255, 0.5, 0.5);
     continueLabel->Visible = false;
@@ -192,7 +196,7 @@ void PlayScene::PauseInitialize()
     retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
-    retryLabel = new Engine::Label("Retry", "pirulen.ttf", 48,
+    retryLabel = new Engine::Label("Retry", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     retryLabel->Visible = false;
@@ -203,7 +207,7 @@ void PlayScene::PauseInitialize()
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
-    exitLabel = new Engine::Label("Back", "pirulen.ttf", 48,
+    exitLabel = new Engine::Label("Back", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     exitLabel->Visible = false;
@@ -218,6 +222,7 @@ void PlayScene::Terminate() {
 void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
+    UIGroup->Update(deltaTime);
     if (isPaused) {
         if (preview)
             preview->Update(deltaTime);
@@ -304,6 +309,8 @@ void PlayScene::Update(float deltaTime) {
                 interactable = true;
 
                 interactingNPC = dynamic_cast<Npc*>(npc);
+                if (!interactingNPC)
+                    interactingNPC = dynamic_cast<EnemyNpc*>(npc);
                 // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
                 nameDiag = interactingNPC->getName();
                 break;
@@ -342,6 +349,8 @@ void PlayScene::Update(float deltaTime) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
     }
+    NpcGroup->Update(deltaTime);
+    TileMapGroup->Update(deltaTime);
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -392,30 +401,28 @@ bool PlayScene::CheckPlayerCollision(const Engine::Point& newPos) {
     int gridX = static_cast<int>(newPos.x / BlockSize);
     int gridY = static_cast<int>(newPos.y / BlockSize);
 
-    if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
-        if (mapState[gridY][gridX] == TILE_HOUSE ||
-            mapState[gridY][gridX] == TILE_TREE) {
-            collision = true;
-        }
-        else if (mapState[gridY][gridX] == TILE_WATER) {
-            if (newPos.y < (gridY * BlockSize + BlockSize * 1.0f)) {
+    if (MapId == 1) {
+        if (gridX >= 0 && gridX < MapWidth && gridY >= 0 && gridY < MapHeight) {
+            if (mapState[gridY][gridX] == TILE_HOUSE ||
+                mapState[gridY][gridX] == TILE_TREE) {
                 collision = true;
+                }
+            else if (mapState[gridY][gridX] == TILE_WATER) {
+                if (newPos.y < (gridY * BlockSize + BlockSize * 1.0f)) {
+                    collision = true;
+                }
             }
         }
     }
 
     // trunk‐only collisions:
     for (auto &b : treeColliders) {
-        if ( newPos.x >= b.x &&
-             newPos.x <= b.x + b.w &&
-             newPos.y >= b.y &&
-             newPos.y <= b.y + b.h )
-        {
+        if (newPos.x >= b.x && newPos.x <= b.x + b.w &&
+            newPos.y >= b.y && newPos.y <= b.y + b.h) {
             return true;
-        }
+            }
     }
-
-    return collision;
+    return false;
 }
 
 
@@ -512,7 +519,7 @@ void PlayScene::OnKeyUp(int keyCode) {
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
     keyDown.insert(keyCode);
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
+    if (keyCode == ALLEGRO_KEY_ESCAPE && !activeTextbox)
     {
         isPaused = !isPaused;
         SetPauseUIVisible(isPaused);
@@ -545,20 +552,34 @@ void PlayScene::OnKeyDown(int keyCode) {
     }
     if (activeTextbox) {
         if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
-            if (!nextDiag.empty()) {
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                RenderTextbox(nextDiag);
+            if (!activeTextbox->isDone()) {
+                std::cout << "skipping" << std::endl;
+                activeTextbox->Skip();
             } else {
+                std::cout << "not skipping" << std::endl;
+                if (!nextDiag.empty()) {
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
+                    RenderTextbox(nextDiag);
+                } else {
 
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                activeTextbox = nullptr;
-                nameDiag = "";
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    activeTextbox = nullptr;
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
+                    nameDiag = "";
 
-                if (interactingNPC->isHostile()) {
-                    SaveState(interactingNPC->getName());
-                    Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    if (interactingNPC->isHostile()) {
+                        SaveState(interactingNPC->getName());
+                        Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    }
+
                 }
-
             }
         }
     }
@@ -610,6 +631,7 @@ void PlayScene::Hit() {
 }
 
 void PlayScene::ReadMap(Engine::Point overrideSpawn) {
+    treeColliders.clear();
     std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".txt";
     // Read map file.
     char c;
@@ -625,10 +647,65 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case 'T': mapData.push_back(5); break;  // Player spawned when change map
             case 'G': mapData.push_back(6); break;  // Enemy ghost
             case 'H': mapData.push_back(7); break;  // House Tile
-            case '8': mapData.push_back(8); break;  // Another dirt
+            // case '8': mapData.push_back(8); break;  // Another dirt
             case 'W': mapData.push_back(9); break;  // Water
             case 'R': mapData.push_back(10); break; // Tree Tile
             case 'r': mapData.push_back(11); break; // Small Tree
+            case '4': mapData.push_back(12); break; // Floor Dungeon 1
+            case '5': mapData.push_back(13); break; // Floor Dungeon 2
+            case '6': mapData.push_back(14); break; // Floor Dungeon 3
+            case '7': mapData.push_back(15); break; // Floor Dungeon 4
+            case '8': mapData.push_back(16); break; // Floor Dungeon 5
+            case '9': mapData.push_back(17); break; // Floor Dungeon 6
+            case 'a': mapData.push_back(18); break; // Floor Dungeon 7
+            case 'b': mapData.push_back(19); break; // Floor Dungeon 8
+            case 'c': mapData.push_back(20); break; // Floor Dungeon 9
+            case 'd': mapData.push_back(21); break; // Floor Dungeon 10
+            case 'e': mapData.push_back(22); break; // Floor Dungeon 11
+            case 'f': mapData.push_back(23); break; // Floor Dungeon 12
+            case 'g': mapData.push_back(24); break; // Floor Dungeon 13
+            case 'h': mapData.push_back(25); break; // Floor Dungeon 14
+            case 'i': mapData.push_back(26); break; // Floor Dungeon 15
+            case 'j': mapData.push_back(27); break; // Floor Dungeon 16
+            case 'k': mapData.push_back(28); break; // Floor Dungeon 17
+            case 'l': mapData.push_back(29); break; // Floor Dungeon 18
+            case 'm': mapData.push_back(30); break; // m to w is empty
+            case 'n': mapData.push_back(31); break; // Floor Dungeon 20
+            case 'o': mapData.push_back(32); break; // Floor Dungeon 21
+            case 'p': mapData.push_back(33); break; // Floor Dungeon 22
+            case 'q': mapData.push_back(34); break; // Floor Dungeon 23
+            case 's': mapData.push_back(35); break; // Floor Dungeon 24
+            case 't': mapData.push_back(36); break; // entry teleport
+            case 'u': mapData.push_back(37); break; // Floor Dungeon 26
+            case 'v': mapData.push_back(38); break; // Floor Dungeon 27
+            case 'w': mapData.push_back(39); break;
+            case 'x': mapData.push_back(40); break; // Floor Dungeon 29
+            case 'y': mapData.push_back(41); break; // Floor Dungeon 30
+            case 'z': mapData.push_back(42); break; // Floor Dungeon 31
+            case 'A': mapData.push_back(43); break; // Floor Dungeon 32
+            case 'B': mapData.push_back(44); break; // Floor Dungeon 33
+            case 'C': mapData.push_back(45); break; // Floor Dungeon 34
+            case 'D': mapData.push_back(46); break; // Floor Dungeon 35
+            case 'E': mapData.push_back(47); break; // Floor Dungeon 36
+            case 'F': mapData.push_back(48); break; // Floor Dungeon 37
+            case 'I': mapData.push_back(49); break; // Floor Dungeon 38
+            case 'J': mapData.push_back(50); break; // Floor Dungeon 39
+            case 'K': mapData.push_back(51); break; // Floor Dungeon 40
+            case 'L': mapData.push_back(52); break; // Floor Dungeon 41
+            case 'M': mapData.push_back(53); break; // Floor Dungeon 42
+            case 'N': mapData.push_back(54); break; // Floor Dungeon 43
+            case 'O': mapData.push_back(55); break; // Floor Dungeon 44
+            case 'P': mapData.push_back(56); break; // Floor Dungeon 45
+            case 'Q': mapData.push_back(57); break; // Floor Dungeon 46
+            case 'U': mapData.push_back(58); break; // Floor Dungeon 47
+            case 'V': mapData.push_back(59); break; // Floor Dungeon 48
+            case '!': mapData.push_back(60); break; // Floor Dungeon 49
+            case '@': mapData.push_back(61); break; // Floor Dungeon 50
+            case '#': mapData.push_back(62); break; // Floor Dungeon 51
+            case '$': mapData.push_back(63); break; // Floor Dungeon 52
+            case 'X': mapData.push_back(297); break;
+            case 'Y': mapData.push_back(298); break;
+            case 'Z': mapData.push_back(299); break;
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -696,7 +773,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 {
 
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
                     NpcGroup->AddNewObject(npc1);
                     break;
@@ -704,41 +781,44 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 3: // NPC2
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
                     NpcGroup->AddNewObject(npc2);
                     break;
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
-                case 5: //Teleport point
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                case 5: //Teleport point map 2
+                    if (MapId == 2) {
+                        mapState[i][j] = TILE_FLOOR;
+                        TileMapGroup->AddNewObject(new Engine::Image("pack/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                    }
                     break;
                 case 6: // Ghost
-                    {
+                {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
-                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
                             std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        NpcGroup->AddNewObject(npc3);
+
                     }
 
                     break;
-                    }
+                }
                 case 7: // House tile
                 {
                     mapState[i][j] = TILE_HOUSE;
@@ -772,24 +852,322 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     // // -------------------------
                     // break;
                     mapState[i][j] = TILE_WATER;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/water.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new WaterTile("play/water", j * BlockSize, i * BlockSize, 1.0f, 0.2f));
                     break;
                 }
-                case 10: // 'R' = big tree
-                    // mapState[i][j] = TILE_TREE;               // ← was TILE_OCCUPIED
-                    // TileMapGroup->AddNewObject(
-                    //   new Engine::Image("play/cao.png", j*BlockSize, i*BlockSize, BlockSize, BlockSize)
-                    // );
-                    // break;
-
+                case 10:
                 case 11: // 'r' = small tree
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(
                       new Engine::Image("play/cao.png", j*BlockSize, i*BlockSize, BlockSize, BlockSize)
                     );
                     break;
+                case 12: // Floor Dungeon 1
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 13: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/upper_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 14: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 15: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/upper_right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 16: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 17: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/lower_right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 18: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/lower.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 19: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/lower_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 20: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 21: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 22: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/one.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 23: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/two.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 24: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/three.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 25: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/four.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 26: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/stained1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 27: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/stained2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 28: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/stained3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 29: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/stained4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 30: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/big_pouch.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 31: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/door1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 32: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/door2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 33: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 34: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 297: // V groveDad
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveDad";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            NpcGroup->AddNewObject(npc3);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
 
-            }
+                    break;
+                }
+                case 298: {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveChild";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
+                        } else {
+                            std::cout << "not friendly";
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
+                    break;
+                }
+                    case 35: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/bottle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 36: // Floor Dungeon 2
+                    if (MapId == 1) {
+                        mapState[i][j] = TILE_FLOOR;
+                        TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                    }
+                    break;
+                    case 37: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/barrel.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 38: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 39: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 40: // x
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_left.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 41: // y
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_right.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 42: // z
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles2.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 43: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 44: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 45: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 46: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 47: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/5.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 48: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/6.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 49: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/7.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 50: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/8.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 51: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/9.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 52: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/10.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 53: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/11.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 54: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/12.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 55: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/13.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 56: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/14.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 57: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/15.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 59: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/17.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                    case 60: // !
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_left.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 61: // @
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_right.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 62: // #
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/big_pouch.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                    case 63: // $
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+
+                    case 299:
+                    {
+                        mapState[i][j] = TILE_FLOOR;
+                        TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        std::string name = "jesterKnight";
+                        if (!GameData::getInstance().deadEnemies.count(name)) {
+                            Npc *npc3;
+                            if (GameData::getInstance().friendlyEnemies.count(name)) {
+                                npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                                std::cout << "friendly";
+                                NpcGroup->AddNewObject(npc3);
+                            } else {
+                                std::cout << "not friendly";
+                                npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                                NpcGroup->AddNewObject(npc3);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+
         }
     }
 
@@ -808,7 +1186,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             (houseAnchorX + houseWidthInTiles) * BlockSize,  // Right of house
             houseAnchorY * BlockSize,                        // Same Y as house top
             96, 128));                                      // Exact pixel dimensions
+    Box houseBox;
+    houseBox.w = 206;  // adjust as needed
+    houseBox.h = 270;   // only the bottom row blocks movement
+    houseBox.x = houseAnchorX * BlockSize + (3 * BlockSize - houseBox.w) / 2.0f ;
+    houseBox.y = (houseAnchorY + 3) * BlockSize - 196;  // bottom row (row 3 of 4)
+    treeColliders.push_back(houseBox);
     }
+
+
 
 //     for (auto &p : bigTreeAnchors) {
 //     TileMapGroup->AddNewObject(new Engine::Image(
@@ -837,14 +1223,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
         ));
     }
 
-    treeColliders.clear();
+
 
     // big 128×128 trees:
     for (auto &p : bigTreeAnchors) {
         // Sprite is 128×128, bottom‐half is trunk, ~32px wide at center:
         Box b;
-        b.w = 32 + 12;
-        b.h = 64;
+        b.w = 72;
+        b.h = 106;
         b.x = p.x*BlockSize + (128 - b.w)/2.0f - 16;   // center it horizontally over the 2 tiles
         b.y = p.y * BlockSize + (128 - b.h) - 16;        // bottom half of sprite
         treeColliders.push_back(b);
@@ -854,8 +1240,8 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     for (auto &p : smallTreeAnchors) {
         // Sprite is  64×128, trunk is maybe 24px wide, 40px tall at the bottom:
         Box b;
-        b.w = 24 + 12;
-        b.h = 64;
+        b.w = 24 + 24;
+        b.h = 102;
         b.x = p.x*BlockSize + (64 - b.w)/2.0f;    // center over this single tile
         b.y = p.y*BlockSize + (128 - b.h);        // bottom of sprite
         treeColliders.push_back(b);
@@ -867,6 +1253,41 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
         GameData::getInstance().playerPosX = spawnPoint.x;
         GameData::getInstance().playerPosY = spawnPoint.y;
     }
+    if (MapId == 2) {
+        const int block = BlockSize;
+        const int mapPixelW = MapWidth * block;
+        const int mapPixelH = MapHeight * block;
+
+        const int innerX = 1 * block;
+        const int innerY = 1 * block;
+        const int innerW = 23 * block;
+        const int innerH = 11 * block;
+
+        // Top wall
+        treeColliders.push_back(Box{
+            0, 15,
+            mapPixelW, innerY
+        });
+
+        // Bottom wall
+        treeColliders.push_back(Box{
+            0, innerY + innerH,
+            mapPixelW, mapPixelH - (innerY + innerH)
+        });
+
+        // Left wall
+        treeColliders.push_back(Box{
+            0 - 10, innerY,
+            innerX, innerH
+        });
+
+        // Right wall
+        treeColliders.push_back(Box{
+            innerX + innerW + 10, innerY,
+            mapPixelW - (innerX + innerW), innerH
+        });
+    }
+
     if (GameData::getInstance().spawned && GameData::getInstance().changeMap) {
         GameData::getInstance().playerPosX = teleportPoint.x;
         GameData::getInstance().playerPosY = teleportPoint.y;
@@ -922,6 +1343,16 @@ void PlayScene::RenderTextbox(std::string key) {
 
 
     activeTextbox = new Engine::Textbox(text,ScreenSize);
+    if (dialogueNpcImage) {
+        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+        dialogueNpcImage = nullptr;
+    }
+    std::string portraitPath = "play/portrait_" + nameDiag + ".png";
+    int textboxHeight = 400;
+    int portraitHeight = 300;
+    int portraitY = ScreenSize.y - textboxHeight - portraitHeight / 2 - 100;
+    dialogueNpcImage = new Engine::Image(portraitPath, 100, portraitY, 300, 300);
+    UIGroup->AddNewObject(dialogueNpcImage);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
 }
@@ -961,5 +1392,20 @@ void PlayScene::ExitOnClick() {
     GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
+    std::cout << GameData::getInstance().Username << std::endl;
+    //write to safe file
+    std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+    std::ifstream jsonFileStream(path);
+    nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+    jsonFileStream.close();
+    jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
+    jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+
+    std::ofstream jsonOut(path);
+    jsonOut << jsonData.dump(4);
+    jsonOut.close();
+
+
+
     Engine::GameEngine::GetInstance().ChangeScene("stage-select");
 }
