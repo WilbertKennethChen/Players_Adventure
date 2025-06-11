@@ -20,6 +20,7 @@
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Player/GameData.hpp"
+#include "NPC/enemynpc.h"
 
 #include <allegro5/allegro_primitives.h>
 
@@ -29,6 +30,7 @@
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/ImageButton.hpp"
+#include "NPC/water.h"
 
 // TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
 // TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
@@ -307,6 +309,8 @@ void PlayScene::Update(float deltaTime) {
                 interactable = true;
 
                 interactingNPC = dynamic_cast<Npc*>(npc);
+                if (!interactingNPC)
+                    interactingNPC = dynamic_cast<EnemyNpc*>(npc);
                 // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
                 nameDiag = interactingNPC->getName();
                 break;
@@ -345,6 +349,8 @@ void PlayScene::Update(float deltaTime) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
     }
+    NpcGroup->Update(deltaTime);
+    TileMapGroup->Update(deltaTime);
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -747,18 +753,16 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
-                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/archivist_shade_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
                             std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/archivist_shade_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
-
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        npc3->Size.x *= 0.23;
-                        npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
+
                     }
 
                     break;
@@ -796,7 +800,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     // // -------------------------
                     // break;
                     mapState[i][j] = TILE_WATER;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/water.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        TileMapGroup->AddNewObject(new WaterTile("play/water", j * BlockSize, i * BlockSize, 1.0f, 0.2f));
                     break;
                 }
                 case 10: // 'R' = big tree
@@ -818,17 +822,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveDad";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
-                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/grove_warden_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            NpcGroup->AddNewObject(npc3);
                             std::cout << "friendly";
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/grove_warden_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        npc3->Size.x *= 0.23;
-                        npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
                     }
 
                     break;
@@ -839,17 +841,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveChild";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
-                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/grove_child_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
                             std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/grove_child_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        npc3->Size.x *= 0.23;
-                        npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
                     }
 
                     break;
@@ -862,15 +862,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/jester_knight_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
                             std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/jester_knight_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        npc3->Size.x *= 0.23;
-                        npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
                     }
 
                     break;
