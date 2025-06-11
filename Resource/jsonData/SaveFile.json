@@ -6,14 +6,9 @@
         "nathan77",
         "john",
         "aaa",
-        "abcd"
+        "wb"
     ],
     "aaa": {
-        "DeadEnemy": [],
-        "FriendlyEnemy": [],
-        "Pass": "abc"
-    },
-    "abcd": {
         "DeadEnemy": [],
         "FriendlyEnemy": [],
         "Pass": "abc"
@@ -48,5 +43,10 @@
         ],
         "FriendlyEnemy": [],
         "Pass": "bib"
+    },
+    "wb": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
     }
 }

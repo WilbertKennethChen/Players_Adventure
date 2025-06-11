@@ -94,7 +94,7 @@ void StartScene::Initialize() {
 
     Engine::LOG(Engine::INFO) << "PreStartScene instruction label added.";
     animationTime = 0.0f;
-
+    bgmInstance = AudioHelper::PlaySample("opening.ogg", true, AudioHelper::BGMVolume);
 }
 
 void StartScene::Update(float deltaTime) {
@@ -118,6 +118,8 @@ void StartScene::Update(float deltaTime) {
 }
 void StartScene::Terminate() {
     instructionLabel = nullptr;
+    AudioHelper::StopSample(bgmInstance);
+    bgmInstance = nullptr;
     IScene::Terminate();
 }
 void StartScene::PlayOnClick(int stage) {

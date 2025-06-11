@@ -86,7 +86,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/panda.png",playerposx, playerposy,playerhp,200,32,32,4);
+    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -124,29 +124,29 @@ void PlayScene::PauseInitialize()
      const int mapPixelWidth = MapWidth * BlockSize;
     const int mapPixelHeight = MapHeight * BlockSize;
 
-    const int pauseW = 640;
-    const int pauseH = 650;
+    const int pauseW = 670;
+    const int pauseH = 720;
     const int pauseX = (mapPixelWidth - pauseW) / 2;
     const int pauseY = (mapPixelHeight - pauseH) / 2;
-    pauseBackground = new Engine::Image("play/sand.png", pauseX, pauseY, pauseW, pauseH);
+    pauseBackground = new Engine::Image("play/pause.png", pauseX, pauseY, pauseW, pauseH);
     pauseBackground->Visible = false;
     UIGroup->AddNewObject(pauseBackground);
 
-    const int centerX = pauseX + pauseW / 2;
-    int currentY = pauseY + 40;
+    const int centerX = pauseX + pauseW / 2 + 10;
+    int currentY = pauseY + 52;
 
-    pauseLabel = new Engine::Label("Pause", "pirulen.ttf", 64,
+    pauseLabel = new Engine::Label("Pause", "undertale.ttf", 64,
                                  centerX, currentY,
                                  0, 0, 0, 255, 0.5, 0.5);
     pauseLabel->Visible = false;
     UIGroup->AddNewObject(pauseLabel);
     currentY += 100;
 
-    const int sliderOffsetX = pauseX + (pauseW - 190) / 2; // Center sliders
-    const int sliderWidth = 190;
+    const int sliderOffsetX = pauseX + (pauseW - 490) / 2; // Center sliders
+    const int sliderWidth = 490;
     const int sliderHeight = 4;
 
-    BGMLabel = new Engine::Label("BGM Volume", "pirulen.ttf", 24,
+    BGMLabel = new Engine::Label("BGM Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     BGMLabel->Visible = false;
@@ -160,7 +160,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewControlObject(sliderBGM);
     currentY += 40;
 
-    SFXLabel = new Engine::Label("SFX Volume", "pirulen.ttf", 24,
+    SFXLabel = new Engine::Label("SFX Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     SFXLabel->Visible = false;
@@ -183,7 +183,7 @@ void PlayScene::PauseInitialize()
     continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
     UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
     continueBtn->Visible = false;
-    continueLabel = new Engine::Label("Continue", "pirulen.ttf", 48,
+    continueLabel = new Engine::Label("Continue", "undertale.ttf", 48,
                                     buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                     0, 0, 0, 255, 0.5, 0.5);
     continueLabel->Visible = false;
@@ -194,7 +194,7 @@ void PlayScene::PauseInitialize()
     retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
-    retryLabel = new Engine::Label("Retry", "pirulen.ttf", 48,
+    retryLabel = new Engine::Label("Retry", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     retryLabel->Visible = false;
@@ -205,7 +205,7 @@ void PlayScene::PauseInitialize()
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
-    exitLabel = new Engine::Label("Back", "pirulen.ttf", 48,
+    exitLabel = new Engine::Label("Back", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     exitLabel->Visible = false;
@@ -515,7 +515,7 @@ void PlayScene::OnKeyUp(int keyCode) {
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
     keyDown.insert(keyCode);
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
+    if (keyCode == ALLEGRO_KEY_ESCAPE && !activeTextbox)
     {
         isPaused = !isPaused;
         SetPauseUIVisible(isPaused);
@@ -556,11 +556,19 @@ void PlayScene::OnKeyDown(int keyCode) {
                 std::cout << "not skipping" << std::endl;
                 if (!nextDiag.empty()) {
                     UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
                     RenderTextbox(nextDiag);
                 } else {
 
                     UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                     activeTextbox = nullptr;
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
                     nameDiag = "";
 
                     if (interactingNPC->isHostile()) {
@@ -1000,6 +1008,16 @@ void PlayScene::RenderTextbox(std::string key) {
 
 
     activeTextbox = new Engine::Textbox(text,ScreenSize);
+    if (dialogueNpcImage) {
+        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+        dialogueNpcImage = nullptr;
+    }
+    std::string portraitPath = "play/portrait_" + nameDiag + ".png";
+    int textboxHeight = 400;
+    int portraitHeight = 300;
+    int portraitY = ScreenSize.y - textboxHeight - portraitHeight / 2 - 100;
+    dialogueNpcImage = new Engine::Image(portraitPath, 100, portraitY, 300, 300);
+    UIGroup->AddNewObject(dialogueNpcImage);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
 }
