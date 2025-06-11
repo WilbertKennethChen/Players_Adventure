@@ -75,6 +75,7 @@ public:
     Engine::Label *UILives;
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
+    Engine::Image* dialogueNpcImage = nullptr;
 
     Turret *preview;
     std::vector<std::vector<TileType>> mapState;

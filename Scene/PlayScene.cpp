@@ -20,6 +20,7 @@
 #include "Engine/Resources.hpp"
 #include "PlayScene.hpp"
 #include "Player/GameData.hpp"
+#include "NPC/enemynpc.h"
 
 #include <allegro5/allegro_primitives.h>
 
@@ -29,6 +30,7 @@
 #include "UI/Component/Textbox.hpp"
 #include "UI/Component/Label.hpp"
 #include "UI/Component/ImageButton.hpp"
+#include "NPC/water.h"
 
 // TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
 // TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
@@ -44,11 +46,7 @@ const int PlayScene::BlockSize = 64;
 const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
 const Engine::Point PlayScene::EndGridPoint = Engine::Point(MapWidth, MapHeight - 1);
-const std::vector<int> PlayScene::code = {
-    ALLEGRO_KEY_UP, ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN, ALLEGRO_KEY_DOWN,
-    ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT, ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT,
-    ALLEGRO_KEY_B, ALLEGRO_KEY_A, ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_ENTER
-};
+
 
 std::set<int> keyDown;
 std::string nextDiag;
@@ -90,7 +88,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/panda.png",playerposx, playerposy,playerhp,200,32,32,4);
+    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -113,7 +111,13 @@ void PlayScene::Initialize() {
     }
     PauseInitialize();
 
-    //set all friendly enemy into friendly
+    //if groveChild is dead cannot groveDad will always be hostile
+    if (GameData::getInstance().deadEnemies.count("groveChild")) {
+       if (GameData::getInstance().friendlyEnemies.count("groveDad")) {
+           GameData::getInstance().friendlyEnemies.erase("groveDad");
+       }
+    }
+
 
 }
 
@@ -122,29 +126,29 @@ void PlayScene::PauseInitialize()
      const int mapPixelWidth = MapWidth * BlockSize;
     const int mapPixelHeight = MapHeight * BlockSize;
 
-    const int pauseW = 640;
-    const int pauseH = 650;
+    const int pauseW = 670;
+    const int pauseH = 720;
     const int pauseX = (mapPixelWidth - pauseW) / 2;
     const int pauseY = (mapPixelHeight - pauseH) / 2;
-    pauseBackground = new Engine::Image("play/sand.png", pauseX, pauseY, pauseW, pauseH);
+    pauseBackground = new Engine::Image("play/pause.png", pauseX, pauseY, pauseW, pauseH);
     pauseBackground->Visible = false;
     UIGroup->AddNewObject(pauseBackground);
 
-    const int centerX = pauseX + pauseW / 2;
-    int currentY = pauseY + 40;
+    const int centerX = pauseX + pauseW / 2 + 10;
+    int currentY = pauseY + 52;
 
-    pauseLabel = new Engine::Label("Pause", "pirulen.ttf", 64,
+    pauseLabel = new Engine::Label("Pause", "undertale.ttf", 64,
                                  centerX, currentY,
                                  0, 0, 0, 255, 0.5, 0.5);
     pauseLabel->Visible = false;
     UIGroup->AddNewObject(pauseLabel);
     currentY += 100;
 
-    const int sliderOffsetX = pauseX + (pauseW - 190) / 2; // Center sliders
-    const int sliderWidth = 190;
+    const int sliderOffsetX = pauseX + (pauseW - 490) / 2; // Center sliders
+    const int sliderWidth = 490;
     const int sliderHeight = 4;
 
-    BGMLabel = new Engine::Label("BGM Volume", "pirulen.ttf", 24,
+    BGMLabel = new Engine::Label("BGM Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     BGMLabel->Visible = false;
@@ -158,7 +162,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewControlObject(sliderBGM);
     currentY += 40;
 
-    SFXLabel = new Engine::Label("SFX Volume", "pirulen.ttf", 24,
+    SFXLabel = new Engine::Label("SFX Volume", "undertale.ttf", 32,
                                centerX, currentY,
                                0, 0, 0, 255, 0.5, 0.5);
     SFXLabel->Visible = false;
@@ -181,7 +185,7 @@ void PlayScene::PauseInitialize()
     continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
     UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
     continueBtn->Visible = false;
-    continueLabel = new Engine::Label("Continue", "pirulen.ttf", 48,
+    continueLabel = new Engine::Label("Continue", "undertale.ttf", 48,
                                     buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                     0, 0, 0, 255, 0.5, 0.5);
     continueLabel->Visible = false;
@@ -192,7 +196,7 @@ void PlayScene::PauseInitialize()
     retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
-    retryLabel = new Engine::Label("Retry", "pirulen.ttf", 48,
+    retryLabel = new Engine::Label("Retry", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     retryLabel->Visible = false;
@@ -203,7 +207,7 @@ void PlayScene::PauseInitialize()
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
-    exitLabel = new Engine::Label("Back", "pirulen.ttf", 48,
+    exitLabel = new Engine::Label("Back", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     exitLabel->Visible = false;
@@ -218,6 +222,7 @@ void PlayScene::Terminate() {
 void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
+    UIGroup->Update(deltaTime);
     if (isPaused) {
         if (preview)
             preview->Update(deltaTime);
@@ -304,6 +309,8 @@ void PlayScene::Update(float deltaTime) {
                 interactable = true;
 
                 interactingNPC = dynamic_cast<Npc*>(npc);
+                if (!interactingNPC)
+                    interactingNPC = dynamic_cast<EnemyNpc*>(npc);
                 // if (interactable) {std::cout << interactingNPC->getName() << std::endl;}
                 nameDiag = interactingNPC->getName();
                 break;
@@ -342,6 +349,8 @@ void PlayScene::Update(float deltaTime) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
     }
+    NpcGroup->Update(deltaTime);
+    TileMapGroup->Update(deltaTime);
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -510,7 +519,7 @@ void PlayScene::OnKeyUp(int keyCode) {
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
     keyDown.insert(keyCode);
-    if (keyCode == ALLEGRO_KEY_ESCAPE)
+    if (keyCode == ALLEGRO_KEY_ESCAPE && !activeTextbox)
     {
         isPaused = !isPaused;
         SetPauseUIVisible(isPaused);
@@ -543,20 +552,34 @@ void PlayScene::OnKeyDown(int keyCode) {
     }
     if (activeTextbox) {
         if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
-            if (!nextDiag.empty()) {
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                RenderTextbox(nextDiag);
+            if (!activeTextbox->isDone()) {
+                std::cout << "skipping" << std::endl;
+                activeTextbox->Skip();
             } else {
+                std::cout << "not skipping" << std::endl;
+                if (!nextDiag.empty()) {
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
+                    RenderTextbox(nextDiag);
+                } else {
 
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                activeTextbox = nullptr;
-                nameDiag = "";
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    activeTextbox = nullptr;
+                    if (dialogueNpcImage) {
+                        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+                        dialogueNpcImage = nullptr;
+                    }
+                    nameDiag = "";
 
-                if (interactingNPC->isHostile()) {
-                    SaveState(interactingNPC->getName());
-                    Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    if (interactingNPC->isHostile()) {
+                        SaveState(interactingNPC->getName());
+                        Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    }
+
                 }
-
             }
         }
     }
@@ -680,6 +703,9 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '@': mapData.push_back(61); break; // Floor Dungeon 50
             case '#': mapData.push_back(62); break; // Floor Dungeon 51
             case '$': mapData.push_back(63); break; // Floor Dungeon 52
+            case 'X': mapData.push_back(297); break;
+            case 'Y': mapData.push_back(298); break;
+            case 'Z': mapData.push_back(299); break;
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -779,15 +805,16 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
-                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
                             std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            NpcGroup->AddNewObject(npc3);
                         }
-                        NpcGroup->AddNewObject(npc3);
+
                     }
 
                     break;
@@ -825,13 +852,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     // // -------------------------
                     // break;
                     mapState[i][j] = TILE_WATER;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/water.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    Box waterBox;
-                    waterBox.w = BlockSize + 32;
-                    waterBox.h = BlockSize + 16;
-                    waterBox.x = j * BlockSize - 16;
-                    waterBox.y = i * BlockSize - 20;
-                    treeColliders.push_back(waterBox);
+                        TileMapGroup->AddNewObject(new WaterTile("play/water", j * BlockSize, i * BlockSize, 1.0f, 0.2f));
                     break;
                 }
                 case 10:
@@ -938,6 +959,41 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("pack/candles3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
+                case 297: // V groveDad
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveDad";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            NpcGroup->AddNewObject(npc3);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
+
+                    break;
+                }
+                case 298:
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveChild";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
+                        } else {
+                            std::cout << "not friendly";
+                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
 
                 case 35: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
@@ -1089,6 +1145,28 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
                     break;
+                    break;
+                }
+                case 299:
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "jesterKnight";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            std::cout << "friendly";
+                            NpcGroup->AddNewObject(npc3);
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
+
+                    break;
+                }
             }
         }
     }
@@ -1123,7 +1201,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
 //         "play/tree1.png",
 //         p.x * BlockSize - 32,      // center 128px over 2 tiles
 //         p.y * BlockSize - 32,
-//         128, 128b.1
+//         128, 128
 //     ));
 // }
 
@@ -1265,6 +1343,16 @@ void PlayScene::RenderTextbox(std::string key) {
 
 
     activeTextbox = new Engine::Textbox(text,ScreenSize);
+    if (dialogueNpcImage) {
+        UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
+        dialogueNpcImage = nullptr;
+    }
+    std::string portraitPath = "play/portrait_" + nameDiag + ".png";
+    int textboxHeight = 400;
+    int portraitHeight = 300;
+    int portraitY = ScreenSize.y - textboxHeight - portraitHeight / 2 - 100;
+    dialogueNpcImage = new Engine::Image(portraitPath, 100, portraitY, 300, 300);
+    UIGroup->AddNewObject(dialogueNpcImage);
     UIGroup->AddNewObject(activeTextbox);
     jsonFileStream.close();
 }
@@ -1304,5 +1392,20 @@ void PlayScene::ExitOnClick() {
     GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
+    std::cout << GameData::getInstance().Username << std::endl;
+    //write to safe file
+    std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+    std::ifstream jsonFileStream(path);
+    nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+    jsonFileStream.close();
+    jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
+    jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+
+    std::ofstream jsonOut(path);
+    jsonOut << jsonData.dump(4);
+    jsonOut.close();
+
+
+
     Engine::GameEngine::GetInstance().ChangeScene("stage-select");
 }

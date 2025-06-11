@@ -117,5 +117,5 @@ void LoseScene::Draw() const {
 }
 
 void LoseScene::BackOnClick(int stage) {
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    Engine::GameEngine::GetInstance().ChangeScene("play");
 }

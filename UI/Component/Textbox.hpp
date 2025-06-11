@@ -28,6 +28,7 @@ namespace Engine {
         Engine::Image* bg;
     public:
         // Text to draw.
+
         std::string Text;
         // Text's color.
         ALLEGRO_COLOR Color;
@@ -61,6 +62,9 @@ namespace Engine {
         /// </summary>
         /// <returns>Height of the text.</returns>
         int GetTextHeight() const;
+        void Update(float deltaTime) override;
+        void Skip();
+        bool isDone() const;
     };
 }
 

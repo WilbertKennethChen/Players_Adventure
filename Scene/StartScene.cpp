@@ -17,6 +17,8 @@
 #include "PlayScene.hpp"
 #include "Scene/StartScene.h"
 
+#include "Enemy/Enemy.hpp"
+#include "nlohmann/json.hpp"
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
@@ -39,8 +41,10 @@ void StartScene::Initialize() {
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/enemy-1.png","calm","Regular enemy","tiles", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
-
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/archivist_shade","calm","Regular ghost, doesn't have any friend","box", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
+    GameData::getInstance().enemyList["groveDad"] = EnemyStruct{"groveDad",30,"play/grove_warden","calm","A father trying his best", "notes","wise protector, i sense your deep love for your kin. i seek only safe passage, promising to respect your domain and pose no threat to your precious family. may our paths cross peacefully, and your children continue to thrive."};
+    GameData::getInstance().enemyList["groveChild"] = EnemyStruct{"groveChild",15,"play/Grove_child","scared","A clueless viny creature, looks young","notes", "hello, little one, you have such beautiful colors! i'm just passing through and wanted to admire your lovely home. would you like this smooth stone? it sparkles just like your dewdrops."};
+    GameData::getInstance().enemyList["jesterKnight"] = EnemyStruct{"jesterKnight",35,"play/jester_knight","calm","A knight that have guarded this place for too long","box","brave knight, your vigil is long and honorable. i seek only to pass this place, not to disturb your sacred duty or the peace you've so valiantly maintained through the ages. grant me safe passage, and your tireless watch shall remain undisturbed, and i will offer a prayer for your steadfast soul."};
 
     std::string instructionText = "Click the tunnel to start...";
     float fontSize = 36;
@@ -49,10 +53,9 @@ void StartScene::Initialize() {
     // ADD THIS LINE: Set the bonfire background for the main menu.
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
-    AddNewObject(new Engine::Label("GameLore", "undertale.ttf", 120, halfW - 50, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
 
-    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/empty.png", halfW - 250, halfH / 2, 400, 400);
-    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
+    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400);
+    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));400,
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/settingok.png", "stage-select/settinggud.png", halfW + 490, halfH * 3 / 2 + 25, 200, 200);
@@ -60,11 +63,11 @@ void StartScene::Initialize() {
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/champ.png", "stage-select/champione.png", halfW + 620, halfH * 3 / 2 + 25, 200, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this,3));
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/icon1.png", "stage-select/icon2.png", halfW + 360, halfH * 3 / 2 + 25, 200, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    btn->SetOnClickCallback(std::bind(&StartScene::LoginOnClick, this));
     AddNewControlObject(btn);
 
     unsigned char initialAlpha = 128;
@@ -72,10 +75,26 @@ void StartScene::Initialize() {
                                    halfW - 45, h - 40,
                                    255, 255, 255, initialAlpha,
                                    0.5, 1.0);
-    AddNewObject(instructionLabel);
+
+    std::string titleText = "??? Adventure";
+    std::string user = GameData::getInstance().Username;
+
+    if (user != "") {
+        user[0]-=32;
+        titleText = user + "'s Adventure";
+        AddNewObject(instructionLabel);
+    } else {
+        AddNewObject(new Engine::Label("Login or Register to Start", "undertale.ttf", fontSize,
+                               halfW - 45, h - 90,
+                               255, 255, 255, 100,
+                               0.5, 1.0));
+    }
+    AddNewObject(new Engine::Label(titleText, "undertale.ttf", 120, halfW, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
+
+
     Engine::LOG(Engine::INFO) << "PreStartScene instruction label added.";
     animationTime = 0.0f;
-
+    bgmInstance = AudioHelper::PlaySample("opening.ogg", true, AudioHelper::BGMVolume);
 }
 
 void StartScene::Update(float deltaTime) {
@@ -99,10 +118,21 @@ void StartScene::Update(float deltaTime) {
 }
 void StartScene::Terminate() {
     instructionLabel = nullptr;
+    AudioHelper::StopSample(bgmInstance);
+    bgmInstance = nullptr;
     IScene::Terminate();
 }
 void StartScene::PlayOnClick(int stage) {
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    if (GameData::getInstance().Username != "") {
+        std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+        std::ifstream jsonFileStream(path);
+        nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+        jsonFileStream.close();
+        GameData::getInstance().deadEnemies = jsonData[GameData::getInstance().Username]["DeadEnemy"];
+        GameData::getInstance().friendlyEnemies = jsonData[GameData::getInstance().Username]["FriendlyEnemy"];
+        Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
+
 }
 void StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("settings");
@@ -110,4 +140,8 @@ void StartScene::SettingsOnClick(int stage) {
 void StartScene::LeaderboardOnClick(int stage)
 {
     Engine::GameEngine::GetInstance().ChangeScene("leaderboard");
+}
+
+void StartScene::LoginOnClick() {
+    Engine::GameEngine::GetInstance().ChangeScene("login");
 }
