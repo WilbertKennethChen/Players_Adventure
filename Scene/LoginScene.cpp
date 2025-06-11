@@ -130,7 +130,7 @@ void LoginScene::OnMouseDown(int button, int mx, int my) {
     int startY = Engine::GameEngine::GetInstance().GetScreenSize().y / 4;
     int boxWidth = 350;
     int boxHeight = 50;
-    int spacing = 80;
+    int spacing = 110;
 
     textBoxUser = (mx >= centerX - boxWidth / 2 && mx <= centerX + boxWidth / 2 && my >= startY && my <= startY + boxHeight);
     textBoxPassword = (mx >= centerX - boxWidth / 2 && mx <= centerX + boxWidth / 2 && my >= startY + spacing && my <= startY + spacing + boxHeight);
