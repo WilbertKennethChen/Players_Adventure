@@ -40,7 +40,7 @@ void StartScene::Initialize() {
     GameData::getInstance().changeMap = false;
 
     //Add new enemy
-    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/enemy-1.png","calm","Regular enemy","notes", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
+    GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",20,"play/archivist_shade","calm","Regular enemy","box", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
 
 
     std::string instructionText = "Click the tunnel to start...";
@@ -51,7 +51,7 @@ void StartScene::Initialize() {
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
 
-    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/empty.png", halfW - 250, halfH / 2, 400, 400);
+    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400, 400);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
     AddNewControlObject(btn);
 

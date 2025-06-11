@@ -2,11 +2,15 @@
 // Created by Celery on 6/5/2025.
 //
 
+#include <allegro5/allegro_audio.h>
 #include "BattleScene.hpp"
 #include <fstream>
 #include <iostream>
 #include <allegro5/allegro_primitives.h>
 #include <nlohmann/json.hpp>
+#include "Engine/AudioHelper.hpp"
+#include <random>
+#include <chrono>
 
 #include "Engine/GameEngine.hpp"
 #include "Player/Player.hpp"
@@ -15,6 +19,7 @@
 #include "UI/Component/Notes.hpp"
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
+#include "Engine/Resources.hpp"
 
 Player* player;
 Npc *enemy;
@@ -30,10 +35,43 @@ Engine::Image * imageSprite = nullptr;
 
 
 void BattleScene::Initialize() {
+    idle = false;
+    battleUIInitialized = false;
+    introAnimationPlaying = true;
+    introRadius = 0;
+    playerHitTimer = 0.0f;
+    bool deathAnimationCompleted = false;
+    float deathEndTimer = 0.0f;
+     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    int halfW = w / 2;
+    int halfH = h / 2;
+
+    // Then set minigame bounds
+    minigame_x1 = 10;
+    minigame_x2 = w - 10;
+    minigame_y1 = halfH / 2 + 150;
+    minigame_y2 = h - 200;
+
+    // ✅ Finally: seed RNG and define distributions
+    std::random_device rd;
+    auto timeSeed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
+    std::seed_seq seed{rd(), timeSeed};
+    rng = std::mt19937(seed);
+    distX = std::uniform_int_distribution<int>(minigame_x1, minigame_x2 - 50);
+    distY = std::uniform_int_distribution<int>(minigame_y1, minigame_y2);
+
+    labelHpEnemy = nullptr;
+    labelHpPlayer = nullptr;
+    labelDesc = nullptr;
+    labelEmo = nullptr;
+    labelNegotiate = nullptr;
+    labelNegotiateInput = nullptr;
+    imageSprite = nullptr;
     enemy = GameData::getInstance().currentEnemy;
     enemyName = enemy->getName();
     enemyMaxHp = GameData::getInstance().enemyList[enemyName].hp;
-    img = GameData::getInstance().enemyList[enemyName].img;
+    img = "Resource/images/" + GameData::getInstance().enemyList[enemyName].img;
     emotion = GameData::getInstance().enemyList[enemyName].emotion;
     desc = GameData::getInstance().enemyList[enemyName].desc;
     miniGame = GameData::getInstance().enemyList[enemyName].minigame;
@@ -41,7 +79,18 @@ void BattleScene::Initialize() {
     playerHp = GameData::getInstance().playerHp;
     playerMaxHp = GameData::getInstance().playerMaxHp;
     enemyHp = enemyMaxHp;
-
+    for (int i = 1; i <= 5; ++i) {
+        std::string path = img + "_" + std::to_string(i) + ".png";
+        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+        if (bmp) enemyFrames.push_back(bmp);
+        else std::cerr << "Failed to load: " << path << std::endl;
+    }
+    for (int i = 6; i <= 9; ++i) {
+        std::string path = img + "_" + std::to_string(i) + ".png";
+        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+        if (bmp) enemyDeathFrames.push_back(bmp);
+        else std::cerr << "Failed to load death frame: " << path << std::endl;
+    }
     //Init Groups
     AddNewControlObject(LabelGroup = new Group());
     AddNewControlObject(NotesGroup = new Group());
@@ -59,65 +108,74 @@ void BattleScene::Initialize() {
     //
     // std::cout << enemyName << " " << enemyMaxHp << " " << enemyDamage << " " << img << std::endl;
 
+    bgmInstance = AudioHelper::PlaySample("cancan.mp3", true, AudioHelper::BGMVolume);
+}
 
-
-
+void BattleScene::SetupBattleUI() {
+    if (battleUIInitialized) return;
+    battleUIInitialized = true;
 
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
 
-
-    //Enemy
-    AddNewObject(new Engine::Image(img, halfW, halfH/2 - 50, 300, 300, 0.5, 0.5));
-
     char buff[20];
+
+    // Enemy HP Label
     sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
-
-    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW - 250, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
-    Engine::ImageButton *btn;
 
-
-
-    //player hp
+    // Player HP Label
     sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 32, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 32, 290, h - 160,
+                                      255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
 
-    //attack button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 100, h-125, w/4, 100);
+    // Attack Button
+    auto* btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
+                                        100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::AttackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h-75, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h - 75,
+                                   0, 0, 0, 255, 0.5, 0.5));
 
-    //negotiate button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w/2 - w/8, h-125, w/4, 100);
+    // Negotiate Button
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
+                                  w / 2 - w / 8, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::NegotiateOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w/2 - w/8 + 200, h-75, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w / 2 - w / 8 + 200, h - 75,
+                                   0, 0, 0, 255, 0.5, 0.5));
 
-    //Run Button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", w - w/4-100, h-125, w/4, 100);
+    // Spare Button
+    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
+                                  w - w / 4 - 100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::SpareOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w- w/4 + 100, h-75, 0, 0, 0, 255, 0.5, 0.5));
-
-    //minigame screen
-    minigame_x1 = 10;
-    minigame_x2 = w-10;
-    minigame_y1 = halfH/2 + 150;
-    minigame_y2 = h-200;
-
+    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w - w / 4 + 100, h - 75,
+                                   0, 0, 0, 255, 0.5, 0.5));
 }
+
 
 
 
 void BattleScene::Update(float dt) {
     // std::cout << idle << std::endl;
+    if (introAnimationPlaying) {
+        introRadius += introSpeed * dt;
+        if (introRadius >= introMaxRadius) {
+            introRadius = introMaxRadius;
+            introAnimationPlaying = false;
+            SetupBattleUI(); // Show UI now
+            displayEnemyStatus();
+            idle = true;
+        }
+        return;
+    }
     NotesGroup->Update(dt);
-    if (idle && !statusDisplayed) {
+    if (idle && !statusDisplayed && !enemyDying) {
         displayEnemyStatus();
     }
     if (!idle && statusDisplayed) {
@@ -171,6 +229,14 @@ void BattleScene::Update(float dt) {
             enemyHit();
         }
     }
+    for (auto it = hitEffects.begin(); it != hitEffects.end(); ) {
+        it->timeLeft -= dt;
+        if (it->timeLeft <= 0) {
+            it = hitEffects.erase(it);
+        } else {
+            ++it;
+        }
+    }
 
     if (minigameBoxActive) {
         notesTime += dt;
@@ -178,52 +244,156 @@ void BattleScene::Update(float dt) {
 
         imageSprite->Position.x = mouseX;
         imageSprite->Position.y = mouseY;
-        if (!circleActive) {
-            timeSinceSpawn += dt;
-            if (timeSinceSpawn >= spawnCD) {
-                float randX = minigame_x1 + rand() % int((minigame_x2-minigame_x1) - 2 * circleRad);
-                float randY = minigame_y1 + rand() % int((minigame_y2 - minigame_y1) - 2 * circleRad);
-                circlePos = Engine::Point(randX, randY);
-                circleActive = true;
-                activeTime = 0.0f;
-                timeSinceSpawn = 0.0f;
+        if (notesTime >= 10) {
+            // If a circle is still active, wait for its timeout
+            if (circleActive) {
+                activeTime += dt;
+                float dx = mouseX - circlePos.x;
+                float dy = mouseY - circlePos.y;
+
+                if (activeTime >= spawnCD) {
+                    if (std::sqrt(dx * dx + dy * dy) > circleRad) {
+                        updatePlayerHp(3);
+                    }
+                    circleActive = false;
+                    timeSinceSpawn = 0;
+                }
+            } else {
+                // No circle active — now we're truly done
+                al_show_mouse_cursor(al_get_current_display());
+                minigameBoxActive = false;
+                enemyHit();
+                BoxGameGroup->Clear();
             }
         } else {
-            activeTime += dt;
-            float dx = mouseX - circlePos.x;
-            float dy = mouseY - circlePos.y;
-
-
-            if (activeTime >= spawnCD) {
-                if (std::sqrt(dx*dx + dy*dy) > circleRad) {
-                    updatePlayerHp(3);
+            // Only spawn/process circle if still in allowed time
+            if (!circleActive) {
+                timeSinceSpawn += dt;
+                if (timeSinceSpawn >= spawnCD) {
+                    auto [randX, randY] = generateRandomPos();
+                    circlePos = Engine::Point(randX, randY);
+                    circleActive = true;
+                    activeTime = 0.0f;
+                    timeSinceSpawn = 0.0f;
                 }
-                circleActive = false;
-                timeSinceSpawn = 0;
+            } else {
+                activeTime += dt;
+                float dx = mouseX - circlePos.x;
+                float dy = mouseY - circlePos.y;
+
+                if (activeTime >= spawnCD) {
+                    if (std::sqrt(dx * dx + dy * dy) > circleRad) {
+                        updatePlayerHp(3);
+                    }
+                    circleActive = false;
+                    timeSinceSpawn = 0;
+                }
             }
         }
 
-
-
         if (notesTime >= 10) {
-            al_show_mouse_cursor(al_get_current_display());
-            minigameBoxActive = false;
-            enemyHit();
-            BoxGameGroup->Clear();
+            if (circleActive) {
+                activeTime += dt;
+                if (activeTime >= spawnCD) {
+                    circleActive = false;
+                    timeSinceSpawn = 0;
+                }
+            } else {
+                al_show_mouse_cursor(al_get_current_display());
+                minigameBoxActive = false;
+                enemyHit();
+                BoxGameGroup->Clear();
+            }
+        }
+    }
+    if (playerHitTimer > 0) {
+        playerHitTimer -= dt;
+    }
+    if (enemyShakeTime > 0.0f) {
+        enemyShakeTime -= dt;
+        if (enemyShakeTime < 0.0f) enemyShakeTime = 0.0f;
+    }
+    frameTime += dt;
+    if (frameTime >= frameInterval) {
+        frameTime = 0.0f;
+        currentEnemyFrame = (currentEnemyFrame + 1) % enemyFrames.size();
+    }
+    if (enemyDying) {
+        deathAnimTimer += dt;
+        if (deathAnimTimer >= deathFrameInterval) {
+            deathAnimTimer = 0;
+            deathFrameIndex++;
+            if (deathFrameIndex >= enemyDeathFrames.size()) {
+                // Animation finished
+                float remainingTime = deathAnimTimer - (deathFrameInterval * enemyDeathFrames.size());
+                if (remainingTime > 0) {
+                    if (!deathAnimationCompleted) {
+                        deathAnimationCompleted = true;
+                        deathEndTimer = remainingTime;
+                    } else {
+                        deathEndTimer -= dt;
+                        if (deathEndTimer <= 0) {
+                            // Animation finished
+                            for (auto bmp : enemyDeathFrames) {
+                                if (bmp) al_destroy_bitmap(bmp);
+                            }
+                            enemyDeathFrames.clear();
+                            GameData::getInstance().deadEnemies.insert(enemyName);
+                            Engine::GameEngine::GetInstance().ChangeScene("play");
+                        }
+                    }
+                } else {
+                    // Animation finished
+                    for (auto bmp : enemyDeathFrames) {
+                        if (bmp) al_destroy_bitmap(bmp);
+                    }
+                    enemyDeathFrames.clear();
+                    GameData::getInstance().deadEnemies.insert(enemyName);
+                    Engine::GameEngine::GetInstance().ChangeScene("play");
+                }
+            }
         }
     }
 }
 
 void BattleScene::Draw() const {
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+
     IScene::Draw();
     LabelGroup->Draw();
 
-    al_draw_rectangle(minigame_x1, minigame_y1, minigame_x2, minigame_y2, al_map_rgba(255,255,255,255), 2);
+    if (!introAnimationPlaying) al_draw_rectangle(minigame_x1, minigame_y1, minigame_x2, minigame_y2, al_map_rgba(255,255,255,255), 7);
     if (minigameNotesActive) {
         NotesGroup->Draw();
 
 
-        al_draw_rectangle(minigame_x2 - 300,minigame_y1,minigame_x2-notesGap,minigame_y2,al_map_rgba(255,255,0,255),1);
+        if (!introAnimationPlaying) {
+            al_draw_rectangle(minigame_x1, minigame_y1, minigame_x2, minigame_y2, al_map_rgba(255,255,255,255), 7);
+        }
+
+        float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
+        float topY = minigame_y1 + 45;
+        float midY = (minigame_y1 + minigame_y2) / 2.0f;
+        float bottomY = minigame_y2 - 45;
+        float radius = 37.0f;
+
+        al_draw_circle(centerX, topY, radius, al_map_rgb(255, 0, 0),5);
+        al_draw_circle(centerX, midY, radius, al_map_rgb(255, 255, 0),5);
+        al_draw_circle(centerX, bottomY, radius, al_map_rgb(0, 255, 0),5);
+        const ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("undertale.ttf", 32).get();
+        ALLEGRO_COLOR white = al_map_rgb(255, 255, 255);
+        al_draw_text(font, white, centerX, topY - 16, ALLEGRO_ALIGN_CENTER, "J");
+        al_draw_text(font, white, centerX, midY - 16, ALLEGRO_ALIGN_CENTER, "K");
+        al_draw_text(font, white, centerX, bottomY - 16, ALLEGRO_ALIGN_CENTER, "L");
+
+        for (const auto& effect : hitEffects) {
+            float alpha = effect.timeLeft / 0.3f;
+            ALLEGRO_COLOR glow = al_map_rgba_f(1.0, 1.0, 1.0, alpha);
+            float radius = 64 + 64 * (1.0f - alpha); // pulse
+
+            al_draw_circle(effect.x, effect.y, radius, glow, 4);
+        }
     }
     if (negotiateActive) {
         std::cout << "negotiate" << std::endl;
@@ -231,9 +401,79 @@ void BattleScene::Draw() const {
     }
     if (minigameBoxActive) {
         if (circleActive) {
-            al_draw_circle(circlePos.x,circlePos.y,circleRad,al_map_rgba(255,255,0,255),2);
+            al_draw_circle(circlePos.x,circlePos.y,circleRad,al_map_rgba(255,255,0,255),4);
         }
         imageSprite->Draw();
+    }
+    if (introAnimationPlaying) {
+        int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+        int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+
+        // Draw white background circle first
+        al_draw_filled_circle(w / 2, h / 2, introRadius, al_map_rgb(255, 255, 255));
+
+        // Clip everything to the circle
+        al_set_clipping_rectangle(w / 2 - introRadius, h / 2 - introRadius, introRadius * 2, introRadius * 2);
+
+        // Draw enemy image scaled based on circle radius
+            if (enemyFrames.size() >= 2 && enemyFrames[1]) { // Use 2nd sprite (index 1)
+                ALLEGRO_BITMAP* introBmp = enemyFrames[1];
+                int bmpW = al_get_bitmap_width(introBmp);
+                int bmpH = al_get_bitmap_height(introBmp);
+                float drawSize = introRadius * 1.33f;
+                al_draw_scaled_bitmap(introBmp, 0, 0, bmpW, bmpH,
+                                      w / 2 - drawSize / 2, h / 2 - drawSize / 2,
+                                      drawSize, drawSize, 0);
+        }
+
+        // Reset clip
+        al_reset_clipping_rectangle();
+    }
+    else
+    {
+        float enemyW = 300;
+        float enemyH = 300;
+        float enemyX = w / 2 - enemyW / 2;
+        float enemyY = minigame_y1 - enemyH - 20;
+
+        if (enemyShakeTime > 0.0f) {
+            float shakeX = ((rand() % 100) / 100.0f - 0.5f) * 2 * enemyShakeMagnitude;
+            float shakeY = ((rand() % 100) / 100.0f - 0.5f) * 2 * enemyShakeMagnitude;
+            enemyX += shakeX;
+            enemyY += shakeY;
+        }
+
+        float centerX = enemyX + enemyW / 2;
+        float centerY = enemyY + enemyH / 2;
+        float radius = std::max(enemyW, enemyH) / 2 + 10;
+        al_draw_filled_circle(centerX, centerY, radius, al_map_rgb(255, 255, 255));
+
+        if (enemyDying && !enemyDeathFrames.empty() && deathFrameIndex < enemyDeathFrames.size()) {
+            const ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("undertale.ttf", 48).get();
+            ALLEGRO_COLOR white = al_map_rgb(255, 255, 255);
+            float centerX = (minigame_x1 + minigame_x2) / 2.0f;
+            float centerY = (minigame_y1 + minigame_y2) / 2.0f;
+            al_draw_text(font, white, centerX, centerY, ALLEGRO_ALIGN_CENTER, "Enemy Death");
+
+            ALLEGRO_BITMAP* deathBmp = enemyDeathFrames[deathFrameIndex];
+            al_draw_scaled_bitmap(deathBmp, 0, 0,
+                al_get_bitmap_width(deathBmp),
+                al_get_bitmap_height(deathBmp),
+                enemyX, enemyY, enemyW, enemyH, 0);
+
+        }
+        else if (!enemyFrames.empty()) {
+            ALLEGRO_BITMAP* currentBmp = enemyFrames[currentEnemyFrame];
+            al_draw_scaled_bitmap(currentBmp, 0, 0,
+                al_get_bitmap_width(currentBmp),
+                al_get_bitmap_height(currentBmp),
+                enemyX, enemyY, enemyW, enemyH, 0);
+        }
+    }
+    if (playerHitTimer > 0) {
+        float alpha = playerHitTimer / 0.3f; // fade out
+        ALLEGRO_COLOR redTint = al_map_rgba_f(1.0, 0.0, 0.0, alpha);
+        al_draw_filled_rectangle(0, 0, w, h, redTint);
     }
 }
 
@@ -245,6 +485,12 @@ void BattleScene::OnKeyDown(int keyCode) {
             for (auto& note : NotesGroup->GetObjects()) {
                 Notes * insideNote = dynamic_cast<Notes*>(note);
                 if (insideNote->hit && insideNote->lane == 0) {
+                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
+                    float y = (insideNote->lane  == 0) ? minigame_y1 + 45 :
+                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
+                                             minigame_y2 - 45;
+
+                    hitEffects.push_back({centerX, y, 0.3f});
                     remove = note;
                     break;
                 }
@@ -259,6 +505,13 @@ void BattleScene::OnKeyDown(int keyCode) {
             for (auto& note : NotesGroup->GetObjects()) {
                 Notes * insideNote = dynamic_cast<Notes*>(note);
                 if (insideNote->hit && insideNote->lane == 1) {
+                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
+                    float y = (insideNote->lane  == 0) ? minigame_y1 + 45 :
+                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
+                                             minigame_y2 - 45;
+
+                    hitEffects.push_back({centerX, y, 0.3f});
+
                     remove = note;
                     break;
                 }
@@ -274,6 +527,13 @@ void BattleScene::OnKeyDown(int keyCode) {
             for (auto& note : NotesGroup->GetObjects()) {
                 Notes * insideNote = dynamic_cast<Notes*>(note);
                 if (insideNote->hit && insideNote->lane == 2) {
+                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
+                    float y = (insideNote->lane == 0) ? minigame_y1 + 45 :
+                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
+                                             minigame_y2 - 45;
+
+                    hitEffects.push_back({centerX, y, 0.3f});
+
                     remove = note;
                     break;
                 }
@@ -300,7 +560,8 @@ void BattleScene::OnKeyDown(int keyCode) {
         }
 
         if (inputPos == negotiateKeys.size()) {
-
+            AudioHelper::StopSample(bgmInstance);
+            bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
@@ -353,6 +614,20 @@ void BattleScene::SpareOnClick() {
     if (idle) {
         if (enemyHp == 5) {
             // std::cout << enemyName;
+            AudioHelper::StopSample(bgmInstance);
+            bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
+            LabelGroup->Clear();
+            NotesGroup->Clear();
+            NegotiateGroup->Clear();
+            BoxGameGroup->Clear();
+            labelHpEnemy = nullptr;
+            labelHpPlayer = nullptr;
+            labelDesc = nullptr;
+            labelEmo = nullptr;
+            for (auto bmp : enemyFrames) {
+                if (bmp) al_destroy_bitmap(bmp);
+            }
+            enemyFrames.clear();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
@@ -411,19 +686,32 @@ void BattleScene::enemyHit() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
-    LabelGroup->RemoveObject(labelHpEnemy->GetObjectIterator());
     char buff[20];
+    if (labelHpEnemy) {
+        LabelGroup->RemoveObject(labelHpEnemy->GetObjectIterator());
+    }
+
     sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
-    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 24, halfW, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW - 250, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
 
 
-    if (enemyHp <= 0) {
-        GameData::getInstance().deadEnemies.insert(enemyName);
-        Engine::GameEngine::GetInstance().ChangeScene("play");
+    if (enemyHp <= 0 && !enemyDying) {
+        enemyDying = true;
+        idle = false;
+        frameTime = 0.0f;
+        deathAnimTimer = 0.0f;
+        LabelGroup->Clear();
+        labelDesc = nullptr;
+        labelEmo = nullptr;
+        labelHpEnemy = nullptr;
+        labelHpPlayer = nullptr;
+        AudioHelper::StopSample(bgmInstance);
+        bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
     }
 
     idle = true;
+    enemyShakeTime = enemyShakeDuration;
 }
 
 void BattleScene::readNotesWave() {
@@ -442,6 +730,7 @@ void BattleScene::readNotesWave() {
 
 void BattleScene::updatePlayerHp(int min){
     playerHp -= min;
+    playerHitTimer = 0.3f;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -453,6 +742,20 @@ void BattleScene::updatePlayerHp(int min){
     LabelGroup->AddNewObject(labelHpPlayer);
     if (playerHp <= 0) {
         al_show_mouse_cursor(al_get_current_display());
+        AudioHelper::StopSample(bgmInstance);
+        bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
+        LabelGroup->Clear();
+        NotesGroup->Clear();
+        NegotiateGroup->Clear();
+        BoxGameGroup->Clear();
+        labelHpEnemy = nullptr;
+        labelHpPlayer = nullptr;
+        labelDesc = nullptr;
+        labelEmo = nullptr;
+        for (auto bmp : enemyFrames) {
+            if (bmp) al_destroy_bitmap(bmp);
+        }
+        enemyFrames.clear();
         Engine::GameEngine::GetInstance().ChangeScene("lose");
     }
 }
@@ -595,10 +898,15 @@ void BattleScene::OnMouseMove(int mx, int my) {
 }
 
 std::pair<int, int> BattleScene::generateRandomPos() const{
-    srand(time(NULL));
-    int x = rand() % ((int)minigame_x2-50);
-    int y = (rand() % ((int) minigame_y2 - (int)minigame_y1)) + minigame_y1;
-    return {x,y};
+    int minX = static_cast<int>(minigame_x1 + circleRad);
+    int maxX = static_cast<int>(minigame_x2 - circleRad);
+    int minY = static_cast<int>(minigame_y1 + circleRad);
+    int maxY = static_cast<int>(minigame_y2 - circleRad);
+    std::uniform_int_distribution<int> distSafeX(minX, maxX);
+    std::uniform_int_distribution<int> distSafeY(minY, maxY);
+    int x = distSafeX(rng);
+    int y = distSafeY(rng);
+    return {x, y};
 }
 
 
