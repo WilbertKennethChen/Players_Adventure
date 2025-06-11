@@ -15,6 +15,7 @@ namespace Engine {
 class StartScene final : public Engine::IScene {
 private:
     Engine::Label* instructionLabel = nullptr;
+    Engine::Label* userLabel = nullptr;
     float animationTime = 0.0f;
 public:
     explicit StartScene() = default;
@@ -23,6 +24,7 @@ public:
     void PlayOnClick(int stage);
     void SettingsOnClick(int stage);
     void LeaderboardOnClick(int stage);
+    void LoginOnClick();
     void Update(float deltaTime) override;
 };
 #endif   // INC_2025_I2P2_TOWERDEFENSE_WITH_ANSWER_STARTSCENE_H

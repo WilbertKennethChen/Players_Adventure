@@ -15,7 +15,10 @@ namespace Engine {
     protected:
         // Smart pointer to font.
         std::shared_ptr<ALLEGRO_FONT> font;
-
+        float revealSpeed = 30.0f;
+        float revealTimer =0;
+        float revealedChars =0;
+        bool revealDone = false;
 
     public:
         // Text to draw.
@@ -43,6 +46,9 @@ namespace Engine {
         /// Draw text with loaded font.
         /// </summary>
         void Draw() const override;
+        void Update(float deltaTime) override;
+        void Skip();
+        bool isDone() const;
         /// <summary>
         /// Return text width.
         /// </summary>

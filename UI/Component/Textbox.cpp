@@ -31,10 +31,23 @@ namespace Engine {
         bg->Draw();
         text->Draw();
     }
+
     int Textbox::GetTextWidth() const {
         return al_get_text_width(font.get(), Text.c_str());
     }
     int Textbox::GetTextHeight() const {
         return al_get_font_line_height(font.get());
     }
+    void Textbox::Update(float deltaTime) {
+        text->Update(deltaTime);
+    }
+    void Textbox::Skip() {
+        text->Skip();
+    }
+    bool Textbox::isDone() const {
+        return text->isDone();
+    }
+
+
+
 }

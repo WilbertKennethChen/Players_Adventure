@@ -17,6 +17,7 @@
 #include "PlayScene.hpp"
 #include "Scene/StartScene.h"
 
+#include "nlohmann/json.hpp"
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
@@ -49,7 +50,6 @@ void StartScene::Initialize() {
     // ADD THIS LINE: Set the bonfire background for the main menu.
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
-    AddNewObject(new Engine::Label("GameLore", "undertale.ttf", 120, halfW - 50, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
 
     btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/empty.png", halfW - 250, halfH / 2, 400, 400);
     btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
@@ -60,11 +60,11 @@ void StartScene::Initialize() {
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/champ.png", "stage-select/champione.png", halfW + 620, halfH * 3 / 2 + 25, 200, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this,3));
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/icon1.png", "stage-select/icon2.png", halfW + 360, halfH * 3 / 2 + 25, 200, 200);
-    btn->SetOnClickCallback(std::bind(&StartScene::LeaderboardOnClick, this, 3));
+    btn->SetOnClickCallback(std::bind(&StartScene::LoginOnClick, this));
     AddNewControlObject(btn);
 
     unsigned char initialAlpha = 128;
@@ -72,7 +72,23 @@ void StartScene::Initialize() {
                                    halfW - 45, h - 40,
                                    255, 255, 255, initialAlpha,
                                    0.5, 1.0);
-    AddNewObject(instructionLabel);
+
+    std::string titleText = "??? Adventure";
+    std::string user = GameData::getInstance().Username;
+
+    if (user != "") {
+        user[0]-=32;
+        titleText = user + "'s Adventure";
+        AddNewObject(instructionLabel);
+    } else {
+        AddNewObject(new Engine::Label("Login or Register to Start", "undertale.ttf", fontSize,
+                               halfW - 45, h - 90,
+                               255, 255, 255, 100,
+                               0.5, 1.0));
+    }
+    AddNewObject(new Engine::Label(titleText, "undertale.ttf", 120, halfW, halfH / 3 - 100, 255, 255, 255, 255, 0.5, 0.5)); // Adjusted color to be visible
+
+
     Engine::LOG(Engine::INFO) << "PreStartScene instruction label added.";
     animationTime = 0.0f;
 
@@ -102,7 +118,16 @@ void StartScene::Terminate() {
     IScene::Terminate();
 }
 void StartScene::PlayOnClick(int stage) {
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    if (GameData::getInstance().Username != "") {
+        std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+        std::ifstream jsonFileStream(path);
+        nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+        jsonFileStream.close();
+        GameData::getInstance().deadEnemies = jsonData[GameData::getInstance().Username]["DeadEnemy"];
+        GameData::getInstance().friendlyEnemies = jsonData[GameData::getInstance().Username]["FriendlyEnemy"];
+        Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
+
 }
 void StartScene::SettingsOnClick(int stage) {
     Engine::GameEngine::GetInstance().ChangeScene("settings");
@@ -110,4 +135,8 @@ void StartScene::SettingsOnClick(int stage) {
 void StartScene::LeaderboardOnClick(int stage)
 {
     Engine::GameEngine::GetInstance().ChangeScene("leaderboard");
+}
+
+void StartScene::LoginOnClick() {
+    Engine::GameEngine::GetInstance().ChangeScene("login");
 }

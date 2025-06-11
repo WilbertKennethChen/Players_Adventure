@@ -113,7 +113,8 @@ void PlayScene::Initialize() {
     }
     PauseInitialize();
 
-    //set all friendly enemy into friendly
+
+
 
 }
 
@@ -218,6 +219,7 @@ void PlayScene::Terminate() {
 void PlayScene::Update(float deltaTime) {
     // If we use deltaTime directly, then we might have Bullet-through-paper problem.
     // Reference: Bullet-Through-Paper
+    UIGroup->Update(deltaTime);
     if (isPaused) {
         if (preview)
             preview->Update(deltaTime);
@@ -527,6 +529,7 @@ void PlayScene::OnKeyDown(int keyCode) {
     }
 
 
+
     if (keyCode == ALLEGRO_KEY_TAB) {
         DebugMode = !DebugMode;
     }
@@ -545,20 +548,26 @@ void PlayScene::OnKeyDown(int keyCode) {
     }
     if (activeTextbox) {
         if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
-            if (!nextDiag.empty()) {
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                RenderTextbox(nextDiag);
+            if (!activeTextbox->isDone()) {
+                std::cout << "skipping" << std::endl;
+                activeTextbox->Skip();
             } else {
+                std::cout << "not skipping" << std::endl;
+                if (!nextDiag.empty()) {
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    RenderTextbox(nextDiag);
+                } else {
 
-                UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
-                activeTextbox = nullptr;
-                nameDiag = "";
+                    UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
+                    activeTextbox = nullptr;
+                    nameDiag = "";
 
-                if (interactingNPC->isHostile()) {
-                    SaveState(interactingNPC->getName());
-                    Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    if (interactingNPC->isHostile()) {
+                        SaveState(interactingNPC->getName());
+                        Engine::GameEngine::GetInstance().ChangeScene("battle");
+                    }
+
                 }
-
             }
         }
     }
@@ -961,5 +970,20 @@ void PlayScene::ExitOnClick() {
     GameData::getInstance().changeMap = false;
     isPaused = false;
     SetPauseUIVisible(false);
+    std::cout << GameData::getInstance().Username << std::endl;
+    //write to safe file
+    std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+    std::ifstream jsonFileStream(path);
+    nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+    jsonFileStream.close();
+    jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
+    jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+
+    std::ofstream jsonOut(path);
+    jsonOut << jsonData.dump(4);
+    jsonOut.close();
+
+
+
     Engine::GameEngine::GetInstance().ChangeScene("stage-select");
 }

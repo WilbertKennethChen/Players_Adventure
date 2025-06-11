@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(.)
 include_directories(Resource)
 
+add_compile_definitions(PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
 file(COPY Resource/audios DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY Resource/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -20,6 +22,7 @@ add_executable(2025_I2P2_TowerDefense
     nlohmann/json.hpp
         Resource/jsonData/dialogue.json
         Resource/jsonData/enemyInfo.json
+        Resource/jsonData/SaveFile.json
 
     Engine/Allegro5Exception.cpp
     Engine/Allegro5Exception.hpp
@@ -106,6 +109,8 @@ add_executable(2025_I2P2_TowerDefense
         Engine/AnimatedSprite.hpp
         Engine/Boundary.hpp
         Engine/Boundary.cpp
+        Scene/LoginScene.cpp
+        Scene/LoginScene.hpp
 )
 
 IF (WIN32)
