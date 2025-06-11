@@ -5,9 +5,15 @@
         "test1234",
         "nathan77",
         "john",
-        "aaa"
+        "aaa",
+        "abcd"
     ],
     "aaa": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "abc"
+    },
+    "abcd": {
         "DeadEnemy": [],
         "FriendlyEnemy": [],
         "Pass": "abc"

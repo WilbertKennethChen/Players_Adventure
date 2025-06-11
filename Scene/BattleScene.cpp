@@ -40,9 +40,17 @@ void BattleScene::Initialize() {
     introAnimationPlaying = true;
     introRadius = 0;
     playerHitTimer = 0.0f;
-    bool deathAnimationCompleted = false;
-    float deathEndTimer = 0.0f;
-     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
+    deathAnimationCompleted = false;
+    deathEndTimer = 0.0f;
+    enemyFrames.clear();
+    enemyDeathFrames.clear();
+    enemyDying = false;
+    deathFrameIndex =0;
+    enemyShakeTime =0;
+    currentEnemyFrame=0;
+    frameTime =0;
+    deathEndTimer = 0;
+    int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
@@ -69,6 +77,7 @@ void BattleScene::Initialize() {
     labelNegotiateInput = nullptr;
     imageSprite = nullptr;
     enemy = GameData::getInstance().currentEnemy;
+
     enemyName = enemy->getName();
     enemyMaxHp = GameData::getInstance().enemyList[enemyName].hp;
     img = "Resource/images/" + GameData::getInstance().enemyList[enemyName].img;
@@ -79,17 +88,30 @@ void BattleScene::Initialize() {
     playerHp = GameData::getInstance().playerHp;
     playerMaxHp = GameData::getInstance().playerMaxHp;
     enemyHp = enemyMaxHp;
-    for (int i = 1; i <= 5; ++i) {
-        std::string path = img + "_" + std::to_string(i) + ".png";
-        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
-        if (bmp) enemyFrames.push_back(bmp);
-        else std::cerr << "Failed to load: " << path << std::endl;
+    if (enemyName == "groveDad" && GameData::getInstance().deadEnemies.count("groveChild")) {
+        emotion = "furious";
     }
-    for (int i = 6; i <= 9; ++i) {
+    for (int i = 1; i <= 4; ++i) {
+
         std::string path = img + "_" + std::to_string(i) + ".png";
-        ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
-        if (bmp) enemyDeathFrames.push_back(bmp);
-        else std::cerr << "Failed to load death frame: " << path << std::endl;
+        if (std::filesystem::exists(path)) {
+            ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+            if (bmp) enemyFrames.push_back(bmp);
+            else std::cerr << "Failed to load: " << path << std::endl;
+        } else {
+            break;
+        }
+
+    }
+    for (int i = 5; i <= 9; ++i) {
+        std::string path = img + "_" + std::to_string(i) + ".png";
+        if (std::filesystem::exists(path)) {
+            ALLEGRO_BITMAP* bmp = al_load_bitmap(path.c_str());
+            if (bmp) enemyDeathFrames.push_back(bmp);
+            else std::cerr << "Failed to load death frame: " << path << std::endl;
+        } else {
+            break;
+        }
     }
     //Init Groups
     AddNewControlObject(LabelGroup = new Group());
@@ -291,20 +313,7 @@ void BattleScene::Update(float dt) {
             }
         }
 
-        if (notesTime >= 10) {
-            if (circleActive) {
-                activeTime += dt;
-                if (activeTime >= spawnCD) {
-                    circleActive = false;
-                    timeSinceSpawn = 0;
-                }
-            } else {
-                al_show_mouse_cursor(al_get_current_display());
-                minigameBoxActive = false;
-                enemyHit();
-                BoxGameGroup->Clear();
-            }
-        }
+
     }
     if (playerHitTimer > 0) {
         playerHitTimer -= dt;
@@ -339,6 +348,7 @@ void BattleScene::Update(float dt) {
                             }
                             enemyDeathFrames.clear();
                             GameData::getInstance().deadEnemies.insert(enemyName);
+                            // std::cout << "first" << std::endl;
                             Engine::GameEngine::GetInstance().ChangeScene("play");
                         }
                     }
@@ -349,10 +359,16 @@ void BattleScene::Update(float dt) {
                     }
                     enemyDeathFrames.clear();
                     GameData::getInstance().deadEnemies.insert(enemyName);
+                    // std::cout << "second" << std::endl;
                     Engine::GameEngine::GetInstance().ChangeScene("play");
                 }
             }
         }
+    }
+    if (negotiateActive) {
+        NegotiateGroup->Update(dt);
+        labelNegotiate->Skip();
+        labelNegotiateInput->Skip();
     }
 }
 
@@ -396,7 +412,7 @@ void BattleScene::Draw() const {
         }
     }
     if (negotiateActive) {
-        std::cout << "negotiate" << std::endl;
+        // std::cout << "negotiate" << std::endl;
         NegotiateGroup->Draw();
     }
     if (minigameBoxActive) {
@@ -594,7 +610,7 @@ void BattleScene::AttackOnClick() {
     //enemy get damage (update enemy health)
 }
 void BattleScene::NegotiateOnClick() {
-    if (idle) {
+    if (idle && emotion != "furious") {
         if (!negotiateActive) {
 
             labelNegotiate = new Engine::Label(negotiateText, "undertale.ttf", 38, minigame_x1, minigame_y1 + 10, 255, 255, 255, 100, 0.5, 0.5,minigame_x2);
@@ -611,8 +627,8 @@ void BattleScene::NegotiateOnClick() {
 }
 
 void BattleScene::SpareOnClick() {
-    if (idle) {
-        if (enemyHp == 5) {
+    if (idle && emotion != "furious") {
+        if (emotion == "scared") {
             // std::cout << enemyName;
             AudioHelper::StopSample(bgmInstance);
             bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
@@ -645,7 +661,7 @@ void BattleScene::displayEnemyStatus() {
 
     labelDesc = new Engine::Label("~ " + desc + " ~", "undertale.ttf", 48, minigame_x2/2, minigame_y1 + 40, 255, 255, 255, 255, 0.5, 0.5);
 
-    if (enemyHp == 5) emotion = "scared";
+    if (enemyHp == 5 && emotion != "furious") emotion = "scared";
     labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "undertale.ttf", 48, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
 
     LabelGroup->AddNewObject(labelEmo);
@@ -662,7 +678,7 @@ void BattleScene::displayEnemyStatus() {
     }
     if (emotion == "furious") {
         notesGap = 200;
-        notesSpeed = 700;
+        notesSpeed = 1000;
     }
 }
 
@@ -681,7 +697,7 @@ void BattleScene::createNotesGame() {
 
 
 void BattleScene::enemyHit() {
-    enemyHp = std::max(enemyHp-5,0);
+    enemyHp = std::max(enemyHp-100,0);
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -697,6 +713,7 @@ void BattleScene::enemyHit() {
 
 
     if (enemyHp <= 0 && !enemyDying) {
+        // std::cout << "enemy dead" << std::endl;
         enemyDying = true;
         idle = false;
         frameTime = 0.0f;
@@ -720,7 +737,7 @@ void BattleScene::readNotesWave() {
     float lane0, lane1, lane2;
     notesWave.resize(3);
     while (fin >> lane0 && fin >> lane1 && fin >> lane2) {
-        std::cout << lane0;
+        // std::cout << lane0;
         notesWave[0].push(lane0);
         notesWave[1].push(lane1);
         notesWave[2].push(lane2);
@@ -763,6 +780,7 @@ void BattleScene::updatePlayerHp(int min){
 
 void BattleScene::convertNegotiateText() {
     int pos=0;
+    negotiateKeys.clear();
     int n = negotiateText.length();
     while (pos < n) {
         char c = negotiateText[pos];

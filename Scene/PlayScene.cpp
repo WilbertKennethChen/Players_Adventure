@@ -44,11 +44,7 @@ const int PlayScene::BlockSize = 64;
 const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
 const Engine::Point PlayScene::EndGridPoint = Engine::Point(MapWidth, MapHeight - 1);
-const std::vector<int> PlayScene::code = {
-    ALLEGRO_KEY_UP, ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN, ALLEGRO_KEY_DOWN,
-    ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT, ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT,
-    ALLEGRO_KEY_B, ALLEGRO_KEY_A, ALLEGRO_KEYMOD_SHIFT, ALLEGRO_KEY_ENTER
-};
+
 
 std::set<int> keyDown;
 std::string nextDiag;
@@ -113,7 +109,12 @@ void PlayScene::Initialize() {
     }
     PauseInitialize();
 
-
+    //if groveChild is dead cannot groveDad will always be hostile
+    if (GameData::getInstance().deadEnemies.count("groveChild")) {
+       if (GameData::getInstance().friendlyEnemies.count("groveDad")) {
+           GameData::getInstance().friendlyEnemies.erase("groveDad");
+       }
+    }
 
 
 }
@@ -638,6 +639,9 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case 'W': mapData.push_back(9); break;  // Water
             case 'R': mapData.push_back(10); break; // Tree Tile
             case 'r': mapData.push_back(11); break; // Small Tree
+            case 'X': mapData.push_back(297); break;
+            case 'Y': mapData.push_back(298); break;
+            case 'Z': mapData.push_back(299); break;
             case '\n':
             case '\r':
                 if (static_cast<int>(mapData.size()) / MapWidth != 0)
@@ -737,12 +741,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            npc3 = new Npc("play/archivist_shade_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
                             std::cout << "friendly";
                         } else {
                             std::cout << "not friendly";
-                            npc3 = new Npc("play/enemy-1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                            npc3 = new Npc("play/archivist_shade_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+
                         }
+                        npc3->Size.x *= 0.23;
+                        npc3->Size.y *= 0.23;
                         NpcGroup->AddNewObject(npc3);
                     }
 
@@ -797,7 +804,69 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                       new Engine::Image("play/cao.png", j*BlockSize, i*BlockSize, BlockSize, BlockSize)
                     );
                     break;
+                case 297: // V groveDad
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveDad";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new Npc("play/grove_warden_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new Npc("play/grove_warden_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                        }
+                        npc3->Size.x *= 0.23;
+                        npc3->Size.y *= 0.23;
+                        NpcGroup->AddNewObject(npc3);
+                    }
 
+                    break;
+                }
+                case 298:
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "groveChild";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new Npc("play/grove_child_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new Npc("play/grove_child_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                        }
+                        npc3->Size.x *= 0.23;
+                        npc3->Size.y *= 0.23;
+                        NpcGroup->AddNewObject(npc3);
+                    }
+
+                    break;
+                }
+                case 299:
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "jesterKnight";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new Npc("play/jester_knight_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name);
+                            std::cout << "friendly";
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new Npc("play/jester_knight_1.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, name,true);
+                        }
+                        npc3->Size.x *= 0.23;
+                        npc3->Size.y *= 0.23;
+                        NpcGroup->AddNewObject(npc3);
+                    }
+
+                    break;
+                }
             }
         }
     }
