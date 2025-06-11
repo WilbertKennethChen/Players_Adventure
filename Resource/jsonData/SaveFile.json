@@ -4,8 +4,14 @@
         "test11",
         "test1234",
         "nathan77",
-        "john"
+        "john",
+        "aaa"
     ],
+    "aaa": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "abc"
+    },
     "john": {
         "DeadEnemy": [],
         "FriendlyEnemy": [],

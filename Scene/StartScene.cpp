@@ -51,8 +51,8 @@ void StartScene::Initialize() {
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
 
-    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400, 400);
-    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));
+    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400);
+    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));400,
     AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/settingok.png", "stage-select/settinggud.png", halfW + 490, halfH * 3 / 2 + 25, 200, 200);
