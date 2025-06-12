@@ -1497,8 +1497,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
         // Top wall
         treeColliders.push_back(Box{
             0, 15,
-            mapPixelW, innerY
+            mapPixelW / 2 - 20, innerY
         });
+
+        treeColliders.push_back(Box{
+            mapPixelW / 2 + 20, 15,
+            mapPixelW / 2, innerY
+        });
+
+
 
         // Bottom wall
         treeColliders.push_back(Box{
