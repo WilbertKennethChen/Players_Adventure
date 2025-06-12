@@ -111,6 +111,10 @@ add_executable(2025_I2P2_TowerDefense
         Engine/Boundary.cpp
         Scene/LoginScene.cpp
         Scene/LoginScene.hpp
+        NPC/enemynpc.cpp
+        NPC/enemynpc.h
+        NPC/water.h
+        NPC/water.cpp
 )
 
 IF (WIN32)

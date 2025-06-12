@@ -6,10 +6,15 @@
         "nathan77",
         "john",
         "aaa",
-        "wb"
+        "wb",
+        "wb123",
+        "nathan11"
     ],
     "aaa": {
-        "DeadEnemy": [],
+        "DeadEnemy": [
+            "groveChild",
+            "groveDad"
+        ],
         "FriendlyEnemy": [],
         "Pass": "abc"
     },
@@ -24,6 +29,11 @@
             "enemy1"
         ],
         "Pass": "test123"
+    },
+    "nathan11": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "wilbertkontol"
     },
     "nathan77": {
         "DeadEnemy": [
@@ -45,6 +55,11 @@
         "Pass": "bib"
     },
     "wb": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
+    },
+    "wb123": {
         "DeadEnemy": [],
         "FriendlyEnemy": [],
         "Pass": "123"
