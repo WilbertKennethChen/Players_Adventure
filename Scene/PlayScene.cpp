@@ -287,8 +287,8 @@ void PlayScene::Update(float deltaTime) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
             pendingSpawnPoint = Engine::Point(BlockSize, player->Position.y);
-        } else if (MapId == 2 && playerLeftEdge <= transitionRange &&
-                 player->Position.y >= bottomEdge + 10) {
+            } else if (MapId == 2 && player->Position.y <= BlockSize &&
+             std::abs(player->Position.x - (MapWidth * BlockSize) / 2) <= BlockSize) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
             pendingSpawnPoint = Engine::Point((MapWidth * BlockSize) - BlockSize, player->Position.y);
