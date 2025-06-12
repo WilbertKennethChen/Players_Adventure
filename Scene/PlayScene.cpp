@@ -665,7 +665,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '2': mapData.push_back(2); break;  // NPC1
             case '3': mapData.push_back(3); break;  // NPC2
             case 'S': mapData.push_back(4); break;  // Player Spawn
-            case 'T': mapData.push_back(5); break;  // Player spawned when change map
+            // case 'T': mapData.push_back(5); break;  // Player spawned when change map
             case 'G': mapData.push_back(6); break;  // Enemy ghost
             case 'H': mapData.push_back(7); break;  // House Tile
             // case '8': mapData.push_back(8); break;  // Another dirt
@@ -849,7 +849,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 5: //Teleport point map 2
                     if (MapId == 2) {
                         mapState[i][j] = TILE_FLOOR;
-                        TileMapGroup->AddNewObject(new Engine::Image("pack/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                         teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     }
                     break;
