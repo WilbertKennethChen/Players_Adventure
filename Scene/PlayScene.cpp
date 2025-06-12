@@ -102,8 +102,25 @@ void PlayScene::Initialize() {
     // Preload Lose Scene
     // Start BGM.
     if (MapId == 1) {
-        bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        // bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        std::string ed = GameData::getInstance().ending;
+        if (ed == "good") {
+            bgmInstance = AudioHelper::PlaySample("goodEnd.mp3",true,AudioHelper::BGMVolume);
+        } else if (ed == "bad") {
+            bgmInstance = AudioHelper::PlaySample("badEnd.mp3",true,AudioHelper::BGMVolume);
+        } else if (ed == "normal") {
+            bgmInstance = AudioHelper::PlaySample("normalEnd.mp3",true,AudioHelper::BGMVolume);
+        } else {
+            bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        }
     } else {
+        if (GameData::getInstance().deadEnemies.size() == 4) {
+            GameData::getInstance().ending = "bad";
+        } else if (GameData::getInstance().friendlyEnemies.size() == 4) {
+            GameData::getInstance().ending = "good";
+        } else if (GameData::getInstance().friendlyEnemies.size() + GameData::getInstance().deadEnemies.size() == 4) {
+            GameData::getInstance().ending = "normal";
+        }
         bgmInstance = AudioHelper::PlaySample("dungeon.mp3", true, AudioHelper::BGMVolume); // or whatever your second map BGM is
     }
     if (bgmInstance) {
@@ -287,8 +304,8 @@ void PlayScene::Update(float deltaTime) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
             pendingSpawnPoint = Engine::Point(BlockSize, player->Position.y);
-        } else if (MapId == 2 && playerLeftEdge <= transitionRange &&
-                 player->Position.y >= bottomEdge + 10) {
+            } else if (MapId == 2 && player->Position.y <= BlockSize &&
+             std::abs(player->Position.x - (MapWidth * BlockSize) / 2) <= BlockSize) {
             isTransitioning = true;
             transitionAlpha = 0.0f;
             pendingSpawnPoint = Engine::Point((MapWidth * BlockSize) - BlockSize, player->Position.y);
@@ -463,6 +480,10 @@ void PlayScene::Draw() const {
         if (BGMLabel) BGMLabel->Draw();
         if (SFXLabel) SFXLabel->Draw();
 
+
+    }
+    if (GameData::getInstance().ending == "bad" && MapId == 1) {
+        al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 175));
     }
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
@@ -803,7 +824,10 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
-                    NpcGroup->AddNewObject(npc1);
+                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                        NpcGroup->AddNewObject(npc1);
+                    }
+
                     break;
                 }
                 case 3: // NPC2
@@ -811,7 +835,9 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
-                    NpcGroup->AddNewObject(npc2);
+                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                        NpcGroup->AddNewObject(npc2);
+                    }
                     break;
                 }
                 case 4:  // Spawn point
@@ -833,13 +859,19 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
+                            npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
                             std::cout << "friendly";
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            // NpcGroup->AddNewObject(npc3);
+                        }
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
                             NpcGroup->AddNewObject(npc3);
                         }
 
@@ -1298,13 +1330,18 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveDad";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc* npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
-                            NpcGroup->AddNewObject(npc3);
-                            std::cout << "friendly";
+                            npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            // NpcGroup->AddNewObject(npc3);
+
                         } else {
-                            std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            // NpcGroup->AddNewObject(npc3);
+                        }
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
                             NpcGroup->AddNewObject(npc3);
                         }
                     }
@@ -1316,35 +1353,47 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveChild";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc* npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
                             std::cout << "friendly";
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            // NpcGroup->AddNewObject(npc3);
+                        }
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
                             NpcGroup->AddNewObject(npc3);
                         }
                     }
+
                     break;
                 }
                 case 299:
-                    {
-                        mapState[i][j] = TILE_FLOOR;
-                        TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                        std::string name = "jesterKnight";
-                        if (!GameData::getInstance().deadEnemies.count(name)) {
-                            Npc *npc3;
-                            if (GameData::getInstance().friendlyEnemies.count(name)) {
-                                npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
-                                std::cout << "friendly";
-                                NpcGroup->AddNewObject(npc3);
-                            } else {
-                                std::cout << "not friendly";
-                                npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
-                                NpcGroup->AddNewObject(npc3);
-                            }
+                {
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string name = "jesterKnight";
+                    if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
+                        if (GameData::getInstance().friendlyEnemies.count(name)) {
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            std::cout << "friendly";
+                            // NpcGroup->AddNewObject(npc3);
+                        } else {
+                            std::cout << "not friendly";
+                            npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            // NpcGroup->AddNewObject(npc3);
                         }
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
+                            NpcGroup->AddNewObject(npc3);
+                        }
+                    }
 
                         break;
                     }
@@ -1518,7 +1567,9 @@ void PlayScene::RenderTextbox(std::string key) {
         nextDiag = data["dialogue"][nameDiag]["friendly"][key]["next"];
     }
 
-
+    if (MapId == 1 && GameData::getInstance().ending == "good") {
+        text = "Congratulations!";
+    }
 
 
     // std::cout << std::filesystem::current_path() << std::endl;

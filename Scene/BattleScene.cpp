@@ -206,7 +206,7 @@ void BattleScene::Update(float dt) {
 
 
     //Notes minigame update
-    if (minigameNotesActive && !notesWave.empty()) {
+    if (minigameNotesActive && playerHp > 0 &&!notesWave.empty()) {
         //spawn notes;
 
         notesTime += dt;
@@ -233,20 +233,22 @@ void BattleScene::Update(float dt) {
             if (note->Position.x >= Engine::GameEngine::GetInstance().GetScreenSize().x) {
                 remove.push_back(note);
                 updatePlayerHp(1);
-            }
-            // mark as can be targeted
-            Notes * insideNote = dynamic_cast<Notes*>(note);
-            if (note->Position.x >= minigame_x2 - 300 && note->Position.x <= minigame_x2 - notesGap) {
-                insideNote->hit = true;
+                if (playerHp <= 0) return;
             } else {
-                insideNote->hit = false;
+                // mark as can be targeted
+                Notes * insideNote = dynamic_cast<Notes*>(note);
+                if (note->Position.x >= minigame_x2 - 300 && note->Position.x <= minigame_x2 - notesGap) {
+                    insideNote->hit = true;
+                } else {
+                    insideNote->hit = false;
+                }
             }
+
         }
         for (auto note : remove) {
             NotesGroup->RemoveObject(note->GetObjectIterator());
         }
         if (NotesGroup->GetObjects().empty() && notesWave[0].empty() && notesWave[1].empty() && notesWave[2].empty()) {
-
             minigameNotesActive = false;
             enemyHit();
         }
@@ -348,6 +350,7 @@ void BattleScene::Update(float dt) {
                             }
                             enemyDeathFrames.clear();
                             GameData::getInstance().deadEnemies.insert(enemyName);
+                            GameData::getInstance().playerHp = playerHp;
                             // std::cout << "first" << std::endl;
                             Engine::GameEngine::GetInstance().ChangeScene("play");
                         }
@@ -360,6 +363,7 @@ void BattleScene::Update(float dt) {
                     enemyDeathFrames.clear();
                     GameData::getInstance().deadEnemies.insert(enemyName);
                     // std::cout << "second" << std::endl;
+                    GameData::getInstance().playerHp = playerHp;
                     Engine::GameEngine::GetInstance().ChangeScene("play");
                 }
             }
@@ -579,6 +583,7 @@ void BattleScene::OnKeyDown(int keyCode) {
             AudioHelper::StopSample(bgmInstance);
             bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
+            GameData::getInstance().playerHp = playerHp;
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
     }
@@ -645,6 +650,7 @@ void BattleScene::SpareOnClick() {
             }
             enemyFrames.clear();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
+            GameData::getInstance().playerHp = playerHp;
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
     }
@@ -697,7 +703,7 @@ void BattleScene::createNotesGame() {
 
 
 void BattleScene::enemyHit() {
-    enemyHp = std::max(enemyHp-100,0);
+    enemyHp = std::max(enemyHp-10,0);
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -758,6 +764,9 @@ void BattleScene::updatePlayerHp(int min){
     labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
     if (playerHp <= 0) {
+        minigameNotesActive = false;
+        minigameBoxActive = false;
+        negotiateActive = false;
         al_show_mouse_cursor(al_get_current_display());
         AudioHelper::StopSample(bgmInstance);
         bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
@@ -774,6 +783,7 @@ void BattleScene::updatePlayerHp(int min){
         }
         enemyFrames.clear();
         Engine::GameEngine::GetInstance().ChangeScene("lose");
+        return;
     }
 }
 
