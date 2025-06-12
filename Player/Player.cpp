@@ -26,6 +26,12 @@ Player::Player(std::string baseImgPath, float x, float y, float hp, float speed)
     }
     std::string base = "Resource/images/" + baseImgPath;
 
+    if (baseImgPath.find("kuo") != std::string::npos) {
+        drawScale = 0.16f;
+    } else {
+        drawScale = 0.2f;
+    }
+
     // Load idle frames (1–3)
     for (int i = 1; i <= 3; ++i) {
         std::string path = base + std::to_string(i) + ".png";
@@ -138,7 +144,7 @@ void Player::Draw() const {
     std::vector<ALLEGRO_BITMAP*> frames = isWalking ? walkFrames : idleFrames;
     if (frames.empty()) return;
     ALLEGRO_BITMAP* frame = frames[currentFrameIndex];
-    float drawScale = 0.2f;
+
     float drawW = Size.x * drawScale;
     float drawH = Size.y * drawScale;
     float drawX = Position.x - drawW / 2;
@@ -147,10 +153,8 @@ void Player::Draw() const {
 
     if (!facingleft) drawX += drawW;
 
-    al_draw_scaled_bitmap(frame,
-        0, 0, Size.x, Size.y,
-        drawX, drawY,
-        drawW * scaleX, drawH, 0);
+    al_draw_scaled_bitmap(frame, 0, 0, Size.x, Size.y,
+        drawX, drawY, drawW * scaleX, drawH, 0);
 }
 
 void Player::OnKeyDown(int keycode) {

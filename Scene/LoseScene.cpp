@@ -10,6 +10,7 @@
 #include "UI/Component/Label.hpp"
 #include "Engine/LOG.hpp"
 #include <allegro5/allegro_primitives.h>
+#include "Player/GameData.hpp"
 
 void LoseScene::Initialize() {
     al_init_primitives_addon();
@@ -25,10 +26,18 @@ void LoseScene::Initialize() {
     animationComplete = false;
     uiShown = false;
 
-    // Load animation frames from individual PNG files
-    int totalFrames = 5; // Change based on your number of PNGs
+    std::string baseSkin = GameData::getInstance().playerSkin;
+    std::string characterKey;
+    int totalFrames = 5;
+
+    if (baseSkin.find("kuo") != std::string::npos) {
+        characterKey = "kuo";
+    } else {
+        characterKey = "silent_wanderer_";
+    }
     for (int i = 1; i <= totalFrames; i++) {
-        std::string path = "Resource/images/lose/loseframe/silent_wanderer_" + std::to_string(i) + ".png";
+        std::string path = "Resource/images/lose/loseframe/" + characterKey + std::to_string(i) + ".png";
+        std::cout << path << std::endl;
         ALLEGRO_BITMAP* frame = al_load_bitmap(path.c_str());
         if (frame) {
             animationFrames.push_back(frame);
@@ -101,7 +110,15 @@ void LoseScene::Draw() const {
         ALLEGRO_BITMAP* frame = animationFrames[currentFrame];
         int frameWidth = al_get_bitmap_width(frame);
         int frameHeight = al_get_bitmap_height(frame);
+
         float scale = 1.0f;
+        float offsetY = 0;
+
+        if (GameData::getInstance().playerSkin.find("kuo") != std::string::npos) {
+            scale = 0.75f;
+            offsetY = 60;
+        }
+
         float drawWidth = frameWidth * scale;
         float drawHeight = frameHeight * scale;
 
@@ -109,7 +126,7 @@ void LoseScene::Draw() const {
             frame,
             0, 0, frameWidth, frameHeight,
             w / 2 - drawWidth / 2,
-            h / 2 - drawHeight / 2,
+            h / 2 - drawHeight / 2 - offsetY,
             drawWidth, drawHeight,
             0
         );

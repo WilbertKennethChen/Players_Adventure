@@ -22,6 +22,7 @@ protected:
     bool isWalking;
 
     std::unordered_map<int, bool> keyState;
+    float drawScale;
 
 public:
     Player(std::string baseImgPath, float x, float y, float hp, float speed);

@@ -88,7 +88,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
+    player = new Player(GameData::getInstance().playerSkin, playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
