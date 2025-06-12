@@ -728,11 +728,12 @@ void BattleScene::enemyHit() {
 
     idle = true;
     enemyShakeTime = enemyShakeDuration;
+    AudioHelper::PlaySample("damage.mp3", false, AudioHelper::SFXVolume);
 }
 
 void BattleScene::readNotesWave() {
     notesWave.clear();
-    std::ifstream fin("Resource/notes1.txt");
+    std::ifstream fin("Resource/notes0.txt");
     float lane0, lane1, lane2;
     notesWave.resize(3);
     while (fin >> lane0 && fin >> lane1 && fin >> lane2) {
@@ -874,6 +875,9 @@ void BattleScene::convertNegotiateText() {
                 break;
             case ' ' :
                 negotiateKeys.push_back(ALLEGRO_KEY_SPACE);
+                break;
+            case '\'':
+                negotiateKeys.push_back(ALLEGRO_KEY_QUOTE);
                 break;
         }
         pos++;
