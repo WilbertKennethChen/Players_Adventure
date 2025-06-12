@@ -669,8 +669,8 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case 'j': mapData.push_back(27); break; // Floor Dungeon 16
             case 'k': mapData.push_back(28); break; // Floor Dungeon 17
             case 'l': mapData.push_back(29); break; // Floor Dungeon 18
-            case 'm': mapData.push_back(30); break; // m to w is empty
-            case 'n': mapData.push_back(31); break; // Floor Dungeon 20
+            case 'm': mapData.push_back(30); break;
+            case 'n': mapData.push_back(31); break; // start of floor map 1
             case 'o': mapData.push_back(32); break; // Floor Dungeon 21
             case 'p': mapData.push_back(33); break; // Floor Dungeon 22
             case 'q': mapData.push_back(34); break; // Floor Dungeon 23
@@ -703,6 +703,34 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             case '@': mapData.push_back(61); break; // Floor Dungeon 50
             case '#': mapData.push_back(62); break; // Floor Dungeon 51
             case '$': mapData.push_back(63); break; // Floor Dungeon 52
+            case '%': mapData.push_back(64); break; // Floor Dungeon 53
+            case '^': mapData.push_back(65); break; // Floor Dungeon 54
+            case '&': mapData.push_back(66); break; // Floor Dungeon 55
+            case '*': mapData.push_back(67); break; // Floor Dungeon 56
+            case '(': mapData.push_back(68); break; // Floor Dungeon 57
+            case ')': mapData.push_back(69); break; // Floor Dungeon 58
+            case '-': mapData.push_back(70); break; // Floor Dungeon 59
+            case '_': mapData.push_back(71); break; // Floor Dungeon 60
+            case '+': mapData.push_back(72); break; // Floor Dungeon 61
+            case '=': mapData.push_back(73); break; // Floor Dungeon 62
+            case '{': mapData.push_back(74); break; // Floor Dungeon 63
+            case '}': mapData.push_back(75); break; // Floor Dungeon 64
+            case '[': mapData.push_back(76); break; // Floor Dungeon 65
+            case ']': mapData.push_back(77); break; // Floor Dungeon 66
+            case '\\': mapData.push_back(78); break; // Floor Dungeon 67
+            case '|': mapData.push_back(79); break; // Floor Dungeon 68
+            case ';': mapData.push_back(80); break; // Floor Dungeon 69
+            case ':': mapData.push_back(81); break; // Floor Dungeon 70
+            case '\'': mapData.push_back(82); break; // Floor Dungeon 71
+            case '\"': mapData.push_back(83); break; // Floor Dungeon 72
+            case ',': mapData.push_back(84); break; // Floor Dungeon 73
+            case '<': mapData.push_back(85); break; // Floor Dungeon 74
+            case '>': mapData.push_back(86); break; // Floor Dungeon 75
+            case '.': mapData.push_back(87); break; // Floor Dungeon 76
+            case '?': mapData.push_back(88); break; // Floor Dungeon 77
+            case '/': mapData.push_back(89); break; // Floor Dungeon 78
+            case '`': mapData.push_back(90); break; // Floor Dungeon 79
+            case '~': mapData.push_back(91); break; // Floor Dungeon 80
             case 'X': mapData.push_back(297); break;
             case 'Y': mapData.push_back(298); break;
             case 'Z': mapData.push_back(299); break;
@@ -767,13 +795,13 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 1:  // Floor
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 2: // NPC1
                 {
 
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
                     NpcGroup->AddNewObject(npc1);
                     break;
@@ -781,7 +809,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 3: // NPC2
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
                     NpcGroup->AddNewObject(npc2);
                     break;
@@ -852,7 +880,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     // // -------------------------
                     // break;
                     mapState[i][j] = TILE_WATER;
-                    TileMapGroup->AddNewObject(new WaterTile("play/water", j * BlockSize, i * BlockSize, 1.0f, 0.2f));
+                    TileMapGroup->AddNewObject(
+                      new WaterTile("play/water", j * BlockSize, i * BlockSize, 1.0f, 0.2f)
+                    );
+                    Box waterBox;
+                    waterBox.x = j * BlockSize - 16;
+                    waterBox.y = i * BlockSize - 44;
+                    waterBox.w = BlockSize + 32;
+                    waterBox.h = BlockSize + 32;
+                    treeColliders.push_back(waterBox);
                     break;
                 }
                 case 10:
@@ -943,22 +979,319 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
                     break;
-                case 31: // Floor Dungeon 2
+                case 31: // 'n'
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("pack/door1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 32: // Floor Dungeon 2
+                case 32: // 'o'
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("pack/door2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 33: // Floor Dungeon 2
+                case 33: // 'p'
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 34: // Floor Dungeon 2
+                case 34: // 'q'
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
+                case 35: // 's'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_down.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 36: // 't'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+
+                    break;
+                case 37: // 'u'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_up.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 38: // 'v'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/water/left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 39: // 'w'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/water/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 40: // x
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_left.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 41: // y
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_right.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 42: // z
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles2.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 43: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 44: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 45: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 46: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 47: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/5.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 48: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/6.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 49: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/7.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 50: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/8.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 51: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/9.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 52: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/10.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 53: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/11.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 54: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/12.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 55: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/13.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 56: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/14.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 57: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/15.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 59: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/16.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 60: // !
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_left.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 61: // @
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_right.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 62: // #
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/big_pouch.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 63: // $
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    // Now add the sword on top of this tile
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 64: // '%'
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/water/right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 65: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 66: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 67: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 68: // Floor Dungeon 2
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 69:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/head_grass.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 70:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 71:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/sign1.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 72:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/bush1.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 73:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/bush2.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 74:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/bush3.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 75: // }
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/chair.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 76: // [
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_log.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 77:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/chest.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 78:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/upper_left_corner.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 79:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 80:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/upper_right_corner.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 81:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 82:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 83:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/bottom_left_corner.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 84:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/bottom.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 85:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/bottom_right_corner.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 86:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/fence.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+                case 87:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/soft1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 88:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/soft2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 89:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/soft3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 90:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/soft4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    break;
+                case 91:
+                    mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree1.png",
+                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                        64, 64)); // size of your sword image
+                    break;
+
                 case 297: // V groveDad
                 {
                     mapState[i][j] = TILE_FLOOR;
@@ -995,158 +1328,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     }
                     break;
                 }
-                    case 35: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/bottle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 36: // Floor Dungeon 2
-                    if (MapId == 1) {
-                        mapState[i][j] = TILE_FLOOR;
-                        TileMapGroup->AddNewObject(new Engine::Image("play/dirtypath.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                        teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
-                    }
-                    break;
-                    case 37: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/barrel.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 38: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 39: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_right.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 40: // x
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_left.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 41: // y
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/sword_right.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 42: // z
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles2.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 43: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 44: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 45: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/3.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 46: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/4.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 47: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/5.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 48: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/6.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 49: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/7.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 50: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/8.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 51: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/9.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 52: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/10.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 53: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/11.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 54: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/12.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 55: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/13.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 56: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/14.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 57: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/15.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 59: // Floor Dungeon 2
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/walls/16.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    break;
-                    case 60: // !
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_left.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 61: // @
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/pouches_right.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 62: // #
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/big_pouch.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-                    case 63: // $
-                    mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    // Now add the sword on top of this tile
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/candles.png",
-                        j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-                        i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-                        64, 64)); // size of your sword image
-                    break;
-
-                    case 299:
+                case 299:
                     {
                         mapState[i][j] = TILE_FLOOR;
                         TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
@@ -1181,11 +1363,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
             houseWidthInTiles * BlockSize,
             houseHeightInTiles * BlockSize));
 
-        // Draw tree to the right of the house (96x128 = 1.5x2 tiles)
-        TileMapGroup->AddNewObject(new Engine::Image("play/tree1.png",
-            (houseAnchorX + houseWidthInTiles) * BlockSize,  // Right of house
-            houseAnchorY * BlockSize,                        // Same Y as house top
-            96, 128));                                      // Exact pixel dimensions
+        // // Draw tree to the right of the house (96x128 = 1.5x2 tiles)
+        // TileMapGroup->AddNewObject(new Engine::Image("play/tree1.png",
+        //     (houseAnchorX + houseWidthInTiles) * BlockSize,  // Right of house
+        //     houseAnchorY * BlockSize,                        // Same Y as house top
+        //     96, 128));                                      // Exact pixel dimensions
     Box houseBox;
     houseBox.w = 206;  // adjust as needed
     houseBox.h = 270;   // only the bottom row blocks movement
@@ -1196,14 +1378,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
 
 
 
-//     for (auto &p : bigTreeAnchors) {
-//     TileMapGroup->AddNewObject(new Engine::Image(
-//         "play/tree1.png",
-//         p.x * BlockSize - 32,      // center 128px over 2 tiles
-//         p.y * BlockSize - 32,
-//         128, 128
-//     ));
-// }
+    for (auto &p : bigTreeAnchors) {
+    TileMapGroup->AddNewObject(new Engine::Image(
+        "play/tree1.png",
+        p.x * BlockSize - 32,      // center 128px over 2 tiles
+        p.y * BlockSize - 32,
+        128, 128
+    ));
+}
 
     // for (auto &p : smallTreeAnchors) {
     //     Box b;
@@ -1229,10 +1411,10 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     for (auto &p : bigTreeAnchors) {
         // Sprite is 128×128, bottom‐half is trunk, ~32px wide at center:
         Box b;
-        b.w = 72;
-        b.h = 106;
-        b.x = p.x*BlockSize + (128 - b.w)/2.0f - 16;   // center it horizontally over the 2 tiles
-        b.y = p.y * BlockSize + (128 - b.h) - 16;        // bottom half of sprite
+        b.w = 112;
+        b.h = 128;
+        b.x = p.x*BlockSize + (128 - b.w)/2.0f - 32;   // center it horizontally over the 2 tiles
+        b.y = p.y * BlockSize + (128 - b.h) - 40;        // bottom half of sprite
         treeColliders.push_back(b);
     }
 
