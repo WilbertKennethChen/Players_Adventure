@@ -170,6 +170,7 @@ void LoginScene::RegisterOnClick() {
             errorLabel->Text = "Username already used";
         } else {
             GameData::getInstance().Username = Username;
+            GameData::getInstance().ending = "";
             std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
             std::ifstream in(path);
             nlohmann::json jsonData = nlohmann::json::parse(in);
