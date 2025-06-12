@@ -1641,7 +1641,7 @@ void PlayScene::RenderTextbox(std::string key) {
     // std::cout << std::filesystem::current_path() << std::endl;
 
 
-    activeTextbox = new Engine::Textbox(text,ScreenSize);
+    activeTextbox = new Engine::Textbox(text, nameDiag, ScreenSize);
     if (dialogueNpcImage) {
         UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
         dialogueNpcImage = nullptr;

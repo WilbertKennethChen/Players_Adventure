@@ -13,23 +13,30 @@
 
 
 namespace Engine {
-    Textbox::Textbox(const std::string &text, Engine::Point SceneSize) {
+    Textbox::Textbox(const std::string &text, const std::string &name, Engine::Point SceneSize) {
         float width = 1400;
         float height = 400;
         int x = SceneSize.x  / 16;
         int y = SceneSize.y / 2 - 20;
         this->bg = new Engine::Image("play/textbox_bg.png", x, y, width, height);
-        this->text = new Engine::Label(text, "pirulen.ttf", 24, x+50, y+50, 255, 255, 255, 255, 0.5, 0.5,width-70);
-
+        this->nameLabel = new Engine::Label(name, "undertale.ttf", 52, x + 50, y + 40, 255, 255, 0, 255, 0.0, 0.5);
+        this->text = new Engine::Label(text, "undertale.ttf", 44, x + 50, y + 80, 255, 255, 255, 255, 0.0, 0.0, width - 70);
+        this->hintLabel = new Engine::Label("press ENTER / SPACE", "undertale.ttf", 28,
+        x + width - 60, y + height - 40, 255, 255, 255, 200, 1.0, 1.0);
     }
     Textbox::~Textbox() {
         delete bg;
         delete text;
-
+        delete nameLabel;
+        delete hintLabel;
     }
     void Textbox::Draw() const {
         bg->Draw();
+        nameLabel->Draw();
         text->Draw();
+        if (text->isDone()) {
+            hintLabel->Draw();
+        }
     }
 
     int Textbox::GetTextWidth() const {
