@@ -849,7 +849,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 5: //Teleport point map 2
                     if (MapId == 2) {
                         mapState[i][j] = TILE_FLOOR;
-                        TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        TileMapGroup->AddNewObject(new Engine::Image("pack/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                         teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     }
                     break;
