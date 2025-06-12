@@ -115,6 +115,8 @@ add_executable(2025_I2P2_TowerDefense
         NPC/enemynpc.h
         NPC/water.h
         NPC/water.cpp
+        Scene/skin.cpp
+        Scene/skin.h
 )
 
 IF (WIN32)
