@@ -100,8 +100,25 @@ void PlayScene::Initialize() {
     // Preload Lose Scene
     // Start BGM.
     if (MapId == 1) {
-        bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        // bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        std::string ed = GameData::getInstance().ending;
+        if (ed == "good") {
+            bgmInstance = AudioHelper::PlaySample("goodEnd.mp3",true,AudioHelper::BGMVolume);
+        } else if (ed == "bad") {
+            bgmInstance = AudioHelper::PlaySample("badEnd.mp3",true,AudioHelper::BGMVolume);
+        } else if (ed == "normal") {
+            bgmInstance = AudioHelper::PlaySample("normalEnd.mp3",true,AudioHelper::BGMVolume);
+        } else {
+            bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
+        }
     } else {
+        if (GameData::getInstance().deadEnemies.size() == 4) {
+            GameData::getInstance().ending = "bad";
+        } else if (GameData::getInstance().friendlyEnemies.size() == 4) {
+            GameData::getInstance().ending = "good";
+        } else if (GameData::getInstance().friendlyEnemies.size() + GameData::getInstance().deadEnemies.size() == 4) {
+            GameData::getInstance().ending = "normal";
+        }
         bgmInstance = AudioHelper::PlaySample("dungeon.mp3", true, AudioHelper::BGMVolume); // or whatever your second map BGM is
     }
     if (bgmInstance) {
@@ -459,6 +476,10 @@ void PlayScene::Draw() const {
         if (BGMLabel) BGMLabel->Draw();
         if (SFXLabel) SFXLabel->Draw();
 
+
+    }
+    if (GameData::getInstance().ending == "bad" && MapId == 1) {
+        al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 175));
     }
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
@@ -719,7 +740,10 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
-                    NpcGroup->AddNewObject(npc1);
+                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                        NpcGroup->AddNewObject(npc1);
+                    }
+
                     break;
                 }
                 case 3: // NPC2
@@ -727,7 +751,9 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
-                    NpcGroup->AddNewObject(npc2);
+                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                        NpcGroup->AddNewObject(npc2);
+                    }
                     break;
                 }
                 case 4:  // Spawn point
@@ -758,7 +784,12 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         }
                         npc3->Size.x *= 0.23;
                         npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
+                            NpcGroup->AddNewObject(npc3);
+                        }
+
                     }
 
                     break;
@@ -828,7 +859,12 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         }
                         npc3->Size.x *= 0.23;
                         npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
+                            NpcGroup->AddNewObject(npc3);
+                        }
+
                     }
 
                     break;
@@ -849,7 +885,12 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         }
                         npc3->Size.x *= 0.23;
                         npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
+
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
+                            NpcGroup->AddNewObject(npc3);
+                        }
                     }
 
                     break;
@@ -870,7 +911,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         }
                         npc3->Size.x *= 0.23;
                         npc3->Size.y *= 0.23;
-                        NpcGroup->AddNewObject(npc3);
+                        if (MapId == 1 && GameData::getInstance().ending == "good") {
+                            NpcGroup->AddNewObject(npc3);
+                        } else if (MapId == 2) {
+                            NpcGroup->AddNewObject(npc3);
+                        }
                     }
 
                     break;
@@ -1001,7 +1046,9 @@ void PlayScene::RenderTextbox(std::string key) {
         nextDiag = data["dialogue"][nameDiag]["friendly"][key]["next"];
     }
 
-
+    if (MapId == 1 && GameData::getInstance().ending == "good") {
+        text = "Congratulations!";
+    }
 
 
     // std::cout << std::filesystem::current_path() << std::endl;

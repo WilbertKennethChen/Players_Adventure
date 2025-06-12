@@ -21,6 +21,7 @@ public:
     float playerPosX;
     float playerPosY;
     std::string Username = "";
+    std::string ending;
 
     std::unordered_map<std::string,EnemyStruct> enemyList;
     std::set<std::string> deadEnemies;
