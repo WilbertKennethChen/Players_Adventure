@@ -32,8 +32,8 @@ void StartScene::Initialize() {
     int halfH = h / 2;
 
     //initialized player state
-    GameData::getInstance().playerMaxHp = 10;
-    GameData::getInstance().playerHp = 10;
+    GameData::getInstance().playerMaxHp = 20;
+    GameData::getInstance().playerHp = 20;
     GameData::getInstance().playerPosX = halfW;
     GameData::getInstance().playerPosY = halfH;
     GameData::getInstance().currentEnemy = nullptr;

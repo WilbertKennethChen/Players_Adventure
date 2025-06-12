@@ -11,10 +11,7 @@
         "nathan11"
     ],
     "aaa": {
-        "DeadEnemy": [
-            "groveChild",
-            "groveDad"
-        ],
+        "DeadEnemy": [],
         "FriendlyEnemy": [],
         "Pass": "abc"
     },

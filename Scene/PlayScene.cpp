@@ -779,14 +779,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc *npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
+                            npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, false);
                             std::cout << "friendly";
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
-                            NpcGroup->AddNewObject(npc3);
+                            npc3 = new EnemyNpc("enemy1","archivist_shade_", j * BlockSize + BlockSize / 2, i * BlockSize + BlockSize / 2, true);
+                            // NpcGroup->AddNewObject(npc3);
                         }
                         if (MapId == 1 && GameData::getInstance().ending == "good") {
                             NpcGroup->AddNewObject(npc3);
@@ -853,14 +854,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveDad";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc* npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
-                            NpcGroup->AddNewObject(npc3);
-                            std::cout << "friendly";
+                            npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            // NpcGroup->AddNewObject(npc3);
+
                         } else {
-                            std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
-                            NpcGroup->AddNewObject(npc3);
+                            npc3 = new EnemyNpc(name,"grove_warden_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            // NpcGroup->AddNewObject(npc3);
                         }
                         if (MapId == 1 && GameData::getInstance().ending == "good") {
                             NpcGroup->AddNewObject(npc3);
@@ -877,14 +878,15 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveChild";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
+                        Npc* npc3;
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
-                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
+                            npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
                             std::cout << "friendly";
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
-                            auto *npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
-                            NpcGroup->AddNewObject(npc3);
+                            npc3 = new EnemyNpc(name,"grove_child_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
+                            // NpcGroup->AddNewObject(npc3);
                         }
                         if (MapId == 1 && GameData::getInstance().ending == "good") {
                             NpcGroup->AddNewObject(npc3);
@@ -905,11 +907,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         if (GameData::getInstance().friendlyEnemies.count(name)) {
                             npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, false);
                             std::cout << "friendly";
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         } else {
                             std::cout << "not friendly";
                             npc3 = new EnemyNpc(name, "jester_knight_", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2,true);
-                            NpcGroup->AddNewObject(npc3);
+                            // NpcGroup->AddNewObject(npc3);
                         }
                         if (MapId == 1 && GameData::getInstance().ending == "good") {
                             NpcGroup->AddNewObject(npc3);
