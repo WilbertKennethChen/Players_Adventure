@@ -155,22 +155,22 @@ void BattleScene::SetupBattleUI() {
     LabelGroup->AddNewObject(labelHpPlayer);
 
     // Attack Button
-    auto* btn = new Engine::ImageButton("play/ui_button.png", "play/ui_button_hovered.png", 100, h - 125, w / 4, 100);
+    auto* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", 100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::AttackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h - 145, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h - 75, 0, 0, 0, 255, 0.5, 0.5));
 
     // Negotiate Button
-    btn = new Engine::ImageButton("play/ui_button.png", "play/ui_button_hovered.png", w / 2 - w / 8, h - 125, w / 4, 100);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", w / 2 - w / 8, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::NegotiateOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w / 2, h - 145, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w / 2, h - 75, 0, 0, 0, 255, 0.5, 0.5));
 
     // Spare Button
-    btn = new Engine::ImageButton("play/ui_button.png", "play/ui_button_hovered.png", w - w / 4 - 100, h - 125, w / 4, 100);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", w - w / 4 - 100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::SpareOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w - w / 4 + 100, h - 145, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w - w / 4 + 100, h - 75, 0, 0, 000, 255, 0.5, 0.5));
 }
 
 

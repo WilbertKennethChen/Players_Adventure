@@ -198,7 +198,7 @@ void PlayScene::PauseInitialize()
     const int buttonX = pauseX + (pauseW - buttonWidth) / 2;
     const int buttonSpacing = 20;
 
-    continueBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    continueBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
     UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
     continueBtn->Visible = false;
@@ -209,7 +209,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewObject(continueLabel);
     currentY += buttonHeight + buttonSpacing;
 
-    retryBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    retryBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
@@ -220,7 +220,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewObject(retryLabel);
     currentY += buttonHeight + buttonSpacing;
 
-    exitBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    exitBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
@@ -1706,5 +1706,5 @@ void PlayScene::ExitOnClick() {
 
 
 
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    Engine::GameEngine::GetInstance().ChangeScene("start");
 }

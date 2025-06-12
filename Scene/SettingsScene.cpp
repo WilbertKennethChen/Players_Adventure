@@ -20,7 +20,7 @@ void SettingsScene::Initialize() {
     int centerX = w / 2;
     int centerY = h / 2;
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
-    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
+    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png",
                                                      centerX - 200, h - 100, 400, 80);
     btn->SetOnClickCallback(std::bind(&SettingsScene::BackOnClick, this, 1));
     AddNewControlObject(btn);

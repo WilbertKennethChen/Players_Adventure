@@ -130,7 +130,9 @@ void StartScene::PlayOnClick(int stage) {
         jsonFileStream.close();
         GameData::getInstance().deadEnemies = jsonData[GameData::getInstance().Username]["DeadEnemy"];
         GameData::getInstance().friendlyEnemies = jsonData[GameData::getInstance().Username]["FriendlyEnemy"];
-        Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+        PlayScene *scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetScene("play"));
+        scene->MapId = stage;
+        Engine::GameEngine::GetInstance().ChangeScene("play");
     }
 
 }

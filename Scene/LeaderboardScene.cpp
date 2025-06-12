@@ -137,21 +137,21 @@ void LeaderboardScene::SetupStaticUI() {
 
     // Buttons (all share same Y for perfect alignment)
     const int btnY = h - 90, lblY = h - 50;
-    prevBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
+    prevBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
                                       halfW - 320, btnY, 200, 80);
     prevBtn->SetOnClickCallback(std::bind(&LeaderboardScene::PrevPage, this));
     AddNewControlObject(prevBtn);
     prevLabel = new Engine::Label("Prev","undertale.ttf",36, halfW - 220, lblY,0,0,0,255,0.5,0.5);
     AddNewObject(prevLabel);
 
-    nextBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
+    nextBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
                                       halfW + 120, btnY, 200, 80);
     nextBtn->SetOnClickCallback(std::bind(&LeaderboardScene::NextPage, this));
     AddNewControlObject(nextBtn);
     nextLabel = new Engine::Label("Next","undertale.ttf",36, halfW + 220, lblY,0,0,0,255,0.5,0.5);
     AddNewObject(nextLabel);
 
-    auto* backBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
+    auto* backBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
                                             halfW - 100, btnY, 200, 80);
     backBtn->SetOnClickCallback(std::bind(&LeaderboardScene::BackOnClick, this, 0));
     AddNewControlObject(backBtn);

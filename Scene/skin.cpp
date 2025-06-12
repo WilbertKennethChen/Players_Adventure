@@ -13,7 +13,7 @@
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
 #include <memory>
-#include <bits/ostream.tcc>
+// #include <bits/ostream.tcc>
 
 #include "Player/GameData.hpp"
 
@@ -28,7 +28,7 @@ void SkinScene::Initialize() {
 
 
     // Back button like LoginScene
-    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", centerX - 200, h - 100, 400, 80);
+    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 200, h - 100, 400, 80);
     btn->SetOnClickCallback(std::bind(&SkinScene::BackOnClick, this));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
@@ -45,7 +45,7 @@ void SkinScene::Initialize() {
     selectBtn1->SetOnClickCallback([]() {
      GameData::getInstance().playerSkin = "play/silent_wanderer_";
         std::cout << "tuyul ready" << std::endl;
-     Engine::GameEngine::GetInstance().ChangeScene("start");
+     Engine::GameEngine::GetInstance().ChangeScene("login");
     });
     AddNewControlObject(selectBtn1);
 
@@ -62,7 +62,7 @@ void SkinScene::Initialize() {
     selectBtn2->SetOnClickCallback([]() {
     GameData::getInstance().playerSkin = "play/kuo";
         std::cout << "kuo ready" << std::endl;
-    Engine::GameEngine::GetInstance().ChangeScene("start");
+    Engine::GameEngine::GetInstance().ChangeScene("login");
     });
     AddNewControlObject(selectBtn2);
 
@@ -72,7 +72,7 @@ void SkinScene::Initialize() {
 }
 
 void SkinScene::BackOnClick() {
-    Engine::GameEngine::GetInstance().ChangeScene("login");
+    Engine::GameEngine::GetInstance().ChangeScene("start");
 }
 
 void SkinScene::Terminate() {
