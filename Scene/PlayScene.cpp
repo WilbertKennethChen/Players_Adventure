@@ -88,7 +88,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
+    player = new Player(GameData::getInstance().playerSkin, playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -361,7 +361,10 @@ void PlayScene::Update(float deltaTime) {
         }
         return;
     }
-
+    if (activeTextbox && activeTextbox->isDone() && talkingSFXInstance) {
+        AudioHelper::StopSample(talkingSFXInstance);
+        talkingSFXInstance = nullptr;
+    }
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
@@ -576,6 +579,10 @@ void PlayScene::OnKeyDown(int keyCode) {
             if (!activeTextbox->isDone()) {
                 std::cout << "skipping" << std::endl;
                 activeTextbox->Skip();
+                if (talkingSFXInstance) {
+                    AudioHelper::StopSample(talkingSFXInstance);
+                    talkingSFXInstance = nullptr;
+                }
             } else {
                 std::cout << "not skipping" << std::endl;
                 if (!nextDiag.empty()) {
@@ -584,9 +591,16 @@ void PlayScene::OnKeyDown(int keyCode) {
                         UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
                         dialogueNpcImage = nullptr;
                     }
+                    if (talkingSFXInstance) {
+                        AudioHelper::StopSample(talkingSFXInstance);
+                        talkingSFXInstance = nullptr;
+                    }
                     RenderTextbox(nextDiag);
                 } else {
-
+                    if (talkingSFXInstance) {
+                        AudioHelper::StopSample(talkingSFXInstance);
+                        talkingSFXInstance = nullptr;
+                    }
                     UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                     activeTextbox = nullptr;
                     if (dialogueNpcImage) {
@@ -1605,6 +1619,7 @@ Engine::Point PlayScene::getScreenSize() {
 
 void PlayScene::RenderTextbox(std::string key) {
     keyDown.clear();
+    talkingSFXInstance = AudioHelper::PlaySample("mumet2.mp3", true, AudioHelper::SFXVolume);
     Engine::Point ScreenSize = getScreenSize();
     std::ifstream jsonFileStream("Resource/jsonData/dialogue.json");
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;

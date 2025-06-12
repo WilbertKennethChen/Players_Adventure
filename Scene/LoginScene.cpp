@@ -64,6 +64,12 @@ void LoginScene::Initialize() {
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
 
+    int btnSize = 200;
+
+    btn = new Engine::ImageButton("stage-select/skin.png", "stage-select/skinhovered.png", w - btnSize - 20, h - btnSize, btnSize, btnSize);
+    btn->SetOnClickCallback(std::bind(&LoginScene::skinonclick, this));
+    AddNewControlObject(btn);
+
     bgmInstance = AudioHelper::PlaySample("wii.mp3", true, AudioHelper::BGMVolume);
 
     std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
@@ -152,6 +158,11 @@ void LoginScene::LoginOnClick() {
         }
     }
 }
+
+void LoginScene::skinonclick(){
+    Engine::GameEngine::GetInstance().ChangeScene("skin");
+}
+
 
 void LoginScene::RegisterOnClick() {
     if (!Username.empty() && !Password.empty()) {
