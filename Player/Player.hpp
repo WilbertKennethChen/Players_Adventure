@@ -35,6 +35,7 @@ public:
 
     float getHp();
     void getHit(int damage);
+    void setHp(float newHp);
 };
 
 #endif // PLAYER_HPP

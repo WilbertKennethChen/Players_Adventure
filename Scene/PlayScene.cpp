@@ -31,6 +31,7 @@
 #include "UI/Component/Label.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "NPC/water.h"
+#include "keybinding.h"
 
 // TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
 // TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
@@ -100,6 +101,11 @@ void PlayScene::Initialize() {
     // Should support buttons.
     AddNewObject(NpcGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
+    doorLockedLabel = new Engine::Label("Door Locked!", "undertale.ttf", 36,
+    0, 0,
+    255, 255, 255, 255, 0.5f, 0.5f);
+    doorLockedLabel->Visible = false;
+    UIGroup->AddNewObject(doorLockedLabel);
     ReadMap(Engine::Point(-1, -1));
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
@@ -216,10 +222,14 @@ void PlayScene::PauseInitialize()
     currentY += buttonHeight + buttonSpacing;
 
     retryBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
-    retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
+    retryBtn->SetOnClickCallback([this]() {
+     if (player) {
+         player->setHp(player->getHp() + 10000000);
+     }
+    });
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
-    retryLabel = new Engine::Label("Retry", "undertale.ttf", 48,
+    retryLabel = new Engine::Label("Cheat", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     retryLabel->Visible = false;
@@ -377,6 +387,16 @@ void PlayScene::Update(float deltaTime) {
     }
     NpcGroup->Update(deltaTime);
     TileMapGroup->Update(deltaTime);
+    if (doorLockedLabel->Visible) {
+        doorLockedTimer -= deltaTime;
+        if (doorLockedTimer <= 0) {
+            doorLockedLabel->Visible = false;
+        }
+        else {
+            doorLockedLabel->Position.x = player->Position.x;
+            doorLockedLabel->Position.y = player->Position.y - 64;
+        }
+    }
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -580,15 +600,21 @@ void PlayScene::OnKeyDown(int keyCode) {
 
 
     // std::cout << interactable << std::endl;
-    if (keyCode == ALLEGRO_KEY_E) {
+    if (keyCode == KeyBindingManager::GetInstance().GetKeyForAction("interact")) {
         std::cout << GameData::getInstance().ending << std::endl;
         std::cout << player->Position.x << " "<< player->Position.y<<  std::endl;
-        if (player->Position.x >= 430 && player->Position.x <=500 && player->Position.y >=240 && player->Position.y <=270 && !GameData::getInstance().ending.empty()) {
-            std::cout << "Change" << std::endl;
-            Engine::GameEngine::GetInstance().ChangeScene("credit");
-        }
-        if (interactable && !activeTextbox) {
+        if (player->Position.x >= 430 && player->Position.x <= 500 &&
+            player->Position.y >= 240 && player->Position.y <= 270) {
+            if (!GameData::getInstance().ending.empty()) {
+                std::cout << "Change" << std::endl;
+                Engine::GameEngine::GetInstance().ChangeScene("credit");
+            } else {
+                doorLockedLabel->Visible = true;
+                doorLockedTimer = 0.65f;
+            }
+       }
 
+        if (interactable && !activeTextbox) {
             RenderTextbox("intro");
         }
     }

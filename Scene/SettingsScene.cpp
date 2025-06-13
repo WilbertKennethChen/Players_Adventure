@@ -25,6 +25,8 @@ void SettingsScene::Initialize() {
     btn->SetOnClickCallback(std::bind(&SettingsScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 110, 0, 0, 0, 255, 0.5, 0.5));
+    warningLabel = new Engine::Label("", "undertale.ttf", 28, centerX, 160, 255, 50, 50, 255, 0.5, 0.5);
+    AddNewObject(warningLabel);
 
     // ================== LEFT SIDE: Key Bindings ==================
     int leftSectionX = w / 4;
@@ -34,17 +36,20 @@ void SettingsScene::Initialize() {
     int keysStartY = 200;
 
     // Movement label
-    AddNewObject(new Engine::Label("Movement", "undertale.ttf", 36, leftSectionX, keysStartY, 255, 255, 255, 255, 0.5, 0.5));
-    keysStartY += 70;
-    CreateKeyBindingButton("up", leftSectionX, keysStartY);
-    CreateKeyBindingButton("left", leftSectionX - spacing, keysStartY + spacing);
-    CreateKeyBindingButton("down", leftSectionX, keysStartY + spacing);
-    CreateKeyBindingButton("right", leftSectionX + spacing, keysStartY + spacing);
+    AddNewObject(new Engine::Label("Movement & Interact", "undertale.ttf", 36, leftSectionX, keysStartY, 255, 255, 255, 255, 0.5, 0.5));
+    keysStartY += 110;
+    int adj = 140;
+    CreateKeyBindingButton("up", leftSectionX - adj, keysStartY);
+    CreateKeyBindingButton("left", leftSectionX - spacing - adj, keysStartY + spacing);
+    CreateKeyBindingButton("down", leftSectionX - adj, keysStartY + spacing);
+    CreateKeyBindingButton("right", leftSectionX + spacing - adj, keysStartY + spacing);
+    CreateKeyBindingButton("interact", leftSectionX + spacing * 2 + 10, keysStartY + spacing - 50);
+
 
     // Minigames label
     keysStartY += spacing * 2 + 50;
     AddNewObject(new Engine::Label("Minigames", "undertale.ttf", 36, leftSectionX, keysStartY, 255, 255, 255, 255, 0.5, 0.5));
-    keysStartY += 70;
+    keysStartY += 110;
     CreateKeyBindingButton("note_lane_0", leftSectionX - spacing, keysStartY);
     CreateKeyBindingButton("note_lane_1", leftSectionX, keysStartY);
     CreateKeyBindingButton("note_lane_2", leftSectionX + spacing, keysStartY);
@@ -82,12 +87,37 @@ void SettingsScene::BackOnClick(int stage) {
 }
 
 void SettingsScene::OnKeyDown(int keyCode) {
-    if (!waitingForKey.empty()) {
-        KeyBindingManager::GetInstance().SetKeyForAction(waitingForKey, keyCode);
-        UpdateKeyBindingLabel(waitingForKey); // Update just this label
-        waitingForKey = "";
+    if (waitingForKey.empty()) return;
+
+    for (const auto& pair : keyBindLabels) {
+        const std::string& action = pair.first;
+        if (action != waitingForKey &&
+            KeyBindingManager::GetInstance().GetKeyForAction(action) == keyCode) {
+            if (warningLabel) {
+                warningLabel->Text = "That key is already assigned!";
+                warningTimer = 1.3f;
+            }
+            return;
+            }
+    }
+
+    KeyBindingManager::GetInstance().SetKeyForAction(waitingForKey, keyCode);
+    UpdateKeyBindingLabel(waitingForKey);
+    if (warningLabel) warningLabel->Text = "";
+    waitingForKey = "";
+}
+
+void SettingsScene::Update(float deltaTime) {
+    IScene::Update(deltaTime);
+
+    if (warningTimer > 0.0f) {
+        warningTimer -= deltaTime;
+        if (warningTimer <= 0.0f && warningLabel) {
+            warningLabel->Text = "";
+        }
     }
 }
+
 
 void SettingsScene::RebindKey(const std::string& action) {
     waitingForKey = action;
