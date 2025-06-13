@@ -483,7 +483,7 @@ void BattleScene::Draw() const {
                 enemyX, enemyY, enemyW, enemyH, 0);
 
         }
-        else if (!enemyFrames.empty()) {
+        else if (!enemyFrames.empty() && !enemyDying) {
             ALLEGRO_BITMAP* currentBmp = enemyFrames[currentEnemyFrame];
             al_draw_scaled_bitmap(currentBmp, 0, 0,
                 al_get_bitmap_width(currentBmp),
@@ -753,7 +753,7 @@ void BattleScene::updatePlayerHp(int min){
     LabelGroup->RemoveObject(labelHpPlayer->GetObjectIterator());
     char buff[20];
     sprintf(buff, "Player HP: %d/%d", playerHp, playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 28, halfW + 250, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 28, halfW + 270, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
     if (playerHp <= 0) {
         minigameNotesActive = false;

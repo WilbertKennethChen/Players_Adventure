@@ -10,6 +10,8 @@ private:
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> bgmInstance;
     std::string waitingForKey;
     std::unordered_map<std::string, Engine::Label*> keyBindLabels;
+    Engine::Label* warningLabel = nullptr;
+    float warningTimer = 0.0f;
     void UpdateKeyBindingLabel(const std::string& action);
 
 public:
@@ -22,6 +24,7 @@ public:
     void OnKeyDown(int keyCode) override;
     void RebindKey(const std::string& action);
     void CreateKeyBindingButton(const std::string& action, float x, float y);
+    void Update(float deltaTime) override;
 };
 
 #endif   // SettingsScene_HPP

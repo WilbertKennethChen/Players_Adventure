@@ -172,3 +172,7 @@ float Player::getHp() {
 void Player::getHit(int damage) {
     hp -= damage;
 }
+
+void Player::setHp(float newHp) {
+    hp = newHp;
+}

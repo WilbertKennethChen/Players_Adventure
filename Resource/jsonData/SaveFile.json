@@ -1,9 +1,35 @@
 {
+    "1111111": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "1111111",
+        "Score": 0
+    },
+    "123456": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "123456",
+        "Score": 0
+    },
+    "13579": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "13579",
+        "Score": 0
+    },
     "Users": [
         "aaa",
         "aab",
         "aac",
-        "aad"
+        "aad",
+        "123456",
+        "wilbert",
+        "wilbertken",
+        "1111111",
+        "13579"
     ],
     "aaa": {
         "DeadEnemy": [],
@@ -46,6 +72,22 @@
         "Ending": "",
         "FriendlyEnemy": [],
         "Pass": "abc",
+        "Score": 0
+    },
+    "wilbert": {
+        "DeadEnemy": [
+            "groveChild"
+        ],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "wilbert",
+        "Score": 675
+    },
+    "wilbertken": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "wilbert",
         "Score": 0
     }
 }
