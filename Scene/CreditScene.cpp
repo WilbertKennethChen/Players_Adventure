@@ -55,16 +55,37 @@ void CreditScene::Initialize() {
         "sit: Amet",
         "Prof: Kuo"};
 
-    for (int i =0;i<texts.size();i++) {
-        Engine::Label * label;
-        label = new Engine::Label(texts[i],"undertale.ttf",32,
-            halfW, scrollY+10,255,255,255,255,0.5,0.5);
-        CreditGroup->AddNewObject(label);
-        credits.push_back(label);
-    }
-    if (GameData::getInstance().ending != "good") {
+    std::vector<std::string>images = {
+    "credit1","credit3","credit4","credit5","credit6",
+        "credit7","credit8","credit9","credit10"
+    };
+    if (GameData::getInstance().ending == "good") {
+        for (int i =0;i<texts.size();i++) {
+            Engine::Label * label;
+            label = new Engine::Label(texts[i],"undertale.ttf",32,
+                halfW, scrollY+10,255,255,255,255,0.5,0.5);
+            CreditGroup->AddNewObject(label);
+            credits.push_back(label);
+        }
+
+        for (int i = 0;i<images.size();i++) {
+            Engine::Image * img;
+            img = new Engine::Image("play/"+images[i]+".jpeg",halfW,scrollY+75,600,400,0.5,0.5);
+            CreditGroup->AddNewObject(img);
+            creditsImg.push_back(img);
+        }
+    } else {
         Done = true;
     }
+
+
+    // if (GameData::getInstance().ending != "good") {
+    //     Done = true;
+    // } else {
+    //     for (auto& img : creditsImg) {
+    //         img->Position.y = scrollY + 500;
+    //     }
+    // }
     std::cout << Done << std::endl;
 
 }
@@ -89,13 +110,20 @@ void CreditScene::Update(float deltaTime) {
     if (!Done && !Skip) {
         scrollY -= scrollSpeed * deltaTime;
 
-        float spacing = 60.0f;
+        float spacingLabel = 60.0f;
+        int idx = 0;
         for (size_t i = 0; i < credits.size(); ++i) {
-            credits[i]->Position.y = scrollY + i * spacing;
+            credits[i]->Position.y = scrollY + idx * spacingLabel;
+            idx++;
+        }
+        float spacingImg = 450;
+        for (size_t i =0; i<creditsImg.size(); ++i) {
+            creditsImg[i]->Position.y = scrollY + (idx * 60) + 200 + (i * spacingImg);
+            idx++;
         }
 
         // optional: when the last line has fully scrolled off, go back to menu
-        float totalHeight = credits.size() * spacing;
+        float totalHeight = (credits.size() * 60) + (creditsImg.size() * spacingImg) + 425;
         if (scrollY + totalHeight < 0) {
             // Engine::GameEngine::GetInstance().ChangeScene("start");
             Done = true;
@@ -158,7 +186,9 @@ void CreditScene::OnKeyDown(int keyCode) {
         std::ifstream jsonFileStream(path);
         nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
         jsonFileStream.close();
-        if (jsonData[GameData::getInstance().Username]["Ending"].empty()) {
+        std::cout << GameData::getInstance().Username  << " " << jsonData[GameData::getInstance().Username]["Ending"] << std::endl;
+        if (jsonData[GameData::getInstance().Username]["Ending"] == "") {
+            std::cout << "saved to leaderboard" << std::endl;
             jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
             jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
             jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
@@ -180,6 +210,17 @@ void CreditScene::OnKeyDown(int keyCode) {
         GameData::getInstance().friendlyEnemies.clear();
         GameData::getInstance().ending = "";
         GameData::getInstance().score = 0;
+        std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+        std::ifstream jsonFileStream(path);
+        nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+        jsonFileStream.close();
+        jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
+        jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+        jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
+        jsonData[GameData::getInstance().Username]["Score"] = GameData::getInstance().score;
+        std::ofstream jsonOut(path);
+        jsonOut << jsonData.dump(4);
+        jsonOut.close();
         std::cout << "reset" << std::endl;
         Engine::GameEngine::GetInstance().ChangeScene("start");
     }
@@ -195,4 +236,5 @@ void CreditScene::Terminate() {
     IScene::Terminate();
     CreditGroup->Clear();
     credits.clear();
+    creditsImg.clear();
 }

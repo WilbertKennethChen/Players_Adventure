@@ -856,7 +856,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc1 = new Npc("play/npc1_top.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
-                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                    if (MapId == 1 && (GameData::getInstance().ending != "bad")) {
                         NpcGroup->AddNewObject(npc1);
                     }
 
@@ -867,7 +867,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     Npc *npc2 = new Npc("play/npc2_top.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
-                    if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
+                    if (MapId == 1 && (GameData::getInstance().ending != "bad")) {
                         NpcGroup->AddNewObject(npc2);
                     }
                     break;

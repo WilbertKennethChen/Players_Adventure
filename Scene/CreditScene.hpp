@@ -31,6 +31,7 @@ private:
     float scrollSpeed;
     Group *CreditGroup;
     std::vector<Engine::Label*> credits;
+    std::vector<Engine::Image*> creditsImg;
     bool revealStarted;
     float fadeA;
     float fadeDuration;

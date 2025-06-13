@@ -80,7 +80,7 @@ void StartScene::Initialize() {
     std::string user = GameData::getInstance().Username;
 
     if (user != "") {
-        user[0]-=32;
+        if(!isdigit(user[0])) user[0]-=32;
         titleText = user + "'s Adventure";
         AddNewObject(instructionLabel);
     } else {
