@@ -49,7 +49,7 @@ void LoseScene::Initialize() {
 
     // Create UI elements but don't add them to the scene yet
     loseLabel = new Engine::Label("You Lose :(", "undertale.ttf", 96, halfW, halfH / 4 + 10, 255, 255, 255, 255, 0.5, 0.5);
-    backButton = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW - 200, halfH * 7 / 4 - 50, 400, 100);
+    backButton = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", halfW - 200, halfH * 7 / 4 - 50, 400, 100);
     backButton->SetOnClickCallback(std::bind(&LoseScene::BackOnClick, this, 2));
     backLabel = new Engine::Label("Back", "undertale.ttf", 48, halfW, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5);
 

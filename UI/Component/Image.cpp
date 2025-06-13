@@ -7,7 +7,9 @@
 #include "Image.hpp"
 
 namespace Engine {
-    Image::Image(std::string img, float x, float y, float w, float h, float anchorX, float anchorY) : IObject(x, y, w, h, anchorX, anchorY) {
+    Image::Image(std::string img, float x, float y, float w, float h, float anchorX, float anchorY) :
+        IObject(x, y, w, h, anchorX, anchorY),
+        Tint(al_map_rgba(255, 255, 255, 255)) {
         if (Size.x == 0 && Size.y == 0) {
             bmp = Resources::GetInstance().GetBitmap(img);
             Size.x = GetBitmapWidth();
@@ -18,7 +20,7 @@ namespace Engine {
         } else if (Size.y == 0) {
             bmp = Resources::GetInstance().GetBitmap(img);
             Size.y = GetBitmapHeight() * Size.x / GetBitmapWidth();
-        } else /* Size.x != 0 && Size.y != 0 */ {
+        } else {
             bmp = Resources::GetInstance().GetBitmap(img, Size.x, Size.y);
         }
     }

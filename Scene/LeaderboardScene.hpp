@@ -8,11 +8,22 @@
 #include <vector>
 #include <tuple>
 #include "Engine/IScene.hpp"
+#include "UI/Component/Image.hpp"
 
 namespace Engine { class Label; class ImageButton; }
 
 class LeaderboardScene final : public Engine::IScene {
 private:
+    // pointers to the three “layers”
+    Engine::Image*      bgImage    = nullptr;
+    Engine::Label*      titleLabel = nullptr;
+    std::vector<Engine::Label*> headerLabels;
+    // (your rankLabels,nameLabels,dateLabels,scoreLabels are already stored)
+
+    // timing
+    float               fadeTimer      = 0.0f;
+    static constexpr float  showTitleAt   = 1.5f;   // seconds until title
+    static constexpr float  showListAt    = 2.0f;   // seconds until list
     // BGM
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> bgmInstance;
 
@@ -51,6 +62,8 @@ public:
     static void AddScoreToLeaderboard(const std::string& playerName,
                                       int score,
                                       const std::string& filePath);
+    // void Update(float deltaTime) override;
+    // void Draw() const override;
 };
 
 #endif // LEADERBOARDSCENE_HPP
