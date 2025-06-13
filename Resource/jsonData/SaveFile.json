@@ -2,7 +2,8 @@
     "Users": [
         "aaa",
         "aab",
-        "aac"
+        "aac",
+        "aad"
     ],
     "aaa": {
         "DeadEnemy": [],
@@ -39,5 +40,12 @@
         ],
         "Pass": "abc",
         "Score": 765
+    },
+    "aad": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "abc",
+        "Score": 0
     }
 }

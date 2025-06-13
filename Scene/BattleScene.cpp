@@ -513,6 +513,7 @@ void BattleScene::OnKeyDown(int keyCode) {
                                  (lane == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
                                                minigame_y2 - 45;
                         hitEffects.push_back({centerX, y, 0.3f});
+                        tempScore += 5;
                         remove = note;
                         break;
                     }
@@ -895,7 +896,7 @@ void BattleScene::createBoxGame() {
         spawnCD = 1;
         activeTime = 0.5;
     } else if (emotion == "furious") {
-        circleRad = 30;
+        circleRad = 25;
         spawnCD = 0.5;
         activeTime = 0.25;
     }

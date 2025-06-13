@@ -1679,7 +1679,7 @@ void PlayScene::RenderTextbox(std::string key) {
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
     nlohmann::json data = nlohmann::json::parse(jsonFileStream);
     std::string text;
-    if (GameData::getInstance().ending != "bad" && MapId == 1) {
+    if (GameData::getInstance().ending != "" && GameData::getInstance().ending != "bad" && MapId == 1) {
         text = data["dialogue"][nameDiag]["congrats"][key]["text"];
         nextDiag = data["dialogue"][nameDiag]["congrats"][key]["next"];
     }  else {
