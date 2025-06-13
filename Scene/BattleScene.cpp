@@ -277,7 +277,7 @@ void BattleScene::Update(float dt) {
 
                 if (activeTime >= spawnCD) {
                     if (std::sqrt(dx * dx + dy * dy) > circleRad) {
-                        updatePlayerHp(3);
+                        updatePlayerHp(2);
                     }
                     circleActive = false;
                     timeSinceSpawn = 0;
@@ -307,7 +307,7 @@ void BattleScene::Update(float dt) {
 
                 if (activeTime >= spawnCD) {
                     if (std::sqrt(dx * dx + dy * dy) > circleRad) {
-                        updatePlayerHp(3);
+                        updatePlayerHp(2);
                     }
                     circleActive = false;
                     timeSinceSpawn = 0;
@@ -704,6 +704,8 @@ void BattleScene::createNotesGame() {
 
 void BattleScene::enemyHit() {
     enemyHp = std::max(enemyHp-10,0);
+    if (enemyName == "jesterKnight" && enemyHp <= enemyMaxHp/2) emotion = "furious";
+    if (enemyName == "jesterKnight" && enemyHp == 5) emotion = "scared";
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -882,6 +884,9 @@ void BattleScene::convertNegotiateText() {
             case ' ' :
                 negotiateKeys.push_back(ALLEGRO_KEY_SPACE);
                 break;
+            case '\'':
+                negotiateKeys.push_back(ALLEGRO_KEY_QUOTE);
+                break;
         }
         pos++;
     }
@@ -901,7 +906,7 @@ void BattleScene::createBoxGame() {
         spawnCD = 1;
         activeTime = 0.5;
     } else if (emotion == "furious") {
-        circleRad = 15;
+        circleRad = 30;
         spawnCD = 0.5;
         activeTime = 0.25;
     }

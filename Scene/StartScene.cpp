@@ -43,7 +43,7 @@ void StartScene::Initialize() {
     //Add new enemy
     GameData::getInstance().enemyList["enemy1"] = EnemyStruct{"enemy1",25,"play/archivist_shade","calm","Regular ghost, doesn't have any friend","box", "forgive me if i intrude on your resting place, noble spirit. i offer no threat, only passage, and perhaps, companionship on this lonely path."};
     GameData::getInstance().enemyList["groveDad"] = EnemyStruct{"groveDad",25,"play/grove_warden","calm","A father trying his best", "notes","wise protector, i sense your deep love for your kin. i seek only safe passage, promising to respect your domain and pose no threat to your precious family. may our paths cross peacefully, and your children continue to thrive."};
-    GameData::getInstance().enemyList["groveChild"] = EnemyStruct{"groveChild",15,"play/Grove_child","scared","A clueless viny creature, looks young","notes", "hello, little one, you have such beautiful colors! i'm just passing through and wanted to admire your lovely home. would you like this smooth stone? it sparkles just like your dewdrops."};
+    GameData::getInstance().enemyList["groveChild"] = EnemyStruct{"groveChild",15,"play/Grove_child","scared","A clueless viny creature, looks young","notes", "hello, little one, you have such beautiful colors. i'm just passing through and wanted to admire your lovely home."};
     GameData::getInstance().enemyList["jesterKnight"] = EnemyStruct{"jesterKnight",35,"play/jester_knight","calm","A knight that have guarded this place for too long","box","brave knight, your vigil is long and honorable. i seek only to pass this place, not to disturb your sacred duty or the peace you've so valiantly maintained through the ages. grant me safe passage, and your tireless watch shall remain undisturbed, and i will offer a prayer for your steadfast soul."};
 
     std::string instructionText = "Click the tunnel to start...";
@@ -124,12 +124,6 @@ void StartScene::Terminate() {
 }
 void StartScene::PlayOnClick(int stage) {
     if (GameData::getInstance().Username != "") {
-        std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
-        std::ifstream jsonFileStream(path);
-        nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
-        jsonFileStream.close();
-        GameData::getInstance().deadEnemies = jsonData[GameData::getInstance().Username]["DeadEnemy"];
-        GameData::getInstance().friendlyEnemies = jsonData[GameData::getInstance().Username]["FriendlyEnemy"];
         Engine::GameEngine::GetInstance().ChangeScene("stage-select");
     }
 

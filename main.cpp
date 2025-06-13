@@ -10,6 +10,7 @@
 #include "Scene/SettingsScene.hpp"
 #include "Scene/BattleScene.hpp"
 #include "Scene/BattleScene.hpp"
+#include "Scene/CreditScene.hpp"
 #include "Scene/PreStartScene.hpp"
 #include "Scene/DoorTransitionScene.hpp"
 #include "Scene/LeaderboardScene.hpp"
@@ -31,6 +32,7 @@ int main(int argc, char **argv) {
     game.AddNewScene("leaderboard", new LeaderboardScene());
 	game.AddNewScene("battle",new BattleScene());
 	game.AddNewScene("login",new LoginScene());
+	game.AddNewScene("credit",new CreditScene());
 
 
 

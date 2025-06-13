@@ -81,6 +81,22 @@ void PlayScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
 
 
+    //if groveChild is dead cannot groveDad will always be hostile
+    if (GameData::getInstance().deadEnemies.count("groveChild")) {
+        if (GameData::getInstance().friendlyEnemies.count("groveDad")) {
+            GameData::getInstance().friendlyEnemies.erase("groveDad");
+        }
+    }
+    //check ending
+    if (GameData::getInstance().deadEnemies.size() == 4) {
+        GameData::getInstance().ending = "bad";
+    } else if (GameData::getInstance().friendlyEnemies.size() == 4) {
+        GameData::getInstance().ending = "good";
+    } else if (GameData::getInstance().friendlyEnemies.size() + GameData::getInstance().deadEnemies.size() == 4) {
+        GameData::getInstance().ending = "normal";
+    }
+
+
     // Should support buttons.
     AddNewObject(NpcGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
@@ -113,14 +129,9 @@ void PlayScene::Initialize() {
         } else {
             bgmInstance = AudioHelper::PlaySample("littleroot.mp3", true, AudioHelper::BGMVolume);
         }
-    } else {
-        if (GameData::getInstance().deadEnemies.size() == 4) {
-            GameData::getInstance().ending = "bad";
-        } else if (GameData::getInstance().friendlyEnemies.size() == 4) {
-            GameData::getInstance().ending = "good";
-        } else if (GameData::getInstance().friendlyEnemies.size() + GameData::getInstance().deadEnemies.size() == 4) {
-            GameData::getInstance().ending = "normal";
-        }
+    }
+
+    if (MapId ==2) {
         bgmInstance = AudioHelper::PlaySample("dungeon.mp3", true, AudioHelper::BGMVolume); // or whatever your second map BGM is
     }
     if (bgmInstance) {
@@ -128,12 +139,7 @@ void PlayScene::Initialize() {
     }
     PauseInitialize();
 
-    //if groveChild is dead cannot groveDad will always be hostile
-    if (GameData::getInstance().deadEnemies.count("groveChild")) {
-       if (GameData::getInstance().friendlyEnemies.count("groveDad")) {
-           GameData::getInstance().friendlyEnemies.erase("groveDad");
-       }
-    }
+
 
 
 }
@@ -368,6 +374,8 @@ void PlayScene::Update(float deltaTime) {
     }
     NpcGroup->Update(deltaTime);
     TileMapGroup->Update(deltaTime);
+    // std::cout << GameData::getInstance().ending << std::endl;
+    // std::cout << player->Position.x << " " << player->Position.y << std::endl;
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -485,6 +493,12 @@ void PlayScene::Draw() const {
     if (GameData::getInstance().ending == "bad" && MapId == 1) {
         al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 175));
     }
+    if (!activeTextbox) {
+        if (MapId == 2) {
+            al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 125));
+        }
+    }
+
 }
 void PlayScene::OnMouseDown(int button, int mx, int my) {
     if (!Visible) return;
@@ -565,11 +579,17 @@ void PlayScene::OnKeyDown(int keyCode) {
 
 
     // std::cout << interactable << std::endl;
-    if (keyCode == ALLEGRO_KEY_E && interactable) {
-
-        if (!activeTextbox) {
+    if (keyCode == ALLEGRO_KEY_E) {
+        std::cout << GameData::getInstance().ending << std::endl;
+        std::cout << player->Position.x << " "<< player->Position.y<<  std::endl;
+        if (player->Position.x >= 430 && player->Position.x <=480 && player->Position.y >=266 && player->Position.y <=269 && !GameData::getInstance().ending.empty()) {
+            std::cout << "Change" << std::endl;
+            Engine::GameEngine::GetInstance().ChangeScene("credit");
+        }
+        if (interactable && !activeTextbox) {
             RenderTextbox("intro");
         }
+
     }
     if (activeTextbox) {
         if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
@@ -604,6 +624,8 @@ void PlayScene::OnKeyDown(int keyCode) {
             }
         }
     }
+    //house
+
 
     // if (keyCode == ALLEGRO_KEY_ESCAPE) {
     //     if (activeTextbox) {
@@ -842,21 +864,30 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/floor_purple.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
                 case 5: //Teleport point map 2
                     if (MapId == 2) {
                         mapState[i][j] = TILE_FLOOR;
-                        TileMapGroup->AddNewObject(new Engine::Image("pack/upper.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        std::string texture = "pack/upper.png";
+                        if (MapId == 1) {
+                            texture = "play/cao.png";
+                        }
+                        TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                         teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     }
                     break;
                 case 6: // Ghost
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string texture = "pack/middle.png";
+                    if (MapId == 1) {
+                        texture = "play/cao.png";
+                    }
+                    TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "enemy1";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
@@ -1327,7 +1358,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 297: // V groveDad
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string texture = "pack/middle.png";
+                    if (MapId == 1) {
+                        texture = "play/cao.png";
+                    }
+                    TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveDad";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc* npc3;
@@ -1350,7 +1385,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 }
                 case 298: {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string texture = "pack/middle.png";
+                    if (MapId == 1) {
+                        texture = "play/cao.png";
+                    }
+                    TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "groveChild";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc* npc3;
@@ -1375,7 +1414,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 299:
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    std::string texture = "pack/middle.png";
+                    if (MapId == 1) {
+                        texture = "play/cao.png";
+                    }
+                    TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string name = "jesterKnight";
                     if (!GameData::getInstance().deadEnemies.count(name)) {
                         Npc *npc3;
@@ -1576,6 +1619,7 @@ void PlayScene::RenderTextbox(std::string key) {
 
     if (MapId == 1 && GameData::getInstance().ending == "good") {
         text = "Congratulations!";
+        nextDiag = "";
     }
 
 
@@ -1640,6 +1684,7 @@ void PlayScene::ExitOnClick() {
     jsonFileStream.close();
     jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
     jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+    jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
 
     std::ofstream jsonOut(path);
     jsonOut << jsonData.dump(4);

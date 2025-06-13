@@ -148,6 +148,13 @@ void LoginScene::LoginOnClick() {
             errorLabel->Text = "Wrong password";
         } else {
             GameData::getInstance().Username = Username;
+            std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
+            std::ifstream jsonFileStream(path);
+            nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
+            jsonFileStream.close();
+            GameData::getInstance().deadEnemies = jsonData[Username]["DeadEnemy"];
+            GameData::getInstance().friendlyEnemies = jsonData[Username]["FriendlyEnemy"];
+            GameData::getInstance().ending = jsonData[Username]["Ending"];
             Engine::GameEngine::GetInstance().ChangeScene("start");
         }
     }
@@ -166,6 +173,7 @@ void LoginScene::RegisterOnClick() {
             in.close();
             jsonData["Users"].push_back(Username);
             jsonData[Username]["Pass"] = Password;
+            jsonData[Username]["Ending"] = "";
             jsonData[Username]["FriendlyEnemy"] = nlohmann::json::array();
             jsonData[Username]["DeadEnemy"] = nlohmann::json::array();
             std::ofstream out(path);

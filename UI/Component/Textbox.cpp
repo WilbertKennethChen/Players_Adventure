@@ -19,7 +19,7 @@ namespace Engine {
         int x = SceneSize.x  / 16;
         int y = SceneSize.y / 2 - 20;
         this->bg = new Engine::Image("play/textbox_bg.png", x, y, width, height);
-        this->text = new Engine::Label(text, "pirulen.ttf", 24, x+50, y+50, 255, 255, 255, 255, 0.5, 0.5,width-70);
+        this->text = new Engine::Label(text, "undertale.ttf", 36, x+50, y+50, 255, 255, 255, 255, 0.5, 0.5,width-70);
 
     }
     Textbox::~Textbox() {
