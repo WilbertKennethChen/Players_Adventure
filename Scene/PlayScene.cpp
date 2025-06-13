@@ -1491,15 +1491,6 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
     treeColliders.push_back(houseBox);
     }
 
-    Box treeStumpBox; // my try, please optimize
-    treeStumpBox.w = 64;
-    treeStumpBox.h = 64;
-    treeStumpBox.x = MapWidth * BlockSize - (5 * BlockSize);
-    treeStumpBox.y = MapHeight * BlockSize - (10 * BlockSize);
-    treeColliders.push_back(treeStumpBox);
-
-
-
     for (auto &p : bigTreeAnchors) {
     TileMapGroup->AddNewObject(new Engine::Image(
         "play/tree1.png",
