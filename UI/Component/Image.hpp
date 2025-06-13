@@ -3,6 +3,7 @@
 #include <allegro5/bitmap.h>
 #include <memory>
 #include <string>
+#include <allegro5/allegro.h>
 
 #include "Engine/IObject.hpp"
 
@@ -14,6 +15,7 @@ namespace Engine {
     public:
         // Smart pointer to bitmap.
         std::shared_ptr<ALLEGRO_BITMAP> bmp;
+        ALLEGRO_COLOR Tint = al_map_rgba(255, 255, 255, 255);
         /// <summary>
         /// Construct a image object.
         /// </summary>

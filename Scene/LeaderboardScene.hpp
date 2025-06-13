@@ -8,6 +8,7 @@
 #include <vector>
 #include <tuple>
 #include "Engine/IScene.hpp"
+#include "UI/Component/Image.hpp"
 
 namespace Engine { class Label; class ImageButton; }
 

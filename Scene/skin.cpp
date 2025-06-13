@@ -29,10 +29,10 @@ void SkinScene::Initialize() {
 
 
     // Back button like LoginScene
-    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 200, h - 100, 400, 80);
+    Engine::ImageButton* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 127, h - 150, 250, 80);
     btn->SetOnClickCallback(std::bind(&SkinScene::BackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 110, 0, 0, 0, 255, 0.5, 0.5));
 
     AddNewObject(new Engine::Image("play/player_idle_0.png", centerX - 380, 250, 256, 256));
     AddNewObject(new Engine::Label("Tuyul", "undertale.ttf", 36, centerX - 252, 220, 255, 255, 255, 255, 0.5, 0.5));
