@@ -27,6 +27,12 @@
           "text" : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer",
           "next" : ""
         }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "npc1 thx",
+          "next" : ""
+        }
       }
     },
     "npc2" : {
@@ -45,6 +51,12 @@
         },
         "body3" : {
           "text" : "But it’s not a worthy choice to assert this horrifying fact as a dominant trait, mainly because personality traits require an initial personality to lay their foundation on. You’re not worthy of anybody’s time, so go fuck off, “cat-girl”.",
+          "next" : ""
+        }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "npc2 thx",
           "next" : ""
         }
       }
@@ -79,6 +91,12 @@
         },
         "body2" : {
           "text" : "Stay safe friend :)",
+          "next" : ""
+        }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "enemy1 thx",
           "next" : ""
         }
       }
@@ -116,6 +134,12 @@
           "text" : "My children... they are the very essence of this forest, and their well-being is my paramount concern.",
           "next" : ""
         }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "groveDad thx",
+          "next" : ""
+        }
       }
 
     },
@@ -137,6 +161,12 @@
         },
         "body1" : {
           "text" : "You didn't try to pull our leaves... and you really understand about the sun? No one ever understands about the sun!",
+          "next" : ""
+        }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "groveChild thx",
           "next" : ""
         }
       }
@@ -168,6 +198,12 @@
         },
         "body2" : {
           "text" : "You may pass this threshold. Go forth, and may your path be as steadfast as your will.",
+          "next" : ""
+        }
+      },
+      "congrats" : {
+        "intro" : {
+          "text" : "jesterKnight thx",
           "next" : ""
         }
       }

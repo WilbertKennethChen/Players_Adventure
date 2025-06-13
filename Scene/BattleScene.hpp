@@ -47,6 +47,7 @@ public:
     // std::unordered_map<std::string,>;
     int enemyMaxHp;
     int enemyHp;
+    int tempScore;
     std::string img;
     std::string emotion;
     std::string desc;

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <filesystem>
 
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
@@ -24,15 +25,16 @@ void LeaderboardScene::ReadLeaderboardFile(const std::string& filename) {
     while (std::getline(file, line)) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        std::string name, scoreStr, datetime;
+        std::string name, scoreStr, datetime,endStr;
         std::getline(iss, name, ';');
         std::getline(iss, scoreStr, ';');
-        std::getline(iss, datetime);
+        std::getline(iss, datetime, ';');
+        std::getline(iss, endStr);
         // trim whitespace (left as exercise)
 
         try {
             int score = std::stoi(scoreStr);
-            leaderboardEntries.emplace_back(name, score, datetime);
+            leaderboardEntries.emplace_back(name, score, datetime,endStr);
         } catch (...) {
             continue;
         }
@@ -46,7 +48,8 @@ void LeaderboardScene::WriteLeaderboardFile(const std::string& filename) {
     for (auto& e : leaderboardEntries) {
         out << std::get<0>(e) << ";"
             << std::get<1>(e) << ";"
-            << std::get<2>(e) << "\n";
+            << std::get<2>(e) << ";"
+            <<  std::get<3>(e) << "\n";
     }
 }
 
@@ -69,10 +72,11 @@ void LeaderboardScene::Initialize() {
     bgmInstance = AudioHelper::PlaySample("leaderboard.mp3", true, AudioHelper::BGMVolume);
 
     // Load entries
-    for (auto& path : { "Resource/scoreboard.txt", "scoreboard.txt" }) {
-        ReadLeaderboardFile(path);
-        if (!leaderboardEntries.empty()) break;
-    }
+    // for (auto& path : { "Resource/scoreboard.txt", "scoreboard.txt" }) {
+    std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/scoreboard.txt").string();
+    ReadLeaderboardFile(path);
+        // if (!leaderboardEntries.empty()) break;
+    // }
 
     SetupStaticUI();
     RefreshPageDisplay();
@@ -180,6 +184,13 @@ void LeaderboardScene::RefreshPageDisplay() {
         nameLabels[i]->Text  = std::get<0>(e);
         dateLabels[i]->Text  = std::get<2>(e).empty() ? "N/A" : std::get<2>(e);
         scoreLabels[i]->Text = std::to_string(std::get<1>(e));
+        if (std::get<3>(e) == "good") {
+            scoreLabels[i]->Color = al_map_rgb(0, 255, 0);
+        } else if (std::get<3>(e) == "normal") {
+            scoreLabels[i]->Color = al_map_rgb(0, 0, 255);
+        } else if (std::get<3>(e) == "bad") {
+            scoreLabels[i]->Color = al_map_rgb(255, 0, 0);
+        }
     }
 
     pageLabel->Text      = "Page " + std::to_string(currentPage+1)
@@ -213,8 +224,9 @@ void LeaderboardScene::BackOnClick(int) {
 
 void LeaderboardScene::AddScoreToLeaderboard(const std::string& playerName,
                                              int score,
-                                             const std::string& filePath) {
-    std::vector<std::tuple<std::string, int, std::string>> entries;
+                                             const std::string& filePath,
+                                             const std::string& end) {
+    std::vector<std::tuple<std::string, int,std::string, std::string>> entries;
 
     // Read from file
     std::ifstream file(filePath);
@@ -222,13 +234,14 @@ void LeaderboardScene::AddScoreToLeaderboard(const std::string& playerName,
     while (std::getline(file, line)) {
         if (line.empty()) continue;
         std::istringstream iss(line);
-        std::string name, scoreStr, datetime;
+        std::string name, scoreStr, datetime, endStr;
         std::getline(iss, name, ';');
         std::getline(iss, scoreStr, ';');
-        std::getline(iss, datetime);
+        std::getline(iss, datetime, ';');
+        std::getline(iss, endStr);
         try {
             int parsedScore = std::stoi(scoreStr);
-            entries.emplace_back(name, parsedScore, datetime);
+            entries.emplace_back(name, parsedScore, datetime,endStr);
         } catch (...) {}
     }
     file.close();
@@ -237,7 +250,7 @@ void LeaderboardScene::AddScoreToLeaderboard(const std::string& playerName,
     std::time_t now = std::time(nullptr);
     char buf[20];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-    entries.emplace_back(playerName, score, buf);
+    entries.emplace_back(playerName, score, buf,end);
 
     // Sort entries
     std::sort(entries.begin(), entries.end(),
@@ -250,6 +263,6 @@ void LeaderboardScene::AddScoreToLeaderboard(const std::string& playerName,
     // Write back
     std::ofstream out(filePath);
     for (auto& e : entries)
-        out << std::get<0>(e) << ";" << std::get<1>(e) << ";" << std::get<2>(e) << "\n";
+        out << std::get<0>(e) << ";" << std::get<1>(e) << ";" << std::get<2>(e) << ";" << std::get<3>(e) << "\n";
 }
 

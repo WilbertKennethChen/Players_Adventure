@@ -19,8 +19,11 @@
 #include "UI/Component/Label.hpp"
 
 void LoginScene::Initialize() {
+
     textBoxUser = false;
     textBoxPassword = false;
+    Username = "";
+    Password = "";
 
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
@@ -161,6 +164,7 @@ void LoginScene::LoginOnClick() {
             GameData::getInstance().deadEnemies = jsonData[Username]["DeadEnemy"];
             GameData::getInstance().friendlyEnemies = jsonData[Username]["FriendlyEnemy"];
             GameData::getInstance().ending = jsonData[Username]["Ending"];
+            GameData::getInstance().score = jsonData[Username]["Score"];
             Engine::GameEngine::GetInstance().ChangeScene("start");
         }
     }
@@ -177,7 +181,10 @@ void LoginScene::RegisterOnClick() {
             errorLabel->Text = "Username already used";
         } else {
             GameData::getInstance().Username = Username;
-            GameData::getInstance().ending = "";
+            GameData::getInstance().friendlyEnemies.clear();
+            GameData::getInstance().ending.clear();
+            GameData::getInstance().deadEnemies.clear();
+            GameData::getInstance().score = 0;
             std::string path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/jsonData/SaveFile.json").string();
             std::ifstream in(path);
             nlohmann::json jsonData = nlohmann::json::parse(in);
@@ -185,6 +192,7 @@ void LoginScene::RegisterOnClick() {
             jsonData["Users"].push_back(Username);
             jsonData[Username]["Pass"] = Password;
             jsonData[Username]["Ending"] = "";
+            jsonData[Username]["Score"] = 0;
             jsonData[Username]["FriendlyEnemy"] = nlohmann::json::array();
             jsonData[Username]["DeadEnemy"] = nlohmann::json::array();
             std::ofstream out(path);

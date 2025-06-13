@@ -50,6 +50,7 @@ void BattleScene::Initialize() {
     currentEnemyFrame=0;
     frameTime =0;
     deathEndTimer = 0;
+    tempScore = 0;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
@@ -243,6 +244,7 @@ void BattleScene::Update(float dt) {
         }
         if (NotesGroup->GetObjects().empty() && notesWave[0].empty() && notesWave[1].empty() && notesWave[2].empty()) {
             minigameNotesActive = false;
+            GameData::getInstance().score += tempScore;
             enemyHit();
         }
     }
@@ -271,6 +273,8 @@ void BattleScene::Update(float dt) {
                 if (activeTime >= spawnCD) {
                     if (std::sqrt(dx * dx + dy * dy) > circleRad) {
                         updatePlayerHp(2);
+                    } else {
+                        tempScore += 20;
                     }
                     circleActive = false;
                     timeSinceSpawn = 0;
@@ -280,6 +284,7 @@ void BattleScene::Update(float dt) {
                 al_show_mouse_cursor(al_get_current_display());
                 minigameBoxActive = false;
                 enemyHit();
+                GameData::getInstance().score += tempScore;
                 BoxGameGroup->Clear();
             }
         } else {
@@ -505,6 +510,7 @@ void BattleScene::OnKeyDown(int keyCode) {
 
                     hitEffects.push_back({centerX, y, 0.3f});
                     remove = note;
+                    tempScore += 5;
                     break;
                 }
             }
@@ -526,6 +532,7 @@ void BattleScene::OnKeyDown(int keyCode) {
                     hitEffects.push_back({centerX, y, 0.3f});
 
                     remove = note;
+                    tempScore += 5;
                     break;
                 }
             }
@@ -548,6 +555,7 @@ void BattleScene::OnKeyDown(int keyCode) {
                     hitEffects.push_back({centerX, y, 0.3f});
 
                     remove = note;
+                    tempScore += 5;
                     break;
                 }
             }
@@ -577,6 +585,7 @@ void BattleScene::OnKeyDown(int keyCode) {
             bgmInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
             GameData::getInstance().playerHp = playerHp;
+            GameData::getInstance().score += 300;
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
     }
@@ -644,6 +653,7 @@ void BattleScene::SpareOnClick() {
             enemyFrames.clear();
             GameData::getInstance().friendlyEnemies.insert(enemyName);
             GameData::getInstance().playerHp = playerHp;
+            GameData::getInstance().score += 100;
             Engine::GameEngine::GetInstance().ChangeScene("play");
         }
     }
@@ -735,7 +745,7 @@ void BattleScene::enemyHit() {
 
 void BattleScene::readNotesWave() {
     notesWave.clear();
-    std::ifstream fin("Resource/notes0.txt");
+    std::ifstream fin("Resource/notes1.txt");
     float lane0, lane1, lane2;
     notesWave.resize(3);
     while (fin >> lane0 && fin >> lane1 && fin >> lane2) {

@@ -2,22 +2,19 @@
     "Users": [
         "aaa",
         "aab",
-        "aac",
-        "aad",
-        "aae",
-        "aaf",
-        "aag"
+        "aac"
     ],
     "aaa": {
-        "DeadEnemy": [
+        "DeadEnemy": [],
+        "Ending": "good",
+        "FriendlyEnemy": [
             "enemy1",
             "groveChild",
             "groveDad",
             "jesterKnight"
         ],
-        "Ending": "bad",
-        "FriendlyEnemy": [],
-        "Pass": "abc"
+        "Pass": "abc",
+        "Score": 760
     },
     "aab": {
         "DeadEnemy": [],
@@ -28,7 +25,8 @@
             "groveDad",
             "jesterKnight"
         ],
-        "Pass": "abc"
+        "Pass": "abc",
+        "Score": 765
     },
     "aac": {
         "DeadEnemy": [],
@@ -39,45 +37,7 @@
             "groveDad",
             "jesterKnight"
         ],
-        "Pass": "abc"
-    },
-    "aad": {
-        "DeadEnemy": [],
-        "Ending": "good",
-        "FriendlyEnemy": [
-            "enemy1",
-            "groveChild",
-            "groveDad",
-            "jesterKnight"
-        ],
-        "Pass": "abc"
-    },
-    "aae": {
-        "DeadEnemy": [],
-        "Ending": "good",
-        "FriendlyEnemy": [
-            "enemy1",
-            "groveChild",
-            "groveDad",
-            "jesterKnight"
-        ],
-        "Pass": "abc"
-    },
-    "aaf": {
-        "DeadEnemy": [],
-        "Ending": "good",
-        "FriendlyEnemy": [
-            "enemy1",
-            "groveChild",
-            "groveDad",
-            "jesterKnight"
-        ],
-        "Pass": "abc"
-    },
-    "aag": {
-        "DeadEnemy": [],
-        "Ending": "",
-        "FriendlyEnemy": [],
-        "Pass": "abc"
+        "Pass": "abc",
+        "Score": 765
     }
 }

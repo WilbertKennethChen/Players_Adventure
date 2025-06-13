@@ -28,6 +28,8 @@
 #include "Engine/GameEngine.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
+
+#include "LeaderboardScene.hpp"
 #include "UI/Component/Label.hpp"
 
 void CreditScene::Initialize() {
@@ -156,20 +158,28 @@ void CreditScene::OnKeyDown(int keyCode) {
         std::ifstream jsonFileStream(path);
         nlohmann::json jsonData = nlohmann::json::parse(jsonFileStream);
         jsonFileStream.close();
-        jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
-        jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
-        jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
-
-        std::ofstream jsonOut(path);
-        jsonOut << jsonData.dump(4);
-        jsonOut.close();
-        std::cout << "back" << std::endl;
+        if (jsonData[GameData::getInstance().Username]["Ending"].empty()) {
+            jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
+            jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
+            jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
+            jsonData[GameData::getInstance().Username]["Score"] = GameData::getInstance().score;
+            std::ofstream jsonOut(path);
+            jsonOut << jsonData.dump(4);
+            jsonOut.close();
+            std::cout << "back" << std::endl;
+            path = (std::filesystem::path(PROJECT_SOURCE_DIR) / "Resource/scoreboard.txt").string();
+            LeaderboardScene::AddScoreToLeaderboard(GameData::getInstance().Username,
+                                                    GameData::getInstance().score,
+                                                    path,
+                                                    GameData::getInstance().ending);
+        }
         Engine::GameEngine::GetInstance().ChangeScene("start");
     }
     if (Skip && keyCode == ALLEGRO_KEY_E) {
         GameData::getInstance().deadEnemies.clear();
         GameData::getInstance().friendlyEnemies.clear();
         GameData::getInstance().ending = "";
+        GameData::getInstance().score = 0;
         std::cout << "reset" << std::endl;
         Engine::GameEngine::GetInstance().ChangeScene("start");
     }

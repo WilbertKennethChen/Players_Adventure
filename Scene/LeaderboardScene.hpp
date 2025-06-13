@@ -17,7 +17,7 @@ private:
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> bgmInstance;
 
     // Data
-    std::vector<std::tuple<std::string,int,std::string>> leaderboardEntries;
+    std::vector<std::tuple<std::string,int,std::string,std::string>> leaderboardEntries;
     int currentPage = 0;
     static constexpr int maxEntriesPerPage = 5;
     static constexpr int maxPages = 10;
@@ -50,7 +50,8 @@ public:
     void BackOnClick(int stage);
     static void AddScoreToLeaderboard(const std::string& playerName,
                                       int score,
-                                      const std::string& filePath);
+                                      const std::string& filePath,
+                                      const std::string& end);
 };
 
 #endif // LEADERBOARDSCENE_HPP

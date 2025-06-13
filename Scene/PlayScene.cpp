@@ -494,7 +494,7 @@ void PlayScene::Draw() const {
     if (GameData::getInstance().ending == "bad" && MapId == 1) {
         al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 175));
     }
-    if (!activeTextbox) {
+    if (!activeTextbox && !isPaused) {
         if (MapId == 2) {
             al_draw_filled_rectangle(0,0,screenW,screenH, al_map_rgba(0, 0, 0, 125));
         }
@@ -583,11 +583,12 @@ void PlayScene::OnKeyDown(int keyCode) {
     if (keyCode == ALLEGRO_KEY_E) {
         std::cout << GameData::getInstance().ending << std::endl;
         std::cout << player->Position.x << " "<< player->Position.y<<  std::endl;
-        if (player->Position.x >= 430 && player->Position.x <=480 && player->Position.y >=266 && player->Position.y <=269 && !GameData::getInstance().ending.empty()) {
+        if (player->Position.x >= 430 && player->Position.x <=500 && player->Position.y >=240 && player->Position.y <=270 && !GameData::getInstance().ending.empty()) {
             std::cout << "Change" << std::endl;
             Engine::GameEngine::GetInstance().ChangeScene("credit");
         }
         if (interactable && !activeTextbox) {
+
             RenderTextbox("intro");
         }
     }
@@ -896,7 +897,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 6: // Ghost
                 {
                     mapState[i][j] = TILE_FLOOR;
-                    std::string texture = "pack/middle.png";
+                    std::string texture = "pack/floor_purple.png";
                     if (MapId == 1) {
                         texture = "play/cao.png";
                     }
@@ -1678,18 +1679,20 @@ void PlayScene::RenderTextbox(std::string key) {
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
     nlohmann::json data = nlohmann::json::parse(jsonFileStream);
     std::string text;
-    if (interactingNPC->isHostile()) {
-        text = data["dialogue"][nameDiag]["hostile"][key]["text"];
-        nextDiag = data["dialogue"][nameDiag]["hostile"][key]["next"];
-    } else {
-        text = data["dialogue"][nameDiag]["friendly"][key]["text"];
-        nextDiag = data["dialogue"][nameDiag]["friendly"][key]["next"];
+    if (GameData::getInstance().ending != "bad" && MapId == 1) {
+        text = data["dialogue"][nameDiag]["congrats"][key]["text"];
+        nextDiag = data["dialogue"][nameDiag]["congrats"][key]["next"];
+    }  else {
+        if (interactingNPC->isHostile()) {
+            text = data["dialogue"][nameDiag]["hostile"][key]["text"];
+            nextDiag = data["dialogue"][nameDiag]["hostile"][key]["next"];
+        } else {
+            text = data["dialogue"][nameDiag]["friendly"][key]["text"];
+            nextDiag = data["dialogue"][nameDiag]["friendly"][key]["next"];
+        }
     }
 
-    if (MapId == 1 && GameData::getInstance().ending == "good") {
-        text = "Congratulations!";
-        nextDiag = "";
-    }
+
 
 
     // std::cout << std::filesystem::current_path() << std::endl;
@@ -1753,7 +1756,8 @@ void PlayScene::ExitOnClick() {
     jsonFileStream.close();
     jsonData[GameData::getInstance().Username]["DeadEnemy"] = GameData::getInstance().deadEnemies;
     jsonData[GameData::getInstance().Username]["FriendlyEnemy"] = GameData::getInstance().friendlyEnemies;
-    jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
+    // jsonData[GameData::getInstance().Username]["Ending"] = GameData::getInstance().ending;
+    jsonData[GameData::getInstance().Username]["Score"] = GameData::getInstance().score;
 
     std::ofstream jsonOut(path);
     jsonOut << jsonData.dump(4);

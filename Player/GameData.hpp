@@ -20,6 +20,7 @@ public:
     float playerMaxHp;
     float playerPosX;
     float playerPosY;
+    int score;
     std::string Username = "";
     std::string ending;
 
