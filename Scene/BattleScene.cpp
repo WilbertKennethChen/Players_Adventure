@@ -20,11 +20,13 @@
 #include "Player/GameData.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "Engine/Resources.hpp"
+#include "keybinding.h"
 
 Player* player;
 Npc *enemy;
 
 bool statusDisplayed;
+bool notesWaveAlreadyPlayed = false;
 Engine::Label * labelDesc = nullptr;
 Engine::Label * labelEmo = nullptr;
 Engine::Label * labelHpEnemy = nullptr;
@@ -401,9 +403,10 @@ void BattleScene::Draw() const {
         al_draw_circle(centerX, bottomY, radius, al_map_rgb(0, 255, 0),5);
         const ALLEGRO_FONT* font = Engine::Resources::GetInstance().GetFont("undertale.ttf", 32).get();
         ALLEGRO_COLOR white = al_map_rgb(255, 255, 255);
-        al_draw_text(font, white, centerX, topY - 16, ALLEGRO_ALIGN_CENTER, "J");
-        al_draw_text(font, white, centerX, midY - 16, ALLEGRO_ALIGN_CENTER, "K");
-        al_draw_text(font, white, centerX, bottomY - 16, ALLEGRO_ALIGN_CENTER, "L");
+        const auto& kb = KeyBindingManager::GetInstance();
+        al_draw_text(font, white, centerX, topY - 16, ALLEGRO_ALIGN_CENTER, al_keycode_to_name(kb.GetKeyForAction("note_lane_0")));
+        al_draw_text(font, white, centerX, midY - 16, ALLEGRO_ALIGN_CENTER, al_keycode_to_name(kb.GetKeyForAction("note_lane_1")));
+        al_draw_text(font, white, centerX, bottomY - 16, ALLEGRO_ALIGN_CENTER, al_keycode_to_name(kb.GetKeyForAction("note_lane_2")));
 
         for (const auto& effect : hitEffects) {
             float alpha = effect.timeLeft / 0.3f;
@@ -497,70 +500,26 @@ void BattleScene::Draw() const {
 
 void BattleScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
+    auto& kb = KeyBindingManager::GetInstance();
     if (minigameNotesActive) {
-        if (keyCode == ALLEGRO_KEY_J) {
-            IObject* remove = nullptr;
-            for (auto& note : NotesGroup->GetObjects()) {
-                Notes * insideNote = dynamic_cast<Notes*>(note);
-                if (insideNote->hit && insideNote->lane == 0) {
-                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
-                    float y = (insideNote->lane  == 0) ? minigame_y1 + 45 :
-                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
-                                             minigame_y2 - 45;
-
-                    hitEffects.push_back({centerX, y, 0.3f});
-                    remove = note;
-                    tempScore += 5;
-                    break;
+        for (int lane = 0; lane < 3; ++lane) {
+            if (keyCode == kb.GetKeyForAction("note_lane_" + std::to_string(lane))) {
+                IObject* remove = nullptr;
+                for (auto& note : NotesGroup->GetObjects()) {
+                    Notes* insideNote = dynamic_cast<Notes*>(note);
+                    if (insideNote->hit && insideNote->lane == lane) {
+                        float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
+                        float y = (lane == 0) ? minigame_y1 + 45 :
+                                 (lane == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
+                                               minigame_y2 - 45;
+                        hitEffects.push_back({centerX, y, 0.3f});
+                        remove = note;
+                        break;
+                    }
                 }
-            }
-            if (remove) {
-                NotesGroup->RemoveObject(remove->GetObjectIterator());
-            }
-        }
-
-        if (keyCode == ALLEGRO_KEY_K) {
-            IObject* remove = nullptr;
-            for (auto& note : NotesGroup->GetObjects()) {
-                Notes * insideNote = dynamic_cast<Notes*>(note);
-                if (insideNote->hit && insideNote->lane == 1) {
-                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
-                    float y = (insideNote->lane  == 0) ? minigame_y1 + 45 :
-                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
-                                             minigame_y2 - 45;
-
-                    hitEffects.push_back({centerX, y, 0.3f});
-
-                    remove = note;
-                    tempScore += 5;
-                    break;
+                if (remove) {
+                    NotesGroup->RemoveObject(remove->GetObjectIterator());
                 }
-            }
-            if(remove) {
-                NotesGroup->RemoveObject(remove->GetObjectIterator());
-            }
-
-        }
-
-        if (keyCode == ALLEGRO_KEY_L) {
-            IObject* remove= nullptr;
-            for (auto& note : NotesGroup->GetObjects()) {
-                Notes * insideNote = dynamic_cast<Notes*>(note);
-                if (insideNote->hit && insideNote->lane == 2) {
-                    float centerX = minigame_x2 - (300 + notesGap) / 2.0f;
-                    float y = (insideNote->lane == 0) ? minigame_y1 + 45 :
-                               (insideNote->lane  == 1) ? (minigame_y1 + minigame_y2) / 2.0f :
-                                             minigame_y2 - 45;
-
-                    hitEffects.push_back({centerX, y, 0.3f});
-
-                    remove = note;
-                    tempScore += 5;
-                    break;
-                }
-            }
-            if (remove) {
-                NotesGroup->RemoveObject(remove->GetObjectIterator());
             }
 
         }
@@ -745,17 +704,43 @@ void BattleScene::enemyHit() {
 
 void BattleScene::readNotesWave() {
     notesWave.clear();
-    std::ifstream fin("Resource/notes1.txt");
-    float lane0, lane1, lane2;
     notesWave.resize(3);
-    while (fin >> lane0 && fin >> lane1 && fin >> lane2) {
-        // std::cout << lane0;
-        notesWave[0].push(lane0);
-        notesWave[1].push(lane1);
-        notesWave[2].push(lane2);
+
+    float totalTime = (enemyName == "groveDad") ? 7.0f : 4.0f;
+    float step = 0.4f;
+    float minLaneGap = (enemyName == "groveChild") ? 0.5f : 0.7f;
+
+    std::uniform_real_distribution<float> stepOffsetDist(-0.1f, 0.1f);
+    std::uniform_int_distribution<int> laneCountDist(1, 2);
+    std::uniform_int_distribution<int> laneDist(0, 2);
+
+    float lastLaneTime[3] = {-1.0f, -1.0f, -1.0f};
+    float currentTime = 0.6f;
+
+    while (currentTime <= totalTime) {
+        int lanesToUse = laneCountDist(rng);
+        std::vector<int> selected;
+
+        int tries = 0;
+        while (selected.size() < lanesToUse && tries < 10) {
+            int lane = laneDist(rng);
+            tries++;
+            if (std::find(selected.begin(), selected.end(), lane) == selected.end()) {
+                float t = currentTime + stepOffsetDist(rng);
+                if (t - lastLaneTime[lane] >= minLaneGap) {
+                    selected.push_back(lane);
+                    notesWave[lane].push(t);
+                    lastLaneTime[lane] = t;
+                }
+            }
+        }
+
+        currentTime += step;
     }
-    fin.close();
+
+    notesWaveAlreadyPlayed = true;
 }
+
 
 void BattleScene::updatePlayerHp(int min){
     playerHp -= min;
