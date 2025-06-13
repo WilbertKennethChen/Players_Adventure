@@ -44,7 +44,10 @@ void KeyBindingManager::ResetToDefaults() {
         {"up", ALLEGRO_KEY_W},
         {"down", ALLEGRO_KEY_S},
         {"left", ALLEGRO_KEY_A},
-        {"right", ALLEGRO_KEY_D}
+        {"right", ALLEGRO_KEY_D},
+        {"note_lane_0", ALLEGRO_KEY_J},
+        {"note_lane_1", ALLEGRO_KEY_K},
+        {"note_lane_2", ALLEGRO_KEY_L}
     };
 
     reverseKeyBindings.clear();

@@ -30,14 +30,25 @@ void SettingsScene::Initialize() {
     int leftSectionX = w / 4;
     AddNewObject(new Engine::Label("Controls", "undertale.ttf", 64, leftSectionX, 80, 255, 255, 255, 255, 0.5, 0.5));
 
-    int buttonSize = 80;
     int spacing = 90;
-    int keysStartY = 350;
+    int keysStartY = 200;
 
+    // Movement label
+    AddNewObject(new Engine::Label("Movement", "undertale.ttf", 36, leftSectionX, keysStartY, 255, 255, 255, 255, 0.5, 0.5));
+    keysStartY += 70;
     CreateKeyBindingButton("up", leftSectionX, keysStartY);
     CreateKeyBindingButton("left", leftSectionX - spacing, keysStartY + spacing);
     CreateKeyBindingButton("down", leftSectionX, keysStartY + spacing);
     CreateKeyBindingButton("right", leftSectionX + spacing, keysStartY + spacing);
+
+    // Minigames label
+    keysStartY += spacing * 2 + 50;
+    AddNewObject(new Engine::Label("Minigames", "undertale.ttf", 36, leftSectionX, keysStartY, 255, 255, 255, 255, 0.5, 0.5));
+    keysStartY += 70;
+    CreateKeyBindingButton("note_lane_0", leftSectionX - spacing, keysStartY);
+    CreateKeyBindingButton("note_lane_1", leftSectionX, keysStartY);
+    CreateKeyBindingButton("note_lane_2", leftSectionX + spacing, keysStartY);
+
 
     // ================== RIGHT SIDE: Audio Settings ==================
     int rightSectionX = w * 3 / 4;

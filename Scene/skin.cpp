@@ -21,6 +21,7 @@ void SkinScene::Initialize() {
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int centerX = w / 2;
+    std::string selectedSkin = GameData::getInstance().playerSkin;
 
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
@@ -49,6 +50,11 @@ void SkinScene::Initialize() {
     });
     AddNewControlObject(selectBtn1);
 
+    if (selectedSkin == "play/silent_wanderer_") {
+        AddNewObject(new Engine::Label("Selected", "undertale.ttf", 28, centerX - 252, 180, 255, 215, 0, 255, 0.5, 0.5));
+    }
+
+
     // Second skin image
     AddNewObject(new Engine::Image("poci/kuo_idle/kuo1.png", centerX + 150, 235,  192, 320));
     AddNewObject(new Engine::Label("Mr.Kuo", "undertale.ttf", 36, centerX + 250, 220, 255, 255, 255, 255, 0.5, 0.5));
@@ -65,6 +71,11 @@ void SkinScene::Initialize() {
     Engine::GameEngine::GetInstance().ChangeScene("login");
     });
     AddNewControlObject(selectBtn2);
+
+    if (selectedSkin == "play/kuo") {
+        AddNewObject(new Engine::Label("Selected", "undertale.ttf", 28, centerX + 250, 180, 255, 215, 0, 255, 0.5, 0.5));
+    }
+
 
 
     // OPTIONAL: Play music
