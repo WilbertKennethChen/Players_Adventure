@@ -1053,11 +1053,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 36: // 't'
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-
                     break;
                 case 37: // 'u'
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_up.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/botak.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump_small.png",
+    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+    64, 64)); // size of your sword image
                     break;
                 case 38: // 'v'
                     mapState[i][j] = TILE_FLOOR;
@@ -1218,9 +1221,13 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("tiles/head_grass.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 70:
+                case 70: // ganti ini untuk phon
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump.png",
+    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+    64, 64)); // size of your sword image
                     break;
                 case 71:
                     mapState[i][j] = TILE_FLOOR;
@@ -1619,7 +1626,7 @@ Engine::Point PlayScene::getScreenSize() {
 
 void PlayScene::RenderTextbox(std::string key) {
     keyDown.clear();
-    talkingSFXInstance = AudioHelper::PlaySample("mumet2.mp3", true, AudioHelper::SFXVolume);
+    talkingSFXInstance = AudioHelper::PlaySample("morse_code.mp3", true, AudioHelper::SFXVolume);
     Engine::Point ScreenSize = getScreenSize();
     std::ifstream jsonFileStream("Resource/jsonData/dialogue.json");
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
