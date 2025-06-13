@@ -49,20 +49,26 @@ void LoginScene::Initialize() {
     errorLabel = new Engine::Label("", "undertale.ttf", 20, centerX, startY + spacing * 2 - 30, 255, 0, 0, 255, 0.5, 0.5);
     AddNewObject(errorLabel);
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", centerX - 200, startY + spacing * 2 + 10, 150, 60);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 200, startY + spacing * 2 + 10, 150, 60);
     btn->SetOnClickCallback(std::bind(&LoginScene::LoginOnClick, this));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Login", "undertale.ttf", 28, centerX - 125, startY + spacing * 2 + 40, 0, 0, 0, 255, 0.5, 0.5));
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", centerX + 50, startY + spacing * 2 + 10, 150, 60);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX + 50, startY + spacing * 2 + 10, 150, 60);
     btn->SetOnClickCallback(std::bind(&LoginScene::RegisterOnClick, this));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Register", "undertale.ttf", 28, centerX + 125, startY + spacing * 2 + 40, 0, 0, 0, 255, 0.5, 0.5));
 
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", centerX - 200, h - 100, 400, 80);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 127, h - 150, 250, 80);
     btn->SetOnClickCallback(std::bind(&LoginScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 110, 0, 0, 0, 255, 0.5, 0.5));
+
+    int btnSize = 200;
+
+    btn = new Engine::ImageButton("stage-select/skin.png", "stage-select/skinhovered.png", w - btnSize - 20, h - btnSize, btnSize, btnSize);
+    btn->SetOnClickCallback(std::bind(&LoginScene::skinonclick, this));
+    AddNewControlObject(btn);
 
     bgmInstance = AudioHelper::PlaySample("wii.mp3", true, AudioHelper::BGMVolume);
 
@@ -159,6 +165,11 @@ void LoginScene::LoginOnClick() {
         }
     }
 }
+
+void LoginScene::skinonclick(){
+    Engine::GameEngine::GetInstance().ChangeScene("skin");
+}
+
 
 void LoginScene::RegisterOnClick() {
     if (!Username.empty() && !Password.empty()) {

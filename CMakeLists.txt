@@ -117,6 +117,8 @@ add_executable(2025_I2P2_TowerDefense
         NPC/water.cpp
         Scene/CreditScene.cpp
         Scene/CreditScene.hpp
+        Scene/skin.cpp
+        Scene/skin.h
 )
 
 IF (WIN32)

@@ -26,6 +26,8 @@ namespace Engine {
         std::shared_ptr<ALLEGRO_FONT> font;
         Engine::Label* text;
         Engine::Image* bg;
+        Engine::Label* nameLabel;
+        Engine::Label* hintLabel;
     public:
         // Text to draw.
 
@@ -46,7 +48,7 @@ namespace Engine {
         /// <param name="a">Color's alpha value.</param>
         /// <param name="anchorX">The centerX of the object. (0, 0) means top-left, while (1, 0) means top-right.</param>
         /// <param name="anchorY">The centerY of the object. (0, 1) means bottom-left, while (1, 1) means bottom-right.</param>
-        explicit Textbox(const std::string &text, Engine::Point ScreenSize);
+        explicit Textbox(const std::string &text, const std::string &name, Engine::Point SceneSize);
         ~Textbox();
         /// <summary>
         /// Draw text with loaded font.

@@ -76,6 +76,7 @@ public:
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
     Engine::Image* dialogueNpcImage = nullptr;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> talkingSFXInstance;
 
     Turret *preview;
     std::vector<std::vector<TileType>> mapState;

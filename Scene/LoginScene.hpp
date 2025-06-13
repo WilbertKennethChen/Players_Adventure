@@ -28,6 +28,7 @@ public:
     void BackOnClick(int stage);
     void LoginOnClick();
     void RegisterOnClick();
+    void skinonclick();
     void Draw() const override;
     void OnKeyDown(int keyCode) override;
     void OnMouseDown(int button, int mx, int my) override;

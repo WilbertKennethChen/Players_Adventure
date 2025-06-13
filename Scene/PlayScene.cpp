@@ -104,7 +104,7 @@ void PlayScene::Initialize() {
     float playerhp = GameData::getInstance().playerHp;
     float playerposx = GameData::getInstance().playerPosX;
     float playerposy = GameData::getInstance().playerPosY;
-    player = new Player("play/silent_wanderer_", playerposx, playerposy, playerhp, 200);
+    player = new Player(GameData::getInstance().playerSkin, playerposx, playerposy, playerhp, 200);
     AddNewObject(player);
     std::cout << playerhp << std::endl;
 
@@ -204,7 +204,7 @@ void PlayScene::PauseInitialize()
     const int buttonX = pauseX + (pauseW - buttonWidth) / 2;
     const int buttonSpacing = 20;
 
-    continueBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    continueBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     continueBtn->SetOnClickCallback(std::bind(&PlayScene::ContinueOnClick, this));
     UIGroup->AddNewControlObject(continueBtn); // Changed from AddNewObject to AddNewControlObject
     continueBtn->Visible = false;
@@ -215,7 +215,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewObject(continueLabel);
     currentY += buttonHeight + buttonSpacing;
 
-    retryBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    retryBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     retryBtn->SetOnClickCallback(std::bind(&PlayScene::RetryOnClick, this));
     UIGroup->AddNewControlObject(retryBtn);
     retryBtn->Visible = false;
@@ -226,7 +226,7 @@ void PlayScene::PauseInitialize()
     UIGroup->AddNewObject(retryLabel);
     currentY += buttonHeight + buttonSpacing;
 
-    exitBtn = new Engine::ImageButton("play/dirt.png", "play/floor.png", buttonX, currentY, buttonWidth, buttonHeight);
+    exitBtn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", buttonX, currentY, buttonWidth, buttonHeight);
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
@@ -367,15 +367,16 @@ void PlayScene::Update(float deltaTime) {
         }
         return;
     }
-
+    if (activeTextbox && activeTextbox->isDone() && talkingSFXInstance) {
+        AudioHelper::StopSample(talkingSFXInstance);
+        talkingSFXInstance = nullptr;
+    }
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         preview->Update(deltaTime);
     }
     NpcGroup->Update(deltaTime);
     TileMapGroup->Update(deltaTime);
-    // std::cout << GameData::getInstance().ending << std::endl;
-    // std::cout << player->Position.x << " " << player->Position.y << std::endl;
 }
 
 void PlayScene::ResetScene(Engine::Point spawnPosition) {
@@ -589,13 +590,16 @@ void PlayScene::OnKeyDown(int keyCode) {
         if (interactable && !activeTextbox) {
             RenderTextbox("intro");
         }
-
     }
     if (activeTextbox) {
         if (keyCode == ALLEGRO_KEY_ENTER || keyCode == ALLEGRO_KEY_SPACE) {
             if (!activeTextbox->isDone()) {
                 std::cout << "skipping" << std::endl;
                 activeTextbox->Skip();
+                if (talkingSFXInstance) {
+                    AudioHelper::StopSample(talkingSFXInstance);
+                    talkingSFXInstance = nullptr;
+                }
             } else {
                 std::cout << "not skipping" << std::endl;
                 if (!nextDiag.empty()) {
@@ -604,9 +608,16 @@ void PlayScene::OnKeyDown(int keyCode) {
                         UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
                         dialogueNpcImage = nullptr;
                     }
+                    if (talkingSFXInstance) {
+                        AudioHelper::StopSample(talkingSFXInstance);
+                        talkingSFXInstance = nullptr;
+                    }
                     RenderTextbox(nextDiag);
                 } else {
-
+                    if (talkingSFXInstance) {
+                        AudioHelper::StopSample(talkingSFXInstance);
+                        talkingSFXInstance = nullptr;
+                    }
                     UIGroup->RemoveObject(activeTextbox->GetObjectIterator());
                     activeTextbox = nullptr;
                     if (dialogueNpcImage) {
@@ -624,8 +635,6 @@ void PlayScene::OnKeyDown(int keyCode) {
             }
         }
     }
-    //house
-
 
     // if (keyCode == ALLEGRO_KEY_ESCAPE) {
     //     if (activeTextbox) {
@@ -845,7 +854,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
 
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    Npc *npc1 = new Npc("play/enemy-10.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
+                    Npc *npc1 = new Npc("play/npc1_top.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc1");
                     if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
                         NpcGroup->AddNewObject(npc1);
                     }
@@ -856,7 +865,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    Npc *npc2 = new Npc("play/enemy-9.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
+                    Npc *npc2 = new Npc("play/npc2_top.png", j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2, "npc2");
                     if (MapId == 1 && (GameData::getInstance().ending == "good" || GameData::getInstance().ending == "")) {
                         NpcGroup->AddNewObject(npc2);
                     }
@@ -864,8 +873,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
@@ -877,6 +885,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                             texture = "play/cao.png";
                         }
                         TileMapGroup->AddNewObject(new Engine::Image(texture, j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                        teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
+                    }
+                    else {
+                        mapState[i][j] = TILE_FLOOR;
+                        TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                         teleportPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     }
                     break;
@@ -919,7 +932,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 }
                 case 8:
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 9: {
                     // mapState[i][j] = TILE_WATER;
@@ -1065,11 +1078,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 36: // 't'
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-
                     break;
                 case 37: // 'u'
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_up.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/botak.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump_small.png",
+    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+    64, 64)); // size of your sword image
                     break;
                 case 38: // 'v'
                     mapState[i][j] = TILE_FLOOR;
@@ -1212,7 +1228,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 65: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner1.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 66: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
@@ -1230,9 +1246,13 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("tiles/head_grass.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
-                case 70:
+                case 70: // ganti ini untuk phon
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump.png",
+    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+    64, 64)); // size of your sword image
                     break;
                 case 71:
                     mapState[i][j] = TILE_FLOOR;
@@ -1249,6 +1269,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                        j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        64, 64
+                    });
                     break;
                 case 73:
                     mapState[i][j] = TILE_FLOOR;
@@ -1257,6 +1282,11 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                        j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                          i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                          64, 64
+                        });
                     break;
                 case 74:
                     mapState[i][j] = TILE_FLOOR;
@@ -1265,14 +1295,24 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                        j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                            i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                          64, 64
+                        });
                     break;
                 case 75: // }
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    TileMapGroup->AddNewObject(new Engine::Image("play/chair.png",
+                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump.png",
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                    j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                    i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                    64.0f, 64.0f
+                    });
                     break;
                 case 76: // [
                     mapState[i][j] = TILE_FLOOR;
@@ -1281,14 +1321,24 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                        j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        64, 64
+                    });
                     break;
                 case 77:
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/cao.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
-                    TileMapGroup->AddNewObject(new Engine::Image("play/chest.png",
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("play/chair.png",
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
                         64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                             j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                             i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                           64, 64
+                        });
                     break;
                 case 78:
                     mapState[i][j] = TILE_FLOOR;
@@ -1348,7 +1398,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 91:
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     TileMapGroup->AddNewObject(new Engine::Image("play/tree1.png",
                         j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
                         i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
@@ -1414,6 +1464,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 case 299:
                 {
                     mapState[i][j] = TILE_FLOOR;
+                    TileMapGroup->AddNewObject(new Engine::Image("pack/middle.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     std::string texture = "pack/middle.png";
                     if (MapId == 1) {
                         texture = "play/cao.png";
@@ -1461,12 +1512,19 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
         //     houseAnchorY * BlockSize,                        // Same Y as house top
         //     96, 128));                                      // Exact pixel dimensions
     Box houseBox;
-    houseBox.w = 206;  // adjust as needed
-    houseBox.h = 270;   // only the bottom row blocks movement
-    houseBox.x = houseAnchorX * BlockSize + (3 * BlockSize - houseBox.w) / 2.0f ;
+    houseBox.w = 380;  // adjust as needed
+    houseBox.h = 245;   // only the bottom row blocks movement
+    houseBox.x = houseAnchorX * BlockSize + (3 * BlockSize - houseBox.w) / 2.0f + 35    ;
     houseBox.y = (houseAnchorY + 3) * BlockSize - 196;  // bottom row (row 3 of 4)
     treeColliders.push_back(houseBox);
     }
+
+    Box treeStumpBox; // my try, please optimize
+    treeStumpBox.w = 64;
+    treeStumpBox.h = 64;
+    treeStumpBox.x = MapWidth * BlockSize - (5 * BlockSize);
+    treeStumpBox.y = MapHeight * BlockSize - (10 * BlockSize);
+    treeColliders.push_back(treeStumpBox);
 
 
 
@@ -1604,6 +1662,7 @@ Engine::Point PlayScene::getScreenSize() {
 
 void PlayScene::RenderTextbox(std::string key) {
     keyDown.clear();
+    talkingSFXInstance = AudioHelper::PlaySample("morse_code.mp3", true, AudioHelper::SFXVolume);
     Engine::Point ScreenSize = getScreenSize();
     std::ifstream jsonFileStream("Resource/jsonData/dialogue.json");
     // std::cout << std::filesystem::exists("Resource/jsonData/enemyInfo.json") << std::endl;
@@ -1626,7 +1685,7 @@ void PlayScene::RenderTextbox(std::string key) {
     // std::cout << std::filesystem::current_path() << std::endl;
 
 
-    activeTextbox = new Engine::Textbox(text,ScreenSize);
+    activeTextbox = new Engine::Textbox(text, nameDiag, ScreenSize);
     if (dialogueNpcImage) {
         UIGroup->RemoveObject(dialogueNpcImage->GetObjectIterator());
         dialogueNpcImage = nullptr;
@@ -1692,5 +1751,5 @@ void PlayScene::ExitOnClick() {
 
 
 
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    Engine::GameEngine::GetInstance().ChangeScene("start");
 }

@@ -103,7 +103,7 @@ void LeaderboardScene::SetupStaticUI() {
     int halfW = w / 2;
 
     // Background + title
-    AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
+    AddNewObject(new Engine::Image("menu/awarding_bg.png", 0, 0, w, h, 0, 0));
     AddNewObject(new Engine::Label("Leaderboard", "undertale.ttf", 60,
                                    halfW, 80, 255,255,255,255, 0.5,0.5));
 
@@ -132,30 +132,30 @@ void LeaderboardScene::SetupStaticUI() {
     }
 
     // Page number
-    pageLabel = new Engine::Label("", "undertale.ttf",36, halfW, h-140,255,255,255,255,0.5,0.5);
+    pageLabel = new Engine::Label("", "undertale.ttf",36, halfW, h-170,255,255,255,255,0.5,0.5);
     AddNewObject(pageLabel);
 
     // Buttons (all share same Y for perfect alignment)
     const int btnY = h - 90, lblY = h - 50;
-    prevBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
-                                      halfW - 320, btnY, 200, 80);
+    prevBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
+                                      halfW - 320, btnY - 50, 200, 80);
     prevBtn->SetOnClickCallback(std::bind(&LeaderboardScene::PrevPage, this));
     AddNewControlObject(prevBtn);
-    prevLabel = new Engine::Label("Prev","undertale.ttf",36, halfW - 220, lblY,0,0,0,255,0.5,0.5);
+    prevLabel = new Engine::Label("Prev","undertale.ttf",36, halfW - 220, lblY - 50,0,0,0,255,0.5,0.5);
     AddNewObject(prevLabel);
 
-    nextBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
-                                      halfW + 120, btnY, 200, 80);
+    nextBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
+                                      halfW + 120, btnY - 50, 200, 80);
     nextBtn->SetOnClickCallback(std::bind(&LeaderboardScene::NextPage, this));
     AddNewControlObject(nextBtn);
-    nextLabel = new Engine::Label("Next","undertale.ttf",36, halfW + 220, lblY,0,0,0,255,0.5,0.5);
+    nextLabel = new Engine::Label("Next","undertale.ttf",36, halfW + 220, lblY - 50,0,0,0,255,0.5,0.5);
     AddNewObject(nextLabel);
 
-    auto* backBtn = new Engine::ImageButton("stage-select/dirt.png","stage-select/floor.png",
-                                            halfW - 100, btnY, 200, 80);
+    auto* backBtn = new Engine::ImageButton("stage-select/ui_button.png","stage-select/ui_button_hovered.png",
+                                            halfW - 100, btnY - 50, 200, 80);
     backBtn->SetOnClickCallback(std::bind(&LeaderboardScene::BackOnClick, this, 0));
     AddNewControlObject(backBtn);
-    AddNewObject(new Engine::Label("Back","undertale.ttf",36, halfW, lblY,0,0,0,255,0.5,0.5));
+    AddNewObject(new Engine::Label("Back","undertale.ttf",36, halfW, lblY - 50,0,0,0,255,0.5,0.5));
 }
 
 // ————————————— Page Refresh & Navigation —————————————

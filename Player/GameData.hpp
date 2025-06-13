@@ -30,6 +30,7 @@ public:
         static GameData instance;
         return instance;
     }
+    std::string playerSkin = "play/silent_wanderer_";
 
     GameData(const GameData&) = delete;
     void operator=(const GameData&) = delete;

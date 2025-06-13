@@ -145,39 +145,32 @@ void BattleScene::SetupBattleUI() {
     char buff[20];
 
     // Enemy HP Label
-    sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
-    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW - 250, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    sprintf(buff, "Enemy HP: %d/%d", enemyHp, enemyMaxHp);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 28, halfW - 250, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
 
     // Player HP Label
-    sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 32, 290, h - 160,
-                                      255, 255, 255, 255, 0.5, 0.5);
+    sprintf(buff, "Player HP: %d/%d", playerHp, playerMaxHp);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 28, halfW + 250, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
 
     // Attack Button
-    auto* btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
-                                        100, h - 125, w / 4, 100);
+    auto* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", 100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::AttackOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h - 75,
-                                   0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Attack", "undertale.ttf", 50, 295, h - 75, 0, 0, 0, 255, 0.5, 0.5));
 
     // Negotiate Button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
-                                  w / 2 - w / 8, h - 125, w / 4, 100);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", w / 2 - w / 8, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::NegotiateOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w / 2 - w / 8 + 200, h - 75,
-                                   0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Negotiate", "undertale.ttf", 48, w / 2, h - 75, 0, 0, 0, 255, 0.5, 0.5));
 
     // Spare Button
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png",
-                                  w - w / 4 - 100, h - 125, w / 4, 100);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", w - w / 4 - 100, h - 125, w / 4, 100);
     btn->SetOnClickCallback(std::bind(&BattleScene::SpareOnClick, this));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w - w / 4 + 100, h - 75,
-                                   0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Spare", "undertale.ttf", 50, w - w / 4 + 100, h - 75, 0, 0, 000, 255, 0.5, 0.5));
 }
 
 
@@ -715,8 +708,8 @@ void BattleScene::enemyHit() {
         LabelGroup->RemoveObject(labelHpEnemy->GetObjectIterator());
     }
 
-    sprintf(buff,"HP:%d/%d",enemyHp,enemyMaxHp);
-    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 32, halfW - 250, halfH/2 + 125, 255, 255, 255, 255, 0.5, 0.5);
+    sprintf(buff, "Enemy HP: %d/%d", enemyHp, enemyMaxHp);
+    labelHpEnemy = new Engine::Label(buff, "undertale.ttf", 28, halfW - 250, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpEnemy);
 
 
@@ -737,11 +730,12 @@ void BattleScene::enemyHit() {
 
     idle = true;
     enemyShakeTime = enemyShakeDuration;
+    AudioHelper::PlaySample("damage.mp3", false, AudioHelper::SFXVolume);
 }
 
 void BattleScene::readNotesWave() {
     notesWave.clear();
-    std::ifstream fin("Resource/notes1.txt");
+    std::ifstream fin("Resource/notes0.txt");
     float lane0, lane1, lane2;
     notesWave.resize(3);
     while (fin >> lane0 && fin >> lane1 && fin >> lane2) {
@@ -762,8 +756,8 @@ void BattleScene::updatePlayerHp(int min){
     int halfH = h / 2;
     LabelGroup->RemoveObject(labelHpPlayer->GetObjectIterator());
     char buff[20];
-    sprintf(buff,"HP:%d/%d",playerHp,playerMaxHp);
-    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 30, 220, h-160, 255, 255, 255, 255, 0.5, 0.5);
+    sprintf(buff, "Player HP: %d/%d", playerHp, playerMaxHp);
+    labelHpPlayer = new Engine::Label(buff, "undertale.ttf", 28, halfW + 250, halfH / 2 + 125, 255, 255, 255, 255, 0.5, 0.5);
     LabelGroup->AddNewObject(labelHpPlayer);
     if (playerHp <= 0) {
         minigameNotesActive = false;

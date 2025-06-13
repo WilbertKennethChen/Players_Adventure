@@ -125,6 +125,9 @@ void StartScene::Terminate() {
 void StartScene::PlayOnClick(int stage) {
     if (GameData::getInstance().Username != "") {
         Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+        PlayScene *scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetScene("play"));
+        scene->MapId = stage;
+        Engine::GameEngine::GetInstance().ChangeScene("play");
     }
 
 }

@@ -15,6 +15,7 @@
 #include "Scene/DoorTransitionScene.hpp"
 #include "Scene/LeaderboardScene.hpp"
 #include "Scene/LoginScene.hpp"
+#include "Scene/skin.h"
 
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
@@ -33,6 +34,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("battle",new BattleScene());
 	game.AddNewScene("login",new LoginScene());
 	game.AddNewScene("credit",new CreditScene());
+	game.AddNewScene("skin",new SkinScene());
 
 
 

@@ -19,7 +19,7 @@ private:
     // Data
     std::vector<std::tuple<std::string,int,std::string>> leaderboardEntries;
     int currentPage = 0;
-    static constexpr int maxEntriesPerPage = 6;
+    static constexpr int maxEntriesPerPage = 5;
     static constexpr int maxPages = 10;
 
     // UI pointers
