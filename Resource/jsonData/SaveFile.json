@@ -53,8 +53,12 @@
         "Pass": "raul123"
     },
     "raul123": {
-        "DeadEnemy": [],
-        "FriendlyEnemy": [],
+        "DeadEnemy": [
+            "groveChild"
+        ],
+        "FriendlyEnemy": [
+            "jesterKnight"
+        ],
         "Pass": "123"
     },
     "test11": {
