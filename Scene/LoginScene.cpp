@@ -59,10 +59,10 @@ void LoginScene::Initialize() {
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Register", "undertale.ttf", 28, centerX + 125, startY + spacing * 2 + 40, 0, 0, 0, 255, 0.5, 0.5));
 
-    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 200, h - 100, 400, 80);
+    btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png", centerX - 127, h - 150, 250, 80);
     btn->SetOnClickCallback(std::bind(&LoginScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 110, 0, 0, 0, 255, 0.5, 0.5));
 
     int btnSize = 200;
 
