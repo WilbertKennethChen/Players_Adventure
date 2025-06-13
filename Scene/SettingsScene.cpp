@@ -21,10 +21,10 @@ void SettingsScene::Initialize() {
     int centerY = h / 2;
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
     Engine::ImageButton* btn = new Engine::ImageButton("stage-select/ui_button.png", "stage-select/ui_button_hovered.png",
-                                                     centerX - 200, h - 100, 400, 80);
+                                                     centerX - 127, h - 150, 250, 80);
     btn->SetOnClickCallback(std::bind(&SettingsScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 65, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "undertale.ttf", 55, centerX, h - 110, 0, 0, 0, 255, 0.5, 0.5));
 
     // ================== LEFT SIDE: Key Bindings ==================
     int leftSectionX = w / 4;

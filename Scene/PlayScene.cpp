@@ -1058,9 +1058,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("play/botak.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump_small.png",
-    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-    64, 64)); // size of your sword image
+                    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                    64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                        j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
+                        64.0f, 64.0f
+                    });
                     break;
                 case 38: // 'v'
                     mapState[i][j] = TILE_FLOOR;
@@ -1225,9 +1230,14 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     mapState[i][j] = TILE_FLOOR;
                     TileMapGroup->AddNewObject(new Engine::Image("tiles/dirt2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     TileMapGroup->AddNewObject(new Engine::Image("play/tree_stump.png",
-    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
-    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
-    64, 64)); // size of your sword image
+                    j * BlockSize + (BlockSize - 64) / 2,  // center horizontally (assuming sword is 32px wide)
+                    i * BlockSize + (BlockSize - 64) / 2,  // center vertically (assuming sword is 32px tall)
+                    64, 64)); // size of your sword image
+                    treeColliders.push_back(Box{
+                    j * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                    i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                    64.0f, 64.0f
+                    });
                     break;
                 case 71:
                     mapState[i][j] = TILE_FLOOR;
@@ -1246,7 +1256,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         64, 64)); // size of your sword image
                     treeColliders.push_back(Box{
                         j * BlockSize + (BlockSize - 64.0f) / 2.0f,
-                        i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
                         64, 64
                     });
                     break;
@@ -1259,7 +1269,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         64, 64)); // size of your sword image
                     treeColliders.push_back(Box{
                         j * BlockSize + (BlockSize - 64.0f) / 2.0f,
-                          i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                          i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
                           64, 64
                         });
                     break;
@@ -1272,7 +1282,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         64, 64)); // size of your sword image
                     treeColliders.push_back(Box{
                         j * BlockSize + (BlockSize - 64.0f) / 2.0f,
-                            i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                            i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
                           64, 64
                         });
                     break;
@@ -1298,7 +1308,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         64, 64)); // size of your sword image
                     treeColliders.push_back(Box{
                         j * BlockSize + (BlockSize - 64.0f) / 2.0f,
-                        i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                        i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
                         64, 64
                     });
                     break;
@@ -1311,7 +1321,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                         64, 64)); // size of your sword image
                     treeColliders.push_back(Box{
                              j * BlockSize + (BlockSize - 64.0f) / 2.0f,
-                             i * BlockSize + (BlockSize - 64.0f) / 2.0f,
+                             i * BlockSize + (BlockSize - 64.0f) / 2.0f - 16,
                            64, 64
                         });
                     break;
