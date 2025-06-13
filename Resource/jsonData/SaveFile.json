@@ -14,7 +14,8 @@
         "wb123",
         "nathan11",
         "raul",
-        "raul123"
+        "raul123",
+        "willy123"
     ],
     "aaa": {
         "DeadEnemy": [
@@ -79,6 +80,11 @@
         "Pass": "123"
     },
     "wb123": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Pass": "123"
+    },
+    "willy123": {
         "DeadEnemy": [],
         "FriendlyEnemy": [],
         "Pass": "123"

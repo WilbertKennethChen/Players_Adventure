@@ -25,6 +25,7 @@ Player* player;
 Npc *enemy;
 
 bool statusDisplayed;
+bool notesWaveAlreadyPlayed = false;
 Engine::Label * labelDesc = nullptr;
 Engine::Label * labelEmo = nullptr;
 Engine::Label * labelHpEnemy = nullptr;
@@ -733,17 +734,43 @@ void BattleScene::enemyHit() {
 
 void BattleScene::readNotesWave() {
     notesWave.clear();
-    std::ifstream fin("Resource/notes0.txt");
-    float lane0, lane1, lane2;
     notesWave.resize(3);
-    while (fin >> lane0 && fin >> lane1 && fin >> lane2) {
-        // std::cout << lane0;
-        notesWave[0].push(lane0);
-        notesWave[1].push(lane1);
-        notesWave[2].push(lane2);
+
+    float totalTime = (enemyName == "groveDad") ? 7.0f : 4.0f;
+    float step = 0.4f;
+    float minLaneGap = (enemyName == "groveChild") ? 0.5f : 0.7f;
+
+    std::uniform_real_distribution<float> stepOffsetDist(-0.1f, 0.1f);
+    std::uniform_int_distribution<int> laneCountDist(1, 2);
+    std::uniform_int_distribution<int> laneDist(0, 2);
+
+    float lastLaneTime[3] = {-1.0f, -1.0f, -1.0f};
+    float currentTime = 0.6f;
+
+    while (currentTime <= totalTime) {
+        int lanesToUse = laneCountDist(rng);
+        std::vector<int> selected;
+
+        int tries = 0;
+        while (selected.size() < lanesToUse && tries < 10) {
+            int lane = laneDist(rng);
+            tries++;
+            if (std::find(selected.begin(), selected.end(), lane) == selected.end()) {
+                float t = currentTime + stepOffsetDist(rng);
+                if (t - lastLaneTime[lane] >= minLaneGap) {
+                    selected.push_back(lane);
+                    notesWave[lane].push(t);
+                    lastLaneTime[lane] = t;
+                }
+            }
+        }
+
+        currentTime += step;
     }
-    fin.close();
+
+    notesWaveAlreadyPlayed = true;
 }
+
 
 void BattleScene::updatePlayerHp(int min){
     playerHp -= min;
