@@ -48,8 +48,11 @@ void CreditScene::Initialize() {
 
     AddNewObject(CreditGroup = new Group());
 
-    std::vector<std::string>texts = {"Director: lorem",
-        "Lead Programmer: ipsum",
+    std::vector<std::string>texts = {
+        "Gameplay Mechanics and Combat Systems: 陳文德",
+        "Dialogue System, Story Development, Enemy Design: 陳俊凱",
+        "User Interface Design and Visual Assets: 郭文祥",
+
         "Art & Design: dolor",
         "Music: sit",
         "sit: Amet",
@@ -63,6 +66,7 @@ void CreditScene::Initialize() {
         "credit7","credit8","credit9","credit10"
     };
     if (GameData::getInstance().ending == "good") {
+        bgmInstance = AudioHelper::PlaySample("lagu_ending.mp3",false,AudioHelper::BGMVolume);
         for (int i =0;i<texts.size();i++) {
             Engine::Label * label;
             label = new Engine::Label(texts[i],"undertale.ttf",32,
@@ -153,6 +157,8 @@ void CreditScene::Update(float deltaTime) {
         }
     }
     if (Done && fadeA < 255) {
+        AudioHelper::StopSample(bgmInstance);
+        // bgmInstance = nullptr;
         fadeA += (255/fadeDuration) * deltaTime;
         if (fadeA >=255) {
             fadeA = 255;
@@ -187,7 +193,7 @@ void CreditScene::Update(float deltaTime) {
                 b = 255;
                 title = "Normal End";
             }
-            bgmInstance = AudioHelper::PlaySample("edsfx.mp3",false,AudioHelper::BGMVolume);
+            sfxInstance = AudioHelper::PlaySample("edsfx.mp3",false,AudioHelper::SFXVolume);
             AddNewObject(new Engine::Label(title, "undertale.ttf", 72, halfW, 100 , r, g, b, 255, 0.5, 0.5));
             AddNewObject(new Engine::Image("play/"+descImg,halfW,halfH,0,0,0.5,0.5));
             AddNewObject(new Engine::Label(desc, "undertale.ttf", 48, halfW, halfH + 250 , 255, 255, 255, 255, 0.5, 0.5));
@@ -269,4 +275,8 @@ void CreditScene::Terminate() {
     credits.clear();
     creditsImg.clear();
     creditsImgTitle.clear();
+    AudioHelper::StopSample(bgmInstance);
+    bgmInstance = nullptr;
+    AudioHelper::StopSample(sfxInstance);
+    sfxInstance = nullptr;
 }
