@@ -50,7 +50,23 @@
       },
       "congrats" : {
         "intro" : {
-          "text" : "npc1 thx",
+          "text" : "Ah, you've returned, and the house behind me is finally open.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Your journey through the dungeon has proven your worth beyond doubt.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Inside, you'll find the secrets long withheld and the answers to the mysteries you've uncovered.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "Your bravery and the relationships you've forged—be it friendships or victories—have opened this door.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "You may enter and discover what lies within. The village owes you a great debt, and your legacy will echo through our stories for generations to come.",
           "next" : ""
         }
       }
@@ -96,7 +112,27 @@
       },
       "congrats" : {
         "intro" : {
-          "text" : "npc2 thx",
+          "text" : "Welcome back, hero! Word of your deeds within the dungeon has already spread through our village.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Your courage and determination have rekindled our spirits and restored our hope.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Whether through might or mercy, you've shaped a new path for us all.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "The darkness that plagued us has receded, and we can now look forward to brighter days.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Your choices have set events in motion, and the world around you has changed because of your actions.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "Rest now, for you have truly earned it. Our village is forever grateful.",
           "next" : ""
         }
       }
@@ -104,39 +140,71 @@
     "enemy1" : {
       "hostile" : {
         "intro" : {
-          "text" : "Very well, where do I begin? My father was a relentlessly self-improving boulangerie owner from Belgium with low grade narcolepsy and a penchant for buggery. My mother was a fifteen year old French prostitute named Chloe with webbed feet.",
+          "text" : "Intruder! You tread recklessly upon sacred memories, each step echoing pain of forgotten histories.",
           "next" : "body1"
         },
         "body1" : {
-          "text" : "My father would womanize, he would drink, he would make outrageous claims like he invented the question mark. Some times he would accuse chestnuts of being lazy, the sort of general malaise that only the genius possess and the insane lament. ",
+          "text" : "Do you understand the weight of your disturbance?",
           "next" : "body2"
         },
         "body2" : {
-          "text" : "My childhood was typical, summers in Rangoon, luge lessons. In the spring we'd make meat helmets. When I was insolent I was placed in a burlap bag and beaten with reeds, pretty standard really.",
+          "text" : "You think yourself brave, yet your ignorance breeds turmoil.",
           "next" : "body3"
         },
         "body3" : {
-          "text" : "At the age of 12 I received my first scribe. At the age of fourteen, a Zoroastrian named Vilma ritualistically shaved my testicles. There really is nothing like a shorn scrotum, it's breathtaking, I suggest you try it.",
+          "text" : "Depart swiftly, or become one with these shadowed halls—another faded memory, another whispered regret.",
           "next" : ""
         }
       },
       "friendly": {
         "intro" : {
-          "text" : "Thank you, I Didn't Know You Were Chill Like That",
+          "text" : "Wait... you don't carry malice.",
           "next" : "body1"
         },
         "body1" : {
-          "text" : "There is other monster inside",
+          "text" : "I sense a different purpose in your heart.",
           "next" : "body2"
         },
         "body2" : {
-          "text" : "Stay safe friend :)",
+          "text" : "Could it be curiosity or compassion that guides your steps?",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "These halls have long known only sorrow and silence.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Perhaps you can hear the whispers, see the remnants of lives once vibrant.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "Be cautious yet steadfast, friend, and the past may offer its wisdom to you.\"",
           "next" : ""
         }
       },
       "congrats" : {
         "intro" : {
-          "text" : "enemy1 thx",
+          "text" : "Ah, friend, it’s you again.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "Never did I anticipate walking among the villagers, accepted, no longer a shadow lurking in forgotten halls.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "You've gifted me a chance at redemption, a life beyond sorrow.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "In the dungeon, I saw only my eternal isolation, but through your actions, you reminded me of compassion and kindness.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Gratitude fills what was once emptiness, and I find joy in this new beginning.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "Thank you for showing me the warmth of light and the value of peace.",
           "next" : ""
         }
       }
@@ -177,7 +245,23 @@
       },
       "congrats" : {
         "intro" : {
-          "text" : "groveDad thx",
+          "text" : "Guardian of my children, friend to my forest—you've shown me trustworthiness, proven through actions, not mere words.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : " I once questioned your intentions, protective as any parent must be.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "Now, seeing my kin flourish under skies of genuine harmony, I know my trust was well placed.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "The forest breathes easier because of you, our roots entwined in friendship.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Accept my deepest gratitude, and know you are always welcome beneath our branches.",
           "next" : ""
         }
       }
@@ -206,11 +290,30 @@
       },
       "congrats" : {
         "intro" : {
-          "text" : "groveChild thx",
+          "text" : "You're back!",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "And the sun shines brighter because you returned without harm, without malice.",
+          "next" : "body2"
+        },
+        "body2" : {
+          "text" : "You were different from the start, listening when others ignored, caring when others turned away.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "Now we play freely, unafraid and unguarded, knowing you protect our peace.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Thank you for understanding us—for seeing beyond leaves and branches into our hearts.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "You've truly made this grove bloom.",
           "next" : ""
         }
       }
-
     },
     "jesterKnight" : {
       "hostile" : {
@@ -243,14 +346,26 @@
       },
       "congrats" : {
         "intro" : {
-          "text" : "jesterKnight thx",
+          "text" : "Brave traveler, my eternal vigil is at an end, and the honor of my duty now rests gently within my heart, no longer a burden.",
+          "next" : "body1"
+        },
+        "body1" : {
+          "text" : "You chose wisdom and empathy, virtues I once thought lost to time.",
+          "next" : "body2"
+        },
+        "body3" : {
+          "text" : "Thanks to your path, I am granted peace and rest among companions, no longer bound to guard the gates of solitude.",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "My gratitude is yours forever, as is my respect.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Walk your path proudly, for you have taught a knight the truest strength lies in kindness.",
           "next" : ""
         }
       }
-
     }
-
-
-
   }
 }
