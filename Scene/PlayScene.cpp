@@ -224,7 +224,7 @@ void PlayScene::PauseInitialize()
     exitBtn->SetOnClickCallback(std::bind(&PlayScene::ExitOnClick, this));
     UIGroup->AddNewControlObject(exitBtn);
     exitBtn->Visible = false;
-    exitLabel = new Engine::Label("Back", "undertale.ttf", 48,
+    exitLabel = new Engine::Label("Main Menu", "undertale.ttf", 48,
                                 buttonX + buttonWidth / 2, currentY + buttonHeight / 2,
                                 0, 0, 0, 255, 0.5, 0.5);
     exitLabel->Visible = false;
@@ -856,7 +856,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                 }
                 case 4:  // Spawn point
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_mid.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/vertical_down.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     spawnPoint = Engine::Point(j * BlockSize + BlockSize/2, i * BlockSize + BlockSize/2);
                     break;
 
@@ -1212,7 +1212,7 @@ void PlayScene::ReadMap(Engine::Point overrideSpawn) {
                     break;
                 case 66: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
-                    TileMapGroup->AddNewObject(new Engine::Image("tiles/corner2.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                    TileMapGroup->AddNewObject(new Engine::Image("tiles/horizontal_left.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
                     break;
                 case 67: // Floor Dungeon 2
                     mapState[i][j] = TILE_FLOOR;
