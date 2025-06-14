@@ -353,7 +353,7 @@
           "text" : "You chose wisdom and empathy, virtues I once thought lost to time.",
           "next" : "body2"
         },
-        "body3" : {
+        "body2" : {
           "text" : "Thanks to your path, I am granted peace and rest among companions, no longer bound to guard the gates of solitude.",
           "next" : "body3"
         },

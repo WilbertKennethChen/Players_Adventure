@@ -679,7 +679,7 @@ void BattleScene::createNotesGame() {
 
 
 void BattleScene::enemyHit() {
-    enemyHp = std::max(enemyHp-100,0);
+    enemyHp = std::max(enemyHp-10,0);
     if (enemyName == "jesterKnight" && enemyHp <= enemyMaxHp/2) emotion = "furious";
     if (enemyName == "jesterKnight" && enemyHp == 5) emotion = "scared";
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;

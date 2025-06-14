@@ -51,7 +51,7 @@ void CreditScene::Initialize() {
     std::vector<std::string>texts = {
         "Credits",
         " ",
-        "ITP II Final Project 2025",
+        "I2P II Final Project 2025",
         "Group 5",
         " ",
         "========================================================================",
