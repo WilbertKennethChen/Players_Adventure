@@ -16,15 +16,35 @@
     "npc1" : {
       "friendly" : {
         "intro" : {
-          "text" : "Intro text 1",
+          "text" : "Hello, stranger.",
           "next" : "body1"
         },
         "body1" : {
-          "text" : "Body 1 Hello world",
+          "text" : "It is a haven of tranquility and beauty, but sadly, true peace has eluded us in recent times.",
           "next" : "body2"
         },
         "body2" : {
-          "text" : "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer",
+          "text" : "You see this house behind me?",
+          "next" : "body3"
+        },
+        "body3" : {
+          "text" : "It's not just any home—it's a place of great significance, currently sealed tight by an ancient enchantment.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Legends say it opens only for those who've proven themselves in the dungeon.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "Whether by defeating all the creatures lurking in its shadows or by gaining their trust and friendship, the path to unlocking this dwelling lies in your actions.",
+          "next" : "body6"
+        },
+        "body6" : {
+          "text" : "The house contains answers to questions long unanswered, truths that many have sought but none have grasped.",
+          "next" : "body7"
+        },
+        "body7" : {
+          "text" : "But until then, the mysteries within remain out of reach, waiting patiently for the worthy to arrive.",
           "next" : ""
         }
       },
@@ -38,19 +58,39 @@
     "npc2" : {
       "friendly" : {
         "intro" : {
-          "text" : "Wowwwww, you meow like a cat! That means you are one, right? Shut the fuck up. If you really want to be put on a leash and treated like a domestic animal then that’s called a fetish, not “quirky” or “cute”. What part of you seriously thinks that any part of acting like a feline establishes a reputation of appreciation?",
+          "text" : "Greetings, traveler! Welcome to our humble village nestled peacefully amidst these lush and vibrant meadows.",
           "next" : "body1"
         },
         "body1" : {
-          "text" : "Is it your lack of any defining aspect of personality that urges you to resort to shitty representations of cats to create an illusion of meaning in your worthless life? Wearing “cat ears” in the shape of headbands further notes the complete absence of human attribution to your false sense of personality, such as intelligence or charisma in any form or shape. ",
+          "text" : "It is a haven of tranquility and beauty, but sadly, true peace has eluded us in recent times.",
           "next" : "body2"
         },
         "body2" : {
-          "text" : "Where do you think this mindset’s gonna lead you? You think you’re funny, random, quirky even? What makes you think that acting like a fucking cat will make a goddamn hyena laugh? I, personally, feel extremely sympathetic towards you as your only escape from the worthless thing you call your existence is to pretend to be an animal.",
+          "text" : "There's a dark dungeon just beyond the forest edge, cloaked in mystery and danger.",
           "next" : "body3"
         },
         "body3" : {
-          "text" : "But it’s not a worthy choice to assert this horrifying fact as a dominant trait, mainly because personality traits require an initial personality to lay their foundation on. You’re not worthy of anybody’s time, so go fuck off, “cat-girl”.",
+          "text" : "Long ago, our ancestors sealed away powerful creatures within its walls, but recently we've heard disturbing rumors.",
+          "next" : "body4"
+        },
+        "body4" : {
+          "text" : "Beasts, shadows, and spirits—creatures twisted by darkness—have been stirring once more.",
+          "next" : "body5"
+        },
+        "body5" : {
+          "text" : "Be careful if you choose to venture there; the paths are treacherous and the foes formidable.",
+          "next" : "body6"
+        },
+        "body6" : {
+          "text" : "Some creatures may be swayed to your side with compassion and understanding, while others, sadly, may only know violence.",
+          "next" : "body7"
+        },
+        "body7" : {
+          "text" : "Either way, your choices will greatly affect not just your fate, but the destiny of our entire village.",
+          "next" : "body8"
+        },
+        "body8" : {
+          "text" : "Brave souls like you give us hope. May fortune favor your courage.",
           "next" : ""
         }
       },
