@@ -49,14 +49,25 @@ void CreditScene::Initialize() {
     AddNewObject(CreditGroup = new Group());
 
     std::vector<std::string>texts = {
-        "Gameplay Mechanics and Combat Systems: 陳文德",
-        "Dialogue System, Story Development, Enemy Design: 陳俊凱",
-        "User Interface Design and Visual Assets: 郭文祥",
-
-        "Art & Design: dolor",
-        "Music: sit",
-        "sit: Amet",
-        "Prof: Kuo"};
+        "Gameplay Mechanics and Combat Systems: Wilbert Kenneth Chen",
+        "Dialogue System, Story Development, Enemy Design: Nathanael Christo Gunawan",
+        "User Interface Design and Visual Assets: Georgius Willy Dinata",
+        "Game Engine Template: I2P II TAs",
+        "Special Thanks to Professor Kuo Po Chih for the Opportunity",
+        "Made with Allegro 5 and C++",
+        "Assets Used:",
+        "Basic Tileset and Asset by Schwarnhild",
+        "Pixel Dungeon Asset and Tiles by Sarpvisuals",
+        "Other Assets from LLMs",
+        "BGM Used:",
+        "Littleroot Town Theme - Pokemon Alpha Saphire",
+        "Mii Channel Music - Nintendo Wii",
+        "Bittesweet Symphony - The Aranbee Pop Symphony",
+        "Grants New Etude - Vincent Rubinetti",
+        "Labyrinth (Depths) - The Legend of Zelda: Tears of The Kingdom",
+        "Foolish Bird - Black Souls 2",
+        "Good bye - A-Yue"
+      };
     imgTitle = {
     "Proposal Draft 5/27", "Map Idea", "Scene Idea", "Start Scene 6/8", "Early Player Sprite", "Early Dialogue", "Map 1 6/9",
         "Player Sprite 6/12", "Dialogue 6/13"
