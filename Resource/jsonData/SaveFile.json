@@ -60,7 +60,8 @@
         "312",
         "1234",
         "12334",
-        "12345"
+        "12345",
+        "test"
     ],
     "aaa": {
         "DeadEnemy": [],
@@ -117,5 +118,12 @@
         ],
         "Pass": "abc",
         "Score": 1095
+    },
+    "test": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "abc",
+        "Score": 0
     }
 }

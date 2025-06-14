@@ -628,10 +628,23 @@ void BattleScene::displayEnemyStatus() {
     int halfW = w / 2;
     int halfH = h / 2;
 
+    std::string trueName;
+
+    if (enemyName == "enemy1")
+        trueName = "Ghost";
+    else if (enemyName == "jesterKnight")
+        trueName = "Jester Knight";
+    else if (enemyName == "groveDad")
+        trueName = "Grove Warden";
+    else if (enemyName == "groveChild")
+        trueName = "Grove Warden Jr";
+    else
+        trueName = enemyName; // fallback to original name
+
     labelDesc = new Engine::Label("~ " + desc + " ~", "undertale.ttf", 48, minigame_x2/2, minigame_y1 + 40, 255, 255, 255, 255, 0.5, 0.5);
 
     if (enemyHp == 5 && emotion != "furious") emotion = "scared";
-    labelEmo = new Engine::Label("~ " + enemyName + " is " + emotion + " ~", "undertale.ttf", 48, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
+    labelEmo = new Engine::Label("~ " + trueName + " is " + emotion + " ~", "undertale.ttf", 48, minigame_x2/2 , minigame_y1 +100, 255, 255, 255, 255, 0.5, 0.5);
 
     LabelGroup->AddNewObject(labelEmo);
     LabelGroup->AddNewObject(labelDesc);

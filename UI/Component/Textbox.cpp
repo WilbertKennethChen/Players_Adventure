@@ -18,8 +18,29 @@ namespace Engine {
         float height = 400;
         int x = SceneSize.x  / 16;
         int y = SceneSize.y / 2 - 20;
+
+
+
+        std::string trueName;
+
+        if (name == "npc1")
+            trueName = "Wilson";
+        else if (name == "npc2")
+            trueName = "Bradley";
+        else if (name == "enemy1")
+            trueName = "Ghost";
+        else if (name == "jesterKnight")
+            trueName = "Jester Knight";
+        else if (name == "groveDad")
+            trueName = "Grove Warden";
+        else if (name == "groveChild")
+            trueName = "Grove Warden Jr";
+        else
+            trueName = name; // fallback to original name
+
+
         this->bg = new Engine::Image("play/textbox_bg.png", x, y, width, height);
-        this->nameLabel = new Engine::Label(name, "undertale.ttf", 52, x + 50, y + 40, 255, 255, 0, 255, 0.0, 0.5);
+        this->nameLabel = new Engine::Label(trueName, "undertale.ttf", 52, x + 50, y + 40, 255, 255, 0, 255, 0.0, 0.5);
         this->text = new Engine::Label(text, "undertale.ttf", 44, x + 50, y + 80, 255, 255, 255, 255, 0.0, 0.0, width - 70);
         this->hintLabel = new Engine::Label("press ENTER / SPACE", "undertale.ttf", 28,
         x + width - 60, y + height - 40, 255, 255, 255, 200, 1.0, 1.0);

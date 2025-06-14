@@ -49,16 +49,33 @@ void CreditScene::Initialize() {
     AddNewObject(CreditGroup = new Group());
 
     std::vector<std::string>texts = {
+        "Credits",
+        " ",
+        "ITP II Final Project 2025",
+        "Group 5",
+        " ",
+        "========================================================================",
+        " ",
         "Gameplay Mechanics and Combat Systems: Wilbert Kenneth Chen",
         "Dialogue System, Story Development, Enemy Design: Nathanael Christo Gunawan",
         "User Interface Design and Visual Assets: Georgius Willy Dinata",
-        "Game Engine Template: I2P II TAs",
+        " ",
+        "========================================================================",
+        "   ",
+        "Special Thanks to I2P TAs for Game Engine and Template",
         "Special Thanks to Professor Kuo Po Chih for the Opportunity",
+        "Special Thanks to Family and Friends",
+        " ",
+        "========================================================================",
+        "   ",
         "Made with Allegro 5 and C++",
+        "Insipired by Undertale",
+        " ",
         "Assets Used:",
         "Basic Tileset and Asset by Schwarnhild",
         "Pixel Dungeon Asset and Tiles by Sarpvisuals",
         "Other Assets from LLMs",
+        " ",
         "BGM Used:",
         "Littleroot Town Theme - Pokemon Alpha Saphire",
         "Mii Channel Music - Nintendo Wii",
@@ -66,22 +83,23 @@ void CreditScene::Initialize() {
         "Grants New Etude - Vincent Rubinetti",
         "Labyrinth (Depths) - The Legend of Zelda: Tears of The Kingdom",
         "Foolish Bird - Black Souls 2",
-        "Good bye - A-Yue"
+        "Good bye - A-Yue",
+        "   "
       };
     imgTitle = {
     "Proposal Draft 5/27", "Map Idea", "Scene Idea", "Start Scene 6/8", "Early Player Sprite", "Early Dialogue", "Map 1 6/9",
-        "Player Sprite 6/12", "Dialogue 6/13"
+        "Battle Scene 6/11","Player Sprite 6/12","Dialogue 6/13"
     };
     std::vector<std::string>images = {
     "credit1","credit3","credit4","credit5","credit6",
-        "credit7","credit8","credit9","credit10"
+        "credit7","credit8","credit11","credit9","credit10"
     };
     if (GameData::getInstance().ending == "good") {
         bgmInstance = AudioHelper::PlaySample("lagu_ending.mp3",false,AudioHelper::BGMVolume);
         for (int i =0;i<texts.size();i++) {
             Engine::Label * label;
-            label = new Engine::Label(texts[i],"undertale.ttf",32,
-                halfW, scrollY+10,255,255,255,255,0.5,0.5);
+            label = new Engine::Label(texts[i],"undertale.ttf",(i) ? 32 : 60,
+                halfW, scrollY+60,255,255,255,255,0.5,0.5);
             CreditGroup->AddNewObject(label);
             credits.push_back(label);
         }
@@ -168,7 +186,7 @@ void CreditScene::Update(float deltaTime) {
         }
     }
     if (Done && fadeA < 255) {
-        AudioHelper::StopSample(bgmInstance);
+
         // bgmInstance = nullptr;
         fadeA += (255/fadeDuration) * deltaTime;
         if (fadeA >=255) {
@@ -286,8 +304,11 @@ void CreditScene::Terminate() {
     credits.clear();
     creditsImg.clear();
     creditsImgTitle.clear();
-    AudioHelper::StopSample(bgmInstance);
+    if (bgmInstance) {
+        AudioHelper::StopSample(bgmInstance);
+    }
+    // AudioHelper::StopSample(bgmInstance);
     bgmInstance = nullptr;
-    AudioHelper::StopSample(sfxInstance);
+    // AudioHelper::StopSample(sfxInstance);
     sfxInstance = nullptr;
 }
