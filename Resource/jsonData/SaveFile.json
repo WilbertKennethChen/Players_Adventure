@@ -1,4 +1,9 @@
 {
+    "": {
+        "DeadEnemy": [],
+        "FriendlyEnemy": [],
+        "Score": 0
+    },
     "122": {
         "DeadEnemy": [],
         "Ending": "",
@@ -60,7 +65,8 @@
         "312",
         "1234",
         "12334",
-        "12345"
+        "12345",
+        "wilbert"
     ],
     "aaa": {
         "DeadEnemy": [],
@@ -117,5 +123,12 @@
         ],
         "Pass": "abc",
         "Score": 1095
+    },
+    "wilbert": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "wilbert",
+        "Score": 0
     }
 }
