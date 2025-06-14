@@ -25,6 +25,7 @@ public:
     void PlayOnClick(int stage);
     void SettingsOnClick(int stage);
     void LeaderboardOnClick(int stage);
+    void OnMouseDown(int button, int mx, int my) override;
     void LoginOnClick();
     void Update(float deltaTime) override;
 };

@@ -27,6 +27,13 @@
         "Pass": "abc",
         "Score": 0
     },
+    "12345": {
+        "DeadEnemy": [],
+        "Ending": "",
+        "FriendlyEnemy": [],
+        "Pass": "abc",
+        "Score": 0
+    },
     "213": {
         "DeadEnemy": [],
         "Ending": "",
@@ -52,7 +59,8 @@
         "213",
         "312",
         "1234",
-        "12334"
+        "12334",
+        "12345"
     ],
     "aaa": {
         "DeadEnemy": [],

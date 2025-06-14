@@ -54,7 +54,10 @@ void CreditScene::Initialize() {
         "Music: sit",
         "sit: Amet",
         "Prof: Kuo"};
-
+    imgTitle = {
+    "Proposal Draft 5/27", "Map Idea", "Scene Idea", "Start Scene 6/8", "Early Player Sprite", "Early Dialogue", "Map 1 6/9",
+        "Player Sprite 6/12", "Dialogue 6/13"
+    };
     std::vector<std::string>images = {
     "credit1","credit3","credit4","credit5","credit6",
         "credit7","credit8","credit9","credit10"
@@ -71,9 +74,26 @@ void CreditScene::Initialize() {
         for (int i = 0;i<images.size();i++) {
             Engine::Image * img;
             img = new Engine::Image("play/"+images[i]+".jpeg",halfW,scrollY+75,600,400,0.5,0.5);
+            Engine::Label * label;
+            label  = new Engine::Label(imgTitle[i],"undertale.ttf",32,
+                halfW, scrollY+10,255,255,255,175,0.5,0.5);
+
             CreditGroup->AddNewObject(img);
+            CreditGroup->AddNewObject(label);
             creditsImg.push_back(img);
+            creditsImgTitle.push_back(label);
         }
+        // Engine::Image * img;
+        // img = new Engine::Image("play/team.jpeg",halfW,scrollY+75,500,600,0.5,0.5);
+        // Engine::Label * label;
+        // label  = new Engine::Label("The Team","undertale.ttf",32,
+        //     halfW, scrollY+10,255,255,255,175,0.5,0.5);
+        // creditsImg.push_back(img);
+        // CreditGroup->AddNewObject(img);
+        // creditsImgTitle.push_back(label);
+        // CreditGroup->AddNewObject(label);
+
+
     } else {
         Done = true;
     }
@@ -119,11 +139,12 @@ void CreditScene::Update(float deltaTime) {
         float spacingImg = 450;
         for (size_t i =0; i<creditsImg.size(); ++i) {
             creditsImg[i]->Position.y = scrollY + (idx * 60) + 200 + (i * spacingImg);
+            creditsImgTitle[i]->Position.y = creditsImg[i]->Position.y + 250;
             idx++;
         }
 
         // optional: when the last line has fully scrolled off, go back to menu
-        float totalHeight = (credits.size() * 60) + (creditsImg.size() * spacingImg) + 425;
+        float totalHeight = (credits.size() * 60) + (creditsImg.size() * spacingImg) + 450;
         if (scrollY + totalHeight < 0) {
             // Engine::GameEngine::GetInstance().ChangeScene("start");
             Done = true;
@@ -141,25 +162,35 @@ void CreditScene::Update(float deltaTime) {
             int halfW = w / 2;
             int halfH = h / 2;
             std::string title;
+            std::string desc;
+            std::string descImg;
             int r,g,b;
             if (GameData::getInstance().ending == "bad") {
                 title = "Bad End";
+                desc = ":(";
+                descImg = "fail.png";
                 r = 255;
                 g = 0;
                 b = 0;
             } else if (GameData::getInstance().ending == "good") {
                 title = "True End";
+                desc = "Thank you for Playing";
+                descImg = "team.png";
                 r=0;
                 g = 255;
                 b = 0;
             } else if (GameData::getInstance().ending == "normal") {
+                desc = "Good Job";
+                descImg = "normal.jpeg";
                 r = 0;
                 g = 0;
                 b = 255;
                 title = "Normal End";
             }
             bgmInstance = AudioHelper::PlaySample("edsfx.mp3",false,AudioHelper::BGMVolume);
-            AddNewObject(new Engine::Label(title, "undertale.ttf", 72, halfW, halfH /2 , r, g, b, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Label(title, "undertale.ttf", 72, halfW, 100 , r, g, b, 255, 0.5, 0.5));
+            AddNewObject(new Engine::Image("play/"+descImg,halfW,halfH,0,0,0.5,0.5));
+            AddNewObject(new Engine::Label(desc, "undertale.ttf", 48, halfW, halfH + 250 , 255, 255, 255, 255, 0.5, 0.5));
             AddNewObject(new Engine::Label("Press Enter to Return to Main Menu / Press E to Reset", "undertale.ttf", 24, halfW, h - 40 , 255, 255, 255, 125, 0.5, 0.5));
 
             Done = false;
@@ -237,4 +268,5 @@ void CreditScene::Terminate() {
     CreditGroup->Clear();
     credits.clear();
     creditsImg.clear();
+    creditsImgTitle.clear();
 }

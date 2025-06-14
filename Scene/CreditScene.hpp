@@ -32,6 +32,8 @@ private:
     Group *CreditGroup;
     std::vector<Engine::Label*> credits;
     std::vector<Engine::Image*> creditsImg;
+    std::vector<Engine::Label*> creditsImgTitle;
+    std::vector<std::string> imgTitle;
     bool revealStarted;
     float fadeA;
     float fadeDuration;

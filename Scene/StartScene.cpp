@@ -54,9 +54,9 @@ void StartScene::Initialize() {
     AddNewObject(new Engine::Image("menu/main_menu.png", 0, 0, w, h, 0, 0));
 
 
-    btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400);
-    btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));400,
-    AddNewControlObject(btn);
+    // btn = new Engine::ImageButton("play/dirty-3.png", "stage-select/emptynew.png", halfW - 250, halfH / 2, 400);
+    // btn->SetOnClickCallback(std::bind(&StartScene::PlayOnClick, this, 1));400,
+    // AddNewControlObject(btn);
 
     btn = new Engine::ImageButton("stage-select/settingok.png", "stage-select/settinggud.png", halfW + 490, halfH * 3 / 2 + 25, 200, 200);
     btn->SetOnClickCallback(std::bind(&StartScene::SettingsOnClick, this, 2));
@@ -141,4 +141,16 @@ void StartScene::LeaderboardOnClick(int stage)
 
 void StartScene::LoginOnClick() {
     Engine::GameEngine::GetInstance().ChangeScene("login");
+}
+
+void StartScene::OnMouseDown(int button, int mx, int my) {
+    IScene::OnMouseDown(button, mx, my);
+    if (mx >= 545 && mx <= 925 && my >= 185 && my <= 545) {
+        if (button == 1 && GameData::getInstance().Username != "") {
+            Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+            PlayScene *scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetScene("play"));
+            scene->MapId = 1;
+            Engine::GameEngine::GetInstance().ChangeScene("play");
+        }
+    }
 }
